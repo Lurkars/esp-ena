@@ -2,8 +2,8 @@
 
 # esp-ena
 
-Implementation of the Covid19 Exposure Notification API by Apple and Google on an ESP32. 
-More information about the Covid19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is meant for people without smartphone or without smartphones with Apples/Googles implementation.
+Implementation of the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with ESP-IDF). 
+More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is meant for people without smartphone or without smartphones with Apples/Googles implementation.
 
 This implementation covers for now the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above):
 * send tokens
