@@ -69,6 +69,12 @@ recommended
 
 ### Build and Flash
 
+May flash partition table:
+
+```
+idf.py partition_table-flash
+```
+
 Build the project and flash it to the board, then run monitor tool to view serial output:
 
 ```

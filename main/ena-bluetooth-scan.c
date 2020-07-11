@@ -34,19 +34,33 @@ void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap
     case ESP_GAP_BLE_SCAN_RESULT_EVT:
         if (p->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_RES_EVT)
         {
-            // check for ENA Service UUID:
-            if (p->scan_rst.ble_adv[0] == 0x3 && p->scan_rst.ble_adv[1] == 0x3 && p->scan_rst.ble_adv[2] == 0x6f && p->scan_rst.ble_adv[3] == 0xfd)
+            if (p->scan_rst.adv_data_len < 28)
+            {
+                // adv_data too short for exposure notification
+                break;
+            }
+
+            int flag_offset = 0;
+            // received payload from Google does not contain flag specified in Bluetooth Specification!? So check for length and then add offset
+            if (p->scan_rst.adv_data_len == 31)
+            {
+                // data contains flag
+                flag_offset = 3;
+            }
+
+            // check for ENA Service UUID: (after flag 0x03 0x03 0x6f 0xfd for ENA service)
+            if (p->scan_rst.ble_adv[0 + flag_offset] == 0x3 && p->scan_rst.ble_adv[1 + flag_offset] == 0x3 && p->scan_rst.ble_adv[2 + flag_offset] == 0x6f && p->scan_rst.ble_adv[3 + flag_offset] == 0xfd)
             {
                 uint8_t rpi[ENA_KEY_LENGTH] = {0};
                 for (int i = 0; i < ENA_KEY_LENGTH; i++)
                 {
-                    rpi[i] = p->scan_rst.ble_adv[8 + i];
+                    rpi[i] = p->scan_rst.ble_adv[i + 8 + flag_offset];
                 }
 
                 uint8_t aem[ENA_AEM_METADATA_LENGTH] = {0};
                 for (int i = 0; i < ENA_AEM_METADATA_LENGTH; i++)
                 {
-                    aem[i] = p->scan_rst.ble_adv[8 + ENA_KEY_LENGTH + i];
+                    aem[i] = p->scan_rst.ble_adv[i + ENA_KEY_LENGTH + 8 + flag_offset];
                 }
 
                 ena_detection((uint32_t)time(NULL), rpi, aem, p->scan_rst.rssi);
