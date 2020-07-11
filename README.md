@@ -1,3 +1,5 @@
+*worked on this a few days offtime, now here is the first working source*
+
 # esp-ena
 
 Implementation of the Covid19 Exposure Notification API by Apple and Google on an ESP32. 
