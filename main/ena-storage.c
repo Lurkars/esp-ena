@@ -23,7 +23,7 @@ void ena_storage_read(size_t address, uint8_t *data, size_t size)
     ESP_LOGD(ENA_STORAGE_LOG, "END ena_storage_read");
 }
 
-void ena_storage_write(size_t address, uint8_t data[], size_t size)
+void ena_storage_write(size_t address, uint8_t *data, size_t size)
 {
     ESP_LOGD(ENA_STORAGE_LOG, "START ena_storage_write");
     const esp_partition_t *partition = esp_partition_find_first(
@@ -36,7 +36,7 @@ void ena_storage_write(size_t address, uint8_t data[], size_t size)
     if (address + size > (block_num + 1) * BLOCK_SIZE)
     {
 
-        ESP_LOGI(ENA_STORAGE_LOG, "overflow block at address %u with size %d (block %d)", address, size, block_num);
+        ESP_LOGD(ENA_STORAGE_LOG, "overflow block at address %u with size %d (block %d)", address, size, block_num);
         const size_t block1_address = address;
         const size_t block2_address = (block_num + 1) * BLOCK_SIZE;
         const size_t data2_size = address + size - block2_address;
@@ -44,18 +44,12 @@ void ena_storage_write(size_t address, uint8_t data[], size_t size)
         ESP_LOGD(ENA_STORAGE_LOG, "block1_address %d, block1_size %d (block %d)", block1_address, data1_size, block_num);
         ESP_LOGD(ENA_STORAGE_LOG, "block2_address %d, block2_size %d (block %d)", block2_address, data2_size, block_num + 1);
         uint8_t *data1 = malloc(data1_size);
-        for (int i = 0; i < data1_size; i++)
-        {
-            data1[i] = data[i];
-        }
-        uint8_t *data2 = malloc(data2_size);
-        for (int i = 0; i < data2_size; i++)
-        {
-            data2[i] = data[data1_size + i];
-        }
-
+        memcpy(data1, data, data1_size);
         ena_storage_write(block1_address, data1, data1_size);
         free(data1);
+
+        uint8_t *data2 = malloc(data2_size);
+        memcpy(data2, &data[data1_size], data2_size);
         ena_storage_write(block2_address, data2, data2_size);
         free(data2);
     }
@@ -74,10 +68,8 @@ void ena_storage_write(size_t address, uint8_t data[], size_t size)
         vTaskDelay(1);
         ESP_ERROR_CHECK(esp_partition_erase_range(partition, block_start, BLOCK_SIZE));
 
-        for (int i = 0; i < size; i++)
-        {
-            buffer[block_address + i] = data[i];
-        }
+        memcpy(&buffer[block_address], data, size);
+
         ESP_ERROR_CHECK(esp_partition_write(partition, block_start, buffer, BLOCK_SIZE));
         free(buffer);
         ESP_LOGD(ENA_STORAGE_LOG, "write data at %u", address);
@@ -86,53 +78,69 @@ void ena_storage_write(size_t address, uint8_t data[], size_t size)
     ESP_LOGD(ENA_STORAGE_LOG, "END ena_storage_write");
 }
 
-void ena_storage_shift_delete(size_t address, size_t size)
+void ena_storage_shift_delete(size_t address, size_t end_address, size_t size)
 {
     ESP_LOGD(ENA_STORAGE_LOG, "START ena_storage_shift_delete");
-    const esp_partition_t *partition = esp_partition_find_first(
-        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, PARTITION_NAME);
-    assert(partition);
 
-    const int block_num = address / BLOCK_SIZE;
-
-    // split if size extends block TODO this does not work like this!!! Shift puts data back to first block!
-    if (address + size > (block_num + 1) * BLOCK_SIZE)
+    int block_num_start = address / BLOCK_SIZE;
+    // split if size extends block
+    if (address + size > (block_num_start + 1) * BLOCK_SIZE)
     {
-        const int block1_address = address;
-        const int block2_address = (block_num + 1) * BLOCK_SIZE;
-        const int data2_size = address + size - block2_address;
-        const int data1_size = size - data2_size;
-        ena_storage_shift_delete(block1_address, data1_size);
-        ena_storage_shift_delete(block2_address, data2_size);
+        ESP_LOGD(ENA_STORAGE_LOG, "overflow block at address %u with size %d (block %d)", address, size, block_num_start);
+        const size_t block1_address = address;
+        const size_t block2_address = (block_num_start + 1) * BLOCK_SIZE;
+        const size_t data2_size = address + size - block2_address;
+        const size_t data1_size = size - data2_size;
+        ena_storage_shift_delete(block1_address, end_address, data1_size);
+        ena_storage_shift_delete(block2_address, end_address - data1_size, data2_size);
     }
     else
     {
-        const int block_start = block_num * BLOCK_SIZE;
-        const int block_address = address - block_start;
-        uint8_t *buffer = malloc(BLOCK_SIZE);
-        ESP_ERROR_CHECK(esp_partition_read(partition, block_start, buffer, BLOCK_SIZE));
-        vTaskDelay(1);
-        ESP_LOGD(ENA_STORAGE_LOG, "shift block from %u to %u with size %u (move %u)", block_address, block_address + size, size, BLOCK_SIZE - address + size);
-        // shift manually
-        for (int i = block_address + size; i < BLOCK_SIZE; i++)
-        {
-            buffer[i - size] = buffer[i];
-        }
+        const esp_partition_t *partition = esp_partition_find_first(
+            ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, PARTITION_NAME);
+        assert(partition);
 
-        for (int i = BLOCK_SIZE - size; i < BLOCK_SIZE; i++)
+        int block_num_end = end_address / BLOCK_SIZE;
+        size_t block_start = address - block_num_start * BLOCK_SIZE;
+        while (block_num_end >= block_num_start)
         {
-            buffer[i] = 0;
+
+            uint8_t *buffer = malloc(BLOCK_SIZE);
+            ESP_ERROR_CHECK(esp_partition_read(partition, block_num_start * BLOCK_SIZE, buffer, BLOCK_SIZE));
+            vTaskDelay(1);
+            // shift inside buffer
+            ESP_LOGD(ENA_STORAGE_LOG, "shift block %d from %u to %u with size %u", block_num_start, (block_start + size), block_start, (BLOCK_SIZE - block_start - size));
+            memcpy(&buffer[block_start], &buffer[block_start + size], BLOCK_SIZE - block_start - size);
+            if (block_num_end > block_num_start)
+            {
+                uint8_t *buffer_next_block = malloc(BLOCK_SIZE);
+
+                ESP_ERROR_CHECK(esp_partition_read(partition, (block_num_start + 1) * BLOCK_SIZE, buffer_next_block, BLOCK_SIZE));
+                vTaskDelay(1);
+                // shift from next block
+                ESP_LOGD(ENA_STORAGE_LOG, "shift next block size %u", size);
+                memcpy(&buffer[BLOCK_SIZE - size], &buffer_next_block[0], size);
+                free(buffer_next_block);
+            }
+            else
+            {
+                // fill end with zeros
+                ESP_LOGD(ENA_STORAGE_LOG, "fill with zeros %u", size);
+                memset(&buffer[BLOCK_SIZE - size], 0, size);
+            }
+
+            ESP_ERROR_CHECK(esp_partition_erase_range(partition, block_num_start * BLOCK_SIZE, BLOCK_SIZE));
+            ESP_ERROR_CHECK(esp_partition_write(partition, block_num_start * BLOCK_SIZE, buffer, BLOCK_SIZE));
+            free(buffer);
+
+            block_num_start++;
+            block_start = 0;
         }
-        // memmove seems to lead to corrupt heap memory!
-        // memmove(&buffer[block_address], &buffer[block_address + size], BLOCK_SIZE - address + size);
-        ESP_ERROR_CHECK(esp_partition_erase_range(partition, block_start, BLOCK_SIZE));
-        ESP_ERROR_CHECK(esp_partition_write(partition, block_start, buffer, BLOCK_SIZE));
-        free(buffer);
     }
     ESP_LOGD(ENA_STORAGE_LOG, "END ena_storage_shift_delete");
 }
 
-void ena_storage_write_tek(uint32_t enin, uint8_t tek[])
+void ena_storage_write_tek(uint32_t enin, uint8_t *tek)
 {
     ESP_LOGD(ENA_STORAGE_LOG, "START ena_storage_write_tek");
     uint8_t tek_count = ena_storage_read_u8(ENA_STORAGE_TEK_COUNT_ADDRESS);
@@ -169,7 +177,7 @@ uint32_t ena_storage_read_enin(void)
     return result;
 }
 
-void ena_storage_read_tek(uint8_t tek[])
+void ena_storage_read_tek(uint8_t *tek)
 {
     ESP_LOGD(ENA_STORAGE_LOG, "START ena_storage_read_tek");
     uint8_t tek_count = ena_storage_read_u8(ENA_STORAGE_TEK_COUNT_ADDRESS);
@@ -195,7 +203,7 @@ uint32_t ena_storage_temp_detections_count(void)
     return count;
 }
 
-uint32_t ena_storage_write_temp_detection(uint32_t timestamp, uint8_t rpi[], uint8_t aem[], int rssi)
+uint32_t ena_storage_write_temp_detection(uint32_t timestamp, uint8_t *rpi, uint8_t *aem, int rssi)
 {
     ESP_LOGD(ENA_STORAGE_LOG, "START ena_storage_write_temp_detection");
     uint32_t count = ena_storage_temp_detections_count() + 1;
@@ -224,7 +232,7 @@ uint32_t ena_storage_write_temp_detection(uint32_t timestamp, uint8_t rpi[], uin
     return count - 1;
 }
 
-void ena_storage_read_temp_detection(uint32_t index, uint32_t *timestamp, uint8_t rpi[], uint8_t aem[], int *rssi)
+void ena_storage_read_temp_detection(uint32_t index, uint32_t *timestamp, uint8_t *rpi, uint8_t *aem, int *rssi)
 {
     ESP_LOGD(ENA_STORAGE_LOG, "START ena_storage_read_temp_detection");
     size_t address = ENA_STORAGE_TEMP_DETECTIONS_START_ADDRESS + index * ENA_STORAGE_DETECTION_LENGTH;
@@ -247,9 +255,9 @@ void ena_storage_remove_temp_detection(uint32_t index)
     ESP_LOGD(ENA_STORAGE_LOG, "START ena_storage_remove_temp_detection");
     size_t address = ENA_STORAGE_TEMP_DETECTIONS_START_ADDRESS + index * ENA_STORAGE_DETECTION_LENGTH;
 
-    ena_storage_shift_delete(address, ENA_STORAGE_DETECTION_LENGTH);
-
     uint32_t count = ena_storage_temp_detections_count();
+    ena_storage_shift_delete(address, ENA_STORAGE_TEMP_DETECTIONS_START_ADDRESS + count * ENA_STORAGE_DETECTION_LENGTH, ENA_STORAGE_DETECTION_LENGTH);
+
     count--;
     ena_storage_write_u32(ENA_STORAGE_TEMP_DETECTIONS_COUNT_ADDRESS, count);
     ESP_LOGD(ENA_STORAGE_LOG, "remove temp detection: %u", index);
@@ -265,7 +273,7 @@ uint32_t ena_storage_detections_count(void)
     return count;
 }
 
-void ena_storage_write_detection(uint32_t timestamp, uint8_t rpi[], uint8_t aem[], int rssi)
+void ena_storage_write_detection(uint32_t timestamp, uint8_t *rpi, uint8_t *aem, int rssi)
 {
     ESP_LOGD(ENA_STORAGE_LOG, "START ena_storage_write_detection");
     ESP_LOG_BUFFER_HEXDUMP(ENA_STORAGE_LOG, rpi, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
@@ -286,7 +294,7 @@ void ena_storage_write_detection(uint32_t timestamp, uint8_t rpi[], uint8_t aem[
     ESP_LOGD(ENA_STORAGE_LOG, "END ena_storage_write_detection");
 }
 
-void ena_storage_read_detection(uint32_t index, uint32_t *timestamp, uint8_t rpi[], uint8_t aem[], int *rssi)
+void ena_storage_read_detection(uint32_t index, uint32_t *timestamp, uint8_t *rpi, uint8_t *aem, int *rssi)
 {
     ESP_LOGD(ENA_STORAGE_LOG, "START ena_storage_read_detection");
     size_t address = ENA_STORAGE_DETECTIONS_START_ADDRESS + index * ENA_STORAGE_DETECTION_LENGTH;
@@ -374,7 +382,7 @@ void ena_storage_erase(void)
     ESP_LOGD(ENA_STORAGE_LOG, "END ena_storage_erase");
 }
 
-void ena_storage_dump_hash_array(uint8_t data[], size_t size)
+void ena_storage_dump_hash_array(uint8_t *data, size_t size)
 {
     for (int i = 0; i < size; i++)
     {

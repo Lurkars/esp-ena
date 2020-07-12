@@ -35,26 +35,26 @@ uint32_t ena_crypto_enin(uint32_t seconds);
 /**
  * calculate a new random Temporary Exposure Key (TEK)
  */
-void ena_crypto_tek(uint8_t tek[]);
+void ena_crypto_tek(uint8_t *tek);
 
 /**
  * calculate a new Rolling Proximity Identifier Key (RPIK) with given TEK
  */
-void ena_crypto_rpik(uint8_t rpik[], uint8_t tek[]);
+void ena_crypto_rpik(uint8_t *rpik, uint8_t *tek);
 
 /**
  * calculate a new Rolling Proximity Identifier with given RPIK and ENIN
  */
-void ena_crypto_rpi(uint8_t rpi[], uint8_t rpik[], uint32_t enin);
+void ena_crypto_rpi(uint8_t *rpi, uint8_t *rpik, uint32_t enin);
 
 /**
  * calculate a new Associated Encrypted Metadata Key (AEMK) with given TEK
  */
-void ena_crypto_aemk(uint8_t aemk[], uint8_t tek[]);
+void ena_crypto_aemk(uint8_t *aemk, uint8_t *tek);
 
 /**
  * create Associated Encrypted Metadata (AEM) with given AEMK along the RPI
  */
-void ena_crypto_aem(uint8_t aem[], uint8_t aemk[], uint8_t rpi[], uint8_t power_level);
+void ena_crypto_aem(uint8_t *aem, uint8_t *aemk, uint8_t *rpi, uint8_t power_level);
 
 #endif

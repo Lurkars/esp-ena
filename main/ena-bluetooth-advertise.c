@@ -19,7 +19,7 @@ void ena_bluetooth_advertise_start(void)
     ESP_ERROR_CHECK(esp_ble_gap_start_advertising(&ena_adv_params));
 }
 
-void ena_bluetooth_advertise_set_payload(uint32_t enin, uint8_t tek[])
+void ena_bluetooth_advertise_set_payload(uint32_t enin, uint8_t *tek)
 {
     uint8_t rpik[ENA_KEY_LENGTH] = {0};
     uint8_t rpi[ENA_KEY_LENGTH] = {0};

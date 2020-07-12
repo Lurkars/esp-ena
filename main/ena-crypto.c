@@ -33,7 +33,7 @@ uint32_t ena_crypto_enin(uint32_t unix_epoch_time)
     return unix_epoch_time / ENA_TIME_WINDOW;
 }
 
-void ena_crypto_tek(uint8_t tek[])
+void ena_crypto_tek(uint8_t *tek)
 {
     int ret;
     if ((ret = mbedtls_ctr_drbg_random(&ctr_drbg, tek, ENA_KEY_LENGTH)) != 0)
@@ -42,15 +42,15 @@ void ena_crypto_tek(uint8_t tek[])
     }
 }
 
-void ena_crypto_rpik(uint8_t rpik[], uint8_t tek[])
+void ena_crypto_rpik(uint8_t *rpik, uint8_t *tek)
 {
     const uint8_t rpik_info[] = "EN-RPIK";
     mbedtls_hkdf(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256), NULL, 0, tek, ENA_KEY_LENGTH, rpik_info, sizeof(rpik_info), rpik, ENA_KEY_LENGTH);
 }
 
-void ena_crypto_rpi(uint8_t rpi[], uint8_t rpik[], uint32_t enin)
+void ena_crypto_rpi(uint8_t *rpi, uint8_t *rpik, uint32_t enin)
 {
-    uint8_t padded_data[ENA_KEY_LENGTH] = "EN-RPI";
+    uint8_t padded_data[] = "EN-RPI";
     padded_data[12] = (enin & 0x000000ff);
     padded_data[13] = (enin & 0x0000ff00) >> 8;
     padded_data[14] = (enin & 0x00ff0000) >> 16;
@@ -63,13 +63,13 @@ void ena_crypto_rpi(uint8_t rpi[], uint8_t rpik[], uint32_t enin)
     mbedtls_aes_free(&aes);
 }
 
-void ena_crypto_aemk(uint8_t aemk[], uint8_t tek[])
+void ena_crypto_aemk(uint8_t *aemk, uint8_t *tek)
 {
     uint8_t aemkInfo[] = "EN-AEMK";
     mbedtls_hkdf(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256), NULL, 0, tek, ENA_KEY_LENGTH, aemkInfo, sizeof(aemkInfo), aemk, ENA_KEY_LENGTH);
 }
 
-void ena_crypto_aem(uint8_t aem[], uint8_t aemk[], uint8_t rpi[], uint8_t power_level)
+void ena_crypto_aem(uint8_t *aem, uint8_t *aemk, uint8_t *rpi, uint8_t power_level)
 {
     uint8_t metadata[ENA_AEM_METADATA_LENGTH];
     metadata[0] = 0b01000000;

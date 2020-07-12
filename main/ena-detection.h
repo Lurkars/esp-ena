@@ -14,6 +14,6 @@
 
 void ena_detections_temp_refresh(uint32_t unix_timestamp);
 
-void ena_detection(uint32_t unix_timestamp, uint8_t rpi[], uint8_t aem[], int rssi);
+void ena_detection(uint32_t unix_timestamp, uint8_t *rpi, uint8_t *aem, int rssi);
 
 #endif

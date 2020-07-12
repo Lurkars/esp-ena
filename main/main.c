@@ -21,6 +21,7 @@
 
 #include "ena.h"
 #include "ena-storage.h"
+#include "ena-interface.h"
 
 #include "sdkconfig.h"
 
@@ -33,13 +34,6 @@ void app_main(void)
     esp_log_level_set(ENA_STORAGE_LOG, ESP_LOG_INFO);
     ena_storage_erase(); // only needed on first start! TODO automatically check
 
-    ena_init();
-
-    // one second loop enough?
-    while (1)
-    {
-        ena_run();
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
+    ena_interface_start();
+    ena_start();
 }
-

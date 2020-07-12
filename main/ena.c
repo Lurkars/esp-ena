@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+
 #include "esp_system.h"
 #include "esp_log.h"
 #include "esp_bt.h"
@@ -20,7 +24,49 @@
 static uint32_t last_enin;                // last ENIN
 static uint8_t tek[ENA_KEY_LENGTH] = {0}; // current TEK
 
-void ena_init(void)
+void ena_run(void *pvParameter)
+{
+    uint32_t unix_timestamp = 0;
+    uint32_t current_enin = 0;
+    while (1)
+    {
+        unix_timestamp = (uint32_t)time(NULL);
+        current_enin = ena_crypto_enin(unix_timestamp);
+        if (current_enin - last_enin >= ENA_TEK_ROLLING_PERIOD)
+        {
+            ena_crypto_tek(tek);
+            ena_storage_write_tek(current_enin, tek);
+            last_enin = current_enin;
+        }
+
+        // change RPI
+        if (unix_timestamp % ENA_TIME_WINDOW == 0)
+        {
+            if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_SCANNING)
+            {
+                ena_bluetooth_scan_stop();
+            }
+            ena_bluetooth_advertise_stop();
+            ena_bluetooth_advertise_set_payload(current_enin, tek);
+            ena_bluetooth_advertise_start();
+            if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_WAITING)
+            {
+                ena_bluetooth_scan_start(ENA_SCANNING_TIME);
+            }
+        }
+
+        // scan
+        if (unix_timestamp % ENA_SCANNING_INTERVAL == 0 && ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_NOT_SCANNING)
+        {
+            ena_bluetooth_scan_start(ENA_SCANNING_TIME);
+        }
+
+        // one second loop correct?!
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+void ena_start(void)
 {
     // init NVS for BLE
     esp_err_t ret;
@@ -30,13 +76,30 @@ void ena_init(void)
         ESP_ERROR_CHECK(nvs_flash_erase());
         ESP_ERROR_CHECK(nvs_flash_init());
     }
-    // init BLE
-    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
-    ESP_ERROR_CHECK(esp_bt_controller_enable(ESP_BT_MODE_BLE));
 
-    ESP_ERROR_CHECK(esp_bluedroid_init());
-    ESP_ERROR_CHECK(esp_bluedroid_enable());
+    // init BLE
+    if (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_IDLE)
+    {
+        esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+        ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
+        while (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_IDLE)
+        {
+        }
+    }
+
+    if (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_INITED)
+    {
+        ESP_ERROR_CHECK(esp_bt_controller_enable(ESP_BT_MODE_BLE));
+    }
+
+    if (esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_UNINITIALIZED)
+    {
+        ESP_ERROR_CHECK(esp_bluedroid_init());
+    }
+    if (esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_INITIALIZED)
+    {
+        ESP_ERROR_CHECK(esp_bluedroid_enable());
+    }
 
     // new bluetooth address nesseccary?
     uint8_t bt_address[ESP_BD_ADDR_LEN];
@@ -77,41 +140,7 @@ void ena_init(void)
     ena_bluetooth_advertise_start();
     // initial scan on every start
     ena_bluetooth_scan_start(ENA_SCANNING_TIME);
-}
 
-void ena_run(void)
-{
-    uint32_t unix_timestamp = (uint32_t)time(NULL);
-    uint32_t current_enin = ena_crypto_enin(unix_timestamp);
-    if (current_enin - last_enin >= ENA_TEK_ROLLING_PERIOD)
-    {
-        ena_crypto_tek(tek);
-        ena_storage_write_tek(current_enin, tek);
-        last_enin = current_enin;
-    }
-
-    // change RPI
-    if (unix_timestamp % ENA_TIME_WINDOW == 0)
-    {
-
-        //
-
-        if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_SCANNING)
-        {
-            ena_bluetooth_scan_stop();
-        }
-        ena_bluetooth_advertise_stop();
-        ena_bluetooth_advertise_set_payload(current_enin, tek);
-        ena_bluetooth_advertise_start();
-        if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_WAITING)
-        {
-            ena_bluetooth_scan_start(ENA_SCANNING_TIME);
-        }
-    }
-
-    // scan
-    if (unix_timestamp % ENA_SCANNING_INTERVAL == 0 && ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_NOT_SCANNING)
-    {
-        ena_bluetooth_scan_start(ENA_SCANNING_TIME);
-    }
+    // what is a good stack size here?
+    xTaskCreate(&ena_run, "ena_run", configMINIMAL_STACK_SIZE * 4, NULL, 5, NULL);
 }

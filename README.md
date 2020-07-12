@@ -5,9 +5,11 @@
 Implementation of the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with ESP-IDF). 
 More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is meant for people without smartphone or without smartphones with Apples/Googles implementation.
 
+[Demo Video](https://twitter.com/Lurkars/status/1282223547579019264)
+
 This implementation covers for now the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above):
 * send tokens
-* store send tokens on flash (last 14 tokens)
+* store TEKs on flash (last 14 tokens)
 * receive tokens
 * received tokens are stored after 5 minutes threshold (storage is limited, ~100k tokens can be stored)
 
@@ -23,7 +25,7 @@ Extensions planned:
     * delete tokens
     * show status
     * report infection?
-* receive infected token list for Germany (will test [Corona Warn App](https://github.com/corona-warn-app))
+* receive infected token list (will test [Corona Warn App](https://github.com/corona-warn-app))
 * send infected status (will test [Corona Warn App](https://github.com/corona-warn-app))
 * battery support
 * 3d print case

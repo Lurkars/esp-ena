@@ -21,7 +21,7 @@
 
 void ena_bluetooth_advertise_start(void);
 
-void ena_bluetooth_advertise_set_payload(uint32_t enin, uint8_t tek[]);
+void ena_bluetooth_advertise_set_payload(uint32_t enin, uint8_t *tek);
 
 void ena_bluetooth_advertise_stop(void);
 

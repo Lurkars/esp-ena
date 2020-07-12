@@ -13,7 +13,7 @@ static uint32_t temp_detection_timestamp_first[ENA_STOARGE_TEMP_DETECTIONS_MAX] 
 static uint32_t temp_detection_timestamp_last[ENA_STOARGE_TEMP_DETECTIONS_MAX] = {0};
 static int temp_detection_rssi_last[ENA_STOARGE_TEMP_DETECTIONS_MAX] = {0};
 
-int ena_get_temp_detection_index(uint8_t rpi[], uint8_t aem[])
+int ena_get_temp_detection_index(uint8_t *rpi, uint8_t *aem)
 {
     for (int i = 0; i < temp_detections_count; i++)
     {
@@ -53,6 +53,7 @@ void ena_detections_temp_refresh(uint32_t unix_timestamp)
     for (int i = 0; i < temp_detections_count; i++)
     {
         ena_storage_read_temp_detection(i, &temp_detection_timestamp_first[i], temp_detection_rpi[i], temp_detection_aem[i], &temp_detection_rssi_last[i]);
+        temp_detection_timestamp_last[i] = temp_detection_timestamp_first[i];
     }
 
     // DEBUG dump
@@ -61,7 +62,7 @@ void ena_detections_temp_refresh(uint32_t unix_timestamp)
     ena_storage_dump_detections();
 }
 
-void ena_detection(uint32_t unix_timestamp, uint8_t rpi[], uint8_t aem[], int rssi)
+void ena_detection(uint32_t unix_timestamp, uint8_t *rpi, uint8_t *aem, int rssi)
 {
     uint32_t detection_index = ena_get_temp_detection_index(rpi, aem);
 
