@@ -64,7 +64,7 @@ void ena_bluetooth_advertise_set_payload(uint32_t enin, uint8_t *tek)
 
     esp_ble_gap_config_adv_data_raw(adv_raw_data, sizeof(adv_raw_data));
 
-    ESP_LOGI(ENA_ADVERTISE_LOG, "payload for ENIN %u", enin);
+    ESP_LOGD(ENA_ADVERTISE_LOG, "payload for ENIN %u", enin);
     ESP_LOG_BUFFER_HEXDUMP(ENA_ADVERTISE_LOG, adv_raw_data, sizeof(adv_raw_data), ESP_LOG_DEBUG);
 }
 

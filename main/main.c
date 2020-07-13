@@ -22,6 +22,7 @@
 #include "ena.h"
 #include "ena-storage.h"
 #include "ena-interface.h"
+#include "ena-interface-menu.h"
 
 #include "sdkconfig.h"
 
@@ -32,8 +33,9 @@ void app_main(void)
     settimeofday(&tv, NULL);
 
     esp_log_level_set(ENA_STORAGE_LOG, ESP_LOG_INFO);
-    ena_storage_erase(); // only needed on first start! TODO automatically check
+   // ena_storage_erase(); // only needed on first start! TODO automatically check
 
     ena_interface_start();
+    ena_interface_menu_start();
     ena_start();
 }

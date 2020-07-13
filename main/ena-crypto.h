@@ -15,10 +15,10 @@
 #ifndef _ena_CRYPTO_H_
 #define _ena_CRYPTO_H_
 
-#define ENA_TIME_WINDOW 600        // time window every 10 minutes
-#define ENA_KEY_LENGTH 16          // key length
-#define ENA_AEM_METADATA_LENGTH 4  // size of metadata
-#define ENA_TEK_ROLLING_PERIOD 144 // TEKRollingPeriod
+#define ENA_TIME_WINDOW (600)        // time window every 10 minutes
+#define ENA_KEY_LENGTH (16)          // key length
+#define ENA_AEM_METADATA_LENGTH (4)  // size of metadata
+#define ENA_TEK_ROLLING_PERIOD (144) // TEKRollingPeriod
 
 #include <stdio.h>
 

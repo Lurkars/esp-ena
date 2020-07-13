@@ -14,6 +14,7 @@
 
 #include "nvs_flash.h"
 
+#include "ena-datastructures.h"
 #include "ena-crypto.h"
 #include "ena-storage.h"
 #include "ena-bluetooth-scan.h"
@@ -21,8 +22,7 @@
 
 #include "ena.h"
 
-static uint32_t last_enin;                // last ENIN
-static uint8_t tek[ENA_KEY_LENGTH] = {0}; // current TEK
+static ena_tek_t last_tek;                // last ENIN
 
 void ena_run(void *pvParameter)
 {
@@ -32,11 +32,11 @@ void ena_run(void *pvParameter)
     {
         unix_timestamp = (uint32_t)time(NULL);
         current_enin = ena_crypto_enin(unix_timestamp);
-        if (current_enin - last_enin >= ENA_TEK_ROLLING_PERIOD)
+        if (current_enin - last_tek.enin >= ENA_TEK_ROLLING_PERIOD)
         {
-            ena_crypto_tek(tek);
-            ena_storage_write_tek(current_enin, tek);
-            last_enin = current_enin;
+            ena_crypto_tek(last_tek.key_data);
+            last_tek.enin = current_enin;
+            ena_storage_write_tek(&last_tek);
         }
 
         // change RPI
@@ -47,7 +47,7 @@ void ena_run(void *pvParameter)
                 ena_bluetooth_scan_stop();
             }
             ena_bluetooth_advertise_stop();
-            ena_bluetooth_advertise_set_payload(current_enin, tek);
+            ena_bluetooth_advertise_set_payload(current_enin, last_tek.key_data);
             ena_bluetooth_advertise_start();
             if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_WAITING)
             {
@@ -118,29 +118,25 @@ void ena_start(void)
 
     uint32_t current_enin = ena_crypto_enin((uint32_t)time(NULL));
 
-    last_enin = ena_storage_read_enin();
+    uint8_t tek_count = ena_storage_read_last_tek(&last_tek);
 
     // read last TEK or create new
-    if (ena_storage_read_u8(ENA_STORAGE_TEK_COUNT_ADDRESS) > 0 && (current_enin - last_enin) < ENA_TEK_ROLLING_PERIOD)
+    if (tek_count == 0 || (current_enin - last_tek.enin) >= ENA_TEK_ROLLING_PERIOD)
     {
-        ena_storage_read_tek(tek);
-    }
-    else
-    {
-        ena_crypto_tek(tek);
-        ena_storage_write_tek(ena_crypto_enin((uint32_t)time(NULL)), tek);
-        last_enin = ena_storage_read_enin();
+        ena_crypto_tek(last_tek.key_data);
+        last_tek.enin = ena_crypto_enin((uint32_t)time(NULL));
+        ena_storage_write_tek(&last_tek);
     }
 
     // init scan
     ena_bluetooth_scan_init();
 
     // init and start advertising
-    ena_bluetooth_advertise_set_payload(current_enin, tek);
+    ena_bluetooth_advertise_set_payload(current_enin, last_tek.key_data);
     ena_bluetooth_advertise_start();
     // initial scan on every start
     ena_bluetooth_scan_start(ENA_SCANNING_TIME);
 
     // what is a good stack size here?
-    xTaskCreate(&ena_run, "ena_run", configMINIMAL_STACK_SIZE * 4, NULL, 5, NULL);
+    xTaskCreate(&ena_run, "ena_run", configMINIMAL_STACK_SIZE * 8, NULL, 5, NULL);
 }

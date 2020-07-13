@@ -17,7 +17,7 @@
 #include "esp_gap_ble_api.h"
 
 #define ENA_ADVERTISE_LOG "ESP-ENA-advertise" // TAG for Logging
-#define ENA_BLUETOOTH_TAG_DATA 0x1A
+#define ENA_BLUETOOTH_TAG_DATA (0x1A)
 
 void ena_bluetooth_advertise_start(void);
 

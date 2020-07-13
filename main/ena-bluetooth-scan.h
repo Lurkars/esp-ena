@@ -16,8 +16,8 @@
 
 #define ENA_SCAN_LOG "ESP-ENA-scan" // TAG for Logging
 
-#define ENA_SCANNING_TIME 30      // scan for 30 seconds
-#define ENA_SCANNING_INTERVAL 300 // scan every 5 minutes
+#define ENA_SCANNING_TIME (30)      // scan for 30 seconds
+#define ENA_SCANNING_INTERVAL (300) // scan every 5 minutes
 
 #include "esp_gap_ble_api.h"
 

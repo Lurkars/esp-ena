@@ -8,7 +8,7 @@
 
 #include "ena-interface.h"
 
-static int interface_state = ENA_INTERFACE_STATE_MENU;
+static int interface_state = ENA_INTERFACE_STATE_IDLE;
 
 static bool touch_status[TOUCH_PAD_MAX] = {0};
 static ena_interface_touch_callback touch_callbacks[TOUCH_PAD_MAX];
@@ -16,7 +16,7 @@ static ena_interface_touch_callback touch_callbacks[TOUCH_PAD_MAX];
 void ena_interface_register_touch_callback(int touch_pad, ena_interface_touch_callback callback)
 {
     touch_callbacks[touch_pad] = callback;
-};
+}
 
 void ena_interface_run(void *pvParameter)
 {
@@ -51,7 +51,7 @@ void ena_interface_start(void)
     ESP_ERROR_CHECK(touch_pad_config(TOUCH_PAD_OK, TOUCHPAD_TOUCH_THRESHOLD));
     ESP_ERROR_CHECK(touch_pad_config(TOUCH_PAD_UP, TOUCHPAD_TOUCH_THRESHOLD));
     ESP_ERROR_CHECK(touch_pad_config(TOUCH_PAD_DOWN, TOUCHPAD_TOUCH_THRESHOLD));
-    xTaskCreate(&ena_interface_run, "ena_interface_run", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    xTaskCreate(&ena_interface_run, "ena_interface_run", configMINIMAL_STACK_SIZE * 4, NULL, 5, NULL);
 }
 
 int ena_interface_get_state(void)
@@ -59,7 +59,7 @@ int ena_interface_get_state(void)
     return interface_state;
 }
 
-void ena_interface_set_state(ena_inerface_state state)
+void ena_interface_set_state(ena_interface_state state)
 {
     interface_state = state;
 }

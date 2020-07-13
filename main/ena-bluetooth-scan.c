@@ -26,10 +26,10 @@ void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap
     switch (event)
     {
     case ESP_GAP_BLE_SCAN_START_COMPLETE_EVT:
-        ESP_LOGI(ENA_SCAN_LOG, "start scanning...");
+        ESP_LOGD(ENA_SCAN_LOG, "start scanning...");
         break;
     case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT:
-        ESP_LOGI(ENA_SCAN_LOG, "stopped scanning...");
+        ESP_LOGD(ENA_SCAN_LOG, "stopped scanning...");
         ena_detections_temp_refresh((uint32_t)time(NULL));
         break;
     case ESP_GAP_BLE_SCAN_RESULT_EVT:
@@ -60,7 +60,7 @@ void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap
         {
             scan_status = ENA_SCAN_STATUS_NOT_SCANNING;
             ena_detections_temp_refresh((uint32_t)time(NULL));
-            ESP_LOGI(ENA_SCAN_LOG, "finished scanning...");
+            ESP_LOGD(ENA_SCAN_LOG, "finished scanning...");
         }
         break;
     default:

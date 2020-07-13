@@ -28,7 +28,7 @@ typedef enum
     ENA_INTERFACE_STATE_SET_MINUTE,
     ENA_INTERFACE_STATE_SET_SECONDS,
     ENA_INTERFACE_STATE_STATUS,
-} ena_inerface_state;
+} ena_interface_state;
 
 typedef void (*ena_interface_touch_callback)(void);
 
@@ -36,7 +36,7 @@ void ena_interface_register_touch_callback(int touch_pad, ena_interface_touch_ca
 
 int ena_interface_get_state(void);
 
-void ena_interface_set_state(ena_inerface_state state);
+void ena_interface_set_state(ena_interface_state state);
 
 void ena_interface_start(void);
 

@@ -1,24 +1,32 @@
 #include <string.h>
 
 #include "esp_log.h"
+
+#include "ena-datastructures.h"
 #include "ena-crypto.h"
 #include "ena-storage.h"
 
 #include "ena-detection.h"
 
 static uint32_t temp_detections_count = 0;
-static uint8_t temp_detection_rpi[ENA_STOARGE_TEMP_DETECTIONS_MAX][ENA_KEY_LENGTH] = {{0}};
-static uint8_t temp_detection_aem[ENA_STOARGE_TEMP_DETECTIONS_MAX][ENA_AEM_METADATA_LENGTH] = {{0}};
-static uint32_t temp_detection_timestamp_first[ENA_STOARGE_TEMP_DETECTIONS_MAX] = {0};
-static uint32_t temp_detection_timestamp_last[ENA_STOARGE_TEMP_DETECTIONS_MAX] = {0};
-static int temp_detection_rssi_last[ENA_STOARGE_TEMP_DETECTIONS_MAX] = {0};
+static ena_temp_detection_t temp_detections[ENA_STOARGE_TEMP_DETECTIONS_MAX];
+
+ena_detection_t ena_detections_convert(ena_temp_detection_t temp_detection)
+{
+    ena_detection_t detection;
+    memcpy(detection.rpi, temp_detection.rpi, ENA_KEY_LENGTH);
+    memcpy(detection.aem, temp_detection.aem, ENA_AEM_METADATA_LENGTH);
+    detection.timestamp = temp_detection.timestamp_last;
+    detection.rssi = temp_detection.rssi;
+    return detection;
+}
 
 int ena_get_temp_detection_index(uint8_t *rpi, uint8_t *aem)
 {
     for (int i = 0; i < temp_detections_count; i++)
     {
-        if (memcmp(temp_detection_rpi[i], rpi, sizeof(ENA_KEY_LENGTH)) == 0 &&
-            memcmp(temp_detection_aem[i], aem, sizeof(ENA_AEM_METADATA_LENGTH)) == 0)
+        if (memcmp(temp_detections[i].rpi, rpi, sizeof(ENA_KEY_LENGTH)) == 0 &&
+            memcmp(temp_detections[i].aem, aem, sizeof(ENA_AEM_METADATA_LENGTH)) == 0)
         {
             return i;
         }
@@ -31,17 +39,17 @@ void ena_detections_temp_refresh(uint32_t unix_timestamp)
     for (int i = 0; i < temp_detections_count; i++)
     {
         // check for treshold and add permanent detection
-        if (temp_detection_timestamp_last[i] - temp_detection_timestamp_first[i] >= ENA_DETECTION_TRESHOLD)
+        if (temp_detections[i].timestamp_last - temp_detections[i].timestamp_first >= ENA_DETECTION_TRESHOLD)
         {
             ESP_LOGD(ENA_DETECTION_LOG, "create detection after treshold");
-            ESP_LOG_BUFFER_HEXDUMP(ENA_STORAGE_LOG, temp_detection_rpi[i], ENA_KEY_LENGTH, ESP_LOG_DEBUG);
-            ena_storage_write_detection(ena_crypto_enin(temp_detection_timestamp_first[i]), temp_detection_rpi[i],
-                                        temp_detection_aem[i], temp_detection_rssi_last[i]);
+            ESP_LOG_BUFFER_HEXDUMP(ENA_DETECTION_LOG, temp_detections[i].rpi, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
+            ena_detection_t detection = ena_detections_convert(temp_detections[i]);
+            ena_storage_write_detection(&detection);
             ena_storage_remove_temp_detection(i);
         }
         else
             // delete temp detections older than two times time window (two times to be safe, one times time window enough?!)
-            if (unix_timestamp - temp_detection_timestamp_first[i] > (ENA_TIME_WINDOW * 2))
+            if (unix_timestamp - temp_detections[i].timestamp_last > (ENA_TIME_WINDOW * 2))
         {
             ESP_LOGD(ENA_DETECTION_LOG, "remove old temporary detection %u", i);
             ena_storage_remove_temp_detection(i);
@@ -52,8 +60,7 @@ void ena_detections_temp_refresh(uint32_t unix_timestamp)
     temp_detections_count = ena_storage_temp_detections_count();
     for (int i = 0; i < temp_detections_count; i++)
     {
-        ena_storage_read_temp_detection(i, &temp_detection_timestamp_first[i], temp_detection_rpi[i], temp_detection_aem[i], &temp_detection_rssi_last[i]);
-        temp_detection_timestamp_last[i] = temp_detection_timestamp_first[i];
+        ena_storage_read_temp_detection(i, &temp_detections[i]);
     }
 
     // DEBUG dump
@@ -68,12 +75,12 @@ void ena_detection(uint32_t unix_timestamp, uint8_t *rpi, uint8_t *aem, int rssi
 
     if (detection_index == -1)
     {
-        temp_detection_timestamp_first[temp_detections_count] = unix_timestamp;
-        memcpy(temp_detection_rpi[temp_detections_count], rpi, ENA_KEY_LENGTH);
-        memcpy(temp_detection_aem[temp_detections_count], aem, ENA_AEM_METADATA_LENGTH);
-        temp_detection_rssi_last[temp_detections_count] = rssi;
-        temp_detection_timestamp_last[temp_detections_count] = unix_timestamp;
-        detection_index = ena_storage_write_temp_detection(unix_timestamp, rpi, aem, rssi);
+        temp_detections[temp_detections_count].timestamp_first = unix_timestamp;
+        memcpy(temp_detections[temp_detections_count].rpi, rpi, ENA_KEY_LENGTH);
+        memcpy(temp_detections[temp_detections_count].aem, aem, ENA_AEM_METADATA_LENGTH);
+        temp_detections[temp_detections_count].rssi = rssi;
+        temp_detections[temp_detections_count].timestamp_last = unix_timestamp;
+        detection_index = ena_storage_write_temp_detection(&temp_detections[temp_detections_count]);
 
         ESP_LOGD(ENA_DETECTION_LOG, "New temporary detection at %d with timestamp %u", temp_detections_count, unix_timestamp);
         ESP_LOG_BUFFER_HEX_LEVEL(ENA_DETECTION_LOG, rpi, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
@@ -88,8 +95,8 @@ void ena_detection(uint32_t unix_timestamp, uint8_t *rpi, uint8_t *aem, int rssi
     }
     else
     {
-        temp_detection_rssi_last[detection_index] = rssi;
-        temp_detection_timestamp_last[detection_index] = unix_timestamp;
+        temp_detections[detection_index].rssi = rssi;
+        temp_detections[detection_index].timestamp_last = unix_timestamp;
         ESP_LOGD(ENA_DETECTION_LOG, "New Timestamp for temporary detection %d: %u", detection_index, unix_timestamp);
     }
 }

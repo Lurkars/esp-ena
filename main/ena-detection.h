@@ -8,7 +8,7 @@
 
 #define ENA_DETECTION_LOG "ESP-ENA-detection" // TAG for Logging
 
-#define ENA_DETECTION_TRESHOLD 300 // meet for longer than 5 minutes
+#define ENA_DETECTION_TRESHOLD (300) // meet for longer than 5 minutes
 
 #include "ena-crypto.h"
 
