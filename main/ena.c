@@ -1,4 +1,16 @@
+// Copyright 2020 Lukas Haubaum
+//
+// Licensed under the GNU Affero General Public License, Version 3;
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 
+//     https://www.gnu.org/licenses/agpl-3.0.html
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 #include <stdio.h>
 #include <time.h>
 
@@ -22,7 +34,19 @@
 
 #include "ena.h"
 
-static ena_tek_t last_tek;                // last ENIN
+static ena_tek_t last_tek;          // last ENIN
+static uint32_t next_rpi_timestamp; // next rpi
+
+void ena_next_rpi_timestamp(uint32_t timestamp)
+{
+    int random_interval = esp_random() % (2 * ENA_RPI_ROLLING_RANDOM_INTERVAL);
+    if (random_interval > ENA_RPI_ROLLING_RANDOM_INTERVAL)
+    {
+        random_interval = ENA_RPI_ROLLING_RANDOM_INTERVAL - random_interval;
+    }
+    next_rpi_timestamp = timestamp + ENA_RPI_ROLLING_PERIOD + random_interval;
+    ESP_LOGD(ENA_LOG, "next rpi at %u (%u from %u)", next_rpi_timestamp, (ENA_RPI_ROLLING_PERIOD + random_interval), timestamp);
+}
 
 void ena_run(void *pvParameter)
 {
@@ -40,7 +64,7 @@ void ena_run(void *pvParameter)
         }
 
         // change RPI
-        if (unix_timestamp % ENA_TIME_WINDOW == 0)
+        if (unix_timestamp >= next_rpi_timestamp)
         {
             if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_SCANNING)
             {
@@ -53,6 +77,7 @@ void ena_run(void *pvParameter)
             {
                 ena_bluetooth_scan_start(ENA_SCANNING_TIME);
             }
+            ena_next_rpi_timestamp(unix_timestamp);
         }
 
         // scan
@@ -118,7 +143,9 @@ void ena_start(void)
 
     uint32_t current_enin = ena_crypto_enin((uint32_t)time(NULL));
 
-    uint8_t tek_count = ena_storage_read_last_tek(&last_tek);
+    uint32_t tek_count = ena_storage_read_last_tek(&last_tek);
+
+    ena_next_rpi_timestamp((uint32_t)time(NULL));
 
     // read last TEK or create new
     if (tek_count == 0 || (current_enin - last_tek.enin) >= ENA_TEK_ROLLING_PERIOD)
