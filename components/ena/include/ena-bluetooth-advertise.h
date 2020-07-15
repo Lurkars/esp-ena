@@ -11,13 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-
-
 #ifndef _ena_BLUETOOTH_ADVERTISE_H_
 #define _ena_BLUETOOTH_ADVERTISE_H_
-
-#include "esp_gap_ble_api.h"
 
 #define ENA_ADVERTISE_LOG "ESP-ENA-advertise" // TAG for Logging
 #define ENA_BLUETOOTH_TAG_DATA (0x1A)         // Data for BLE payload TAG

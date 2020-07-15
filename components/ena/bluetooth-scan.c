@@ -15,9 +15,10 @@
 #include <time.h>
 
 #include "esp_log.h"
+#include "esp_gap_ble_api.h"
 
 #include "ena-crypto.h"
-#include "ena-detection.h"
+#include "ena-beacons.h"
 
 #include "ena-bluetooth-scan.h"
 
@@ -36,6 +37,8 @@ static esp_ble_scan_params_t ena_scan_params = {
 
 void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
+
+    uint32_t unix_timestamp = (uint32_t)time(NULL);
     esp_ble_gap_cb_param_t *p = (esp_ble_gap_cb_param_t *)param;
     switch (event)
     {
@@ -44,7 +47,7 @@ void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap
         break;
     case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT:
         ESP_LOGD(ENA_SCAN_LOG, "stopped scanning...");
-        ena_detections_temp_refresh((uint32_t)time(NULL));
+        ena_beacons_temp_refresh(unix_timestamp);
         break;
     case ESP_GAP_BLE_SCAN_RESULT_EVT:
         if (p->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_RES_EVT)
@@ -56,7 +59,8 @@ void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap
             {
                 uint8_t service_data_length = 0;
                 uint8_t *service_data = esp_ble_resolve_adv_data(p->scan_rst.ble_adv, 0x16, &service_data_length);
-                if (service_data_length != (sizeof(ENA_SERVICE_UUID) + ENA_KEY_LENGTH + ENA_AEM_METADATA_LENGTH)) {
+                if (service_data_length != (sizeof(ENA_SERVICE_UUID) + ENA_KEY_LENGTH + ENA_AEM_METADATA_LENGTH))
+                {
                     ESP_LOGW(ENA_SCAN_LOG, "received ENA Service with invalid payload");
                     break;
                 }
@@ -65,7 +69,7 @@ void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap
                 memcpy(rpi, &service_data[sizeof(ENA_SERVICE_UUID)], ENA_KEY_LENGTH);
                 uint8_t *aem = malloc(ENA_AEM_METADATA_LENGTH);
                 memcpy(aem, &service_data[sizeof(ENA_SERVICE_UUID) + ENA_KEY_LENGTH], ENA_AEM_METADATA_LENGTH);
-                ena_detection((uint32_t)time(NULL), rpi, aem, p->scan_rst.rssi);
+                ena_beacon(unix_timestamp, rpi, aem, p->scan_rst.rssi);
                 free(rpi);
                 free(aem);
             }
@@ -73,7 +77,7 @@ void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap
         else if (p->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_CMPL_EVT)
         {
             scan_status = ENA_SCAN_STATUS_NOT_SCANNING;
-            ena_detections_temp_refresh((uint32_t)time(NULL));
+            ena_beacons_temp_refresh(unix_timestamp);
             ESP_LOGD(ENA_SCAN_LOG, "finished scanning...");
         }
         break;
@@ -87,8 +91,8 @@ void ena_bluetooth_scan_init(void)
 {
     ESP_ERROR_CHECK(esp_ble_gap_set_scan_params(&ena_scan_params));
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(ena_bluetooth_scan_event_callback));
-    // init temporary detections
-    ena_detections_temp_refresh((uint32_t)time(NULL));
+    // init temporary beacons
+    ena_beacons_temp_refresh((uint32_t)time(NULL));
 }
 
 void ena_bluetooth_scan_start(uint32_t duration)

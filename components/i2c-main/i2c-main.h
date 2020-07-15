@@ -11,22 +11,25 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#ifndef _i2c_main_H_
+#define _i2c_main_H_
 
-#ifndef _ena_INTERFACE_DATETIME_H_
-#define _ena_INTERFACE_DATETIME_H_
+#define I2C_SDA_PIN (21)
+#define I2C_SCL_PIN (22)
+#define I2C_CLK_SPEED (1000000)
 
-typedef enum
-{
-    ENA_INTERFACE_DATETIME_STATE_YEAR = 0,
-    ENA_INTERFACE_DATETIME_STATE_MONTH,
-    ENA_INTERFACE_DATETIME_STATE_DAY,
-    ENA_INTERFACE_DATETIME_STATE_HOUR,
-    ENA_INTERFACE_DATETIME_STATE_MINUTE,
-    ENA_INTERFACE_DATETIME_STATE_SECONDS,
-} ena_inerface_datetime_state;
+/**
+ * @brief initialize main I2C interface
+ */
+void i2c_main_init();
 
-void ena_interface_datetime_start(void);
-
-int ena_interface_datetime_state(void);
+/**
+ * @brief check if I2C interface already initialized
+ * 
+ * @return
+ *      - false I2C not initialized
+ *      - true  I2C initialized
+ */
+bool i2c_is_initialized();
 
 #endif

@@ -26,7 +26,6 @@
 
 #include "nvs_flash.h"
 
-#include "ena-datastructures.h"
 #include "ena-crypto.h"
 #include "ena-storage.h"
 #include "ena-bluetooth-scan.h"
@@ -39,13 +38,13 @@ static uint32_t next_rpi_timestamp; // next rpi
 
 void ena_next_rpi_timestamp(uint32_t timestamp)
 {
-    int random_interval = esp_random() % (2 * ENA_RPI_ROLLING_RANDOM_INTERVAL);
-    if (random_interval > ENA_RPI_ROLLING_RANDOM_INTERVAL)
+    int random_interval = esp_random() % (2 * ENA_BT_RANDOMIZE_ROTATION_TIMEOUT_INTERVAL);
+    if (random_interval > ENA_BT_RANDOMIZE_ROTATION_TIMEOUT_INTERVAL)
     {
-        random_interval = ENA_RPI_ROLLING_RANDOM_INTERVAL - random_interval;
+        random_interval = ENA_BT_RANDOMIZE_ROTATION_TIMEOUT_INTERVAL - random_interval;
     }
-    next_rpi_timestamp = timestamp + ENA_RPI_ROLLING_PERIOD + random_interval;
-    ESP_LOGD(ENA_LOG, "next rpi at %u (%u from %u)", next_rpi_timestamp, (ENA_RPI_ROLLING_PERIOD + random_interval), timestamp);
+    next_rpi_timestamp = timestamp + ENA_BT_ROTATION_TIMEOUT_INTERVAL + random_interval;
+    ESP_LOGD(ENA_LOG, "next rpi at %u (%u from %u)", next_rpi_timestamp, (ENA_BT_ROTATION_TIMEOUT_INTERVAL + random_interval), timestamp);
 }
 
 void ena_run(void *pvParameter)
@@ -56,10 +55,12 @@ void ena_run(void *pvParameter)
     {
         unix_timestamp = (uint32_t)time(NULL);
         current_enin = ena_crypto_enin(unix_timestamp);
-        if (current_enin - last_tek.enin >= ENA_TEK_ROLLING_PERIOD)
+        if (current_enin - last_tek.enin >= last_tek.rolling_period)
         {
             ena_crypto_tek(last_tek.key_data);
             last_tek.enin = current_enin;
+            // validity only to next day 00:00
+            last_tek.rolling_period = ENA_TEK_ROLLING_PERIOD - (last_tek.enin % ENA_TEK_ROLLING_PERIOD);
             ena_storage_write_tek(&last_tek);
         }
 
@@ -93,6 +94,9 @@ void ena_run(void *pvParameter)
 
 void ena_start(void)
 {
+#if (CONFIG_ENA_STORAGE_ERASE)
+    ena_storage_erase();
+#endif
     // init NVS for BLE
     esp_err_t ret;
     ret = nvs_flash_init();
@@ -141,17 +145,20 @@ void ena_start(void)
     // init ENA
     ena_crypto_init();
 
-    uint32_t current_enin = ena_crypto_enin((uint32_t)time(NULL));
-
+    uint32_t unix_timestamp = (uint32_t)time(NULL);
+    
+    uint32_t current_enin = ena_crypto_enin(unix_timestamp);
     uint32_t tek_count = ena_storage_read_last_tek(&last_tek);
 
-    ena_next_rpi_timestamp((uint32_t)time(NULL));
+    ena_next_rpi_timestamp(unix_timestamp);
 
     // read last TEK or create new
-    if (tek_count == 0 || (current_enin - last_tek.enin) >= ENA_TEK_ROLLING_PERIOD)
+    if (tek_count == 0 || (current_enin - last_tek.enin) >= last_tek.rolling_period)
     {
         ena_crypto_tek(last_tek.key_data);
-        last_tek.enin = ena_crypto_enin((uint32_t)time(NULL));
+        last_tek.enin = ena_crypto_enin(unix_timestamp);
+        // validity only to next day 00:00
+        last_tek.rolling_period = ENA_TEK_ROLLING_PERIOD - (last_tek.enin % ENA_TEK_ROLLING_PERIOD);
         ena_storage_write_tek(&last_tek);
     }
 

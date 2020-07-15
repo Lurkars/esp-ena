@@ -11,22 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#ifndef _ena_INTERFACE_DATETIME_H_
+#define _ena_INTERFACE_DATETIME_H_
 
-#ifndef _ena_H_
-#define _ena_H_
+typedef enum
+{
+    ENA_INTERFACE_DATETIME_STATE_YEAR = 0,
+    ENA_INTERFACE_DATETIME_STATE_MONTH,
+    ENA_INTERFACE_DATETIME_STATE_DAY,
+    ENA_INTERFACE_DATETIME_STATE_HOUR,
+    ENA_INTERFACE_DATETIME_STATE_MINUTE,
+    ENA_INTERFACE_DATETIME_STATE_SECONDS,
+} ena_inerface_datetime_state;
 
-#define ENA_LOG "ESP-ENA" // TAG for Logging
+void ena_interface_datetime_start(void);
 
-#define ENA_RPI_ROLLING_PERIOD (900)          // change RPI every 15 minutes
-#define ENA_RPI_ROLLING_RANDOM_INTERVAL (150) // random intervall change of rpi +/- ~2.5 minutes
-
-/**
- * @brief       Start Exposure Notification API
- * 
- * This initializes the complete stack of ESP_ENA. It will initialize BLE module and 
- * starting a task for managing advertising and scanning processes.
- * 
- */
-void ena_start(void);
+int ena_interface_datetime_state(void);
 
 #endif

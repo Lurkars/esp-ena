@@ -11,14 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 #ifndef _ena_INTERFACE_H_
 #define _ena_INTERFACE_H_
 
 #define ENA_INTERFACE_LOG "ESP-ENA-interface" // TAG for Logging
 
 #define TOUCHPAD_FILTER_TOUCH_PERIOD (10)
-
 #define TOUCH_PAD_COUNT (4)
 #define TOUCH_PAD_ESC (TOUCH_PAD_NUM0)
 #define TOUCH_PAD_OK (TOUCH_PAD_NUM6)

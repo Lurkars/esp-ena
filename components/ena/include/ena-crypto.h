@@ -11,14 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 #ifndef _ena_CRYPTO_H_
 #define _ena_CRYPTO_H_
 
-#define ENA_TIME_WINDOW (600)        // time window every 10 minutes
-#define ENA_KEY_LENGTH (16)          // key length
-#define ENA_AEM_METADATA_LENGTH (4)  // size of metadata
-#define ENA_TEK_ROLLING_PERIOD (144) // TEKRollingPeriod
+#define ENA_TIME_WINDOW (600)                                  // time window every 10 minutes
+#define ENA_KEY_LENGTH (16)                                    // key length
+#define ENA_AEM_METADATA_LENGTH (4)                            // size of metadata
+#define ENA_TEK_ROLLING_PERIOD (CONFIG_ENA_TEK_ROLLING_PERIOD) // TEKRollingPeriod
 
 #include <stdio.h>
 

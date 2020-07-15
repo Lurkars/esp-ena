@@ -8,13 +8,13 @@ More information about the Covid-19 Exposure Notification at [Apple](https://www
 [Demo Video](https://twitter.com/Lurkars/status/1282223547579019264)
 
 This implementation covers for now the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above):
-* send tokens
-* store TEKs on flash (last 14 tokens)
-* receive tokens
-* received tokens are stored after 5 minutes threshold (storage is limited, ~100k tokens can be stored)
+* send beacons
+* store TEKs on flash (last 14)
+* receive beacons
+* received beacons are stored after 5 minutes threshold (storage is limited, ~100k beacons can be stored)
 
 Features missing for now are:
-* compare received tokens with infected list
+* compare received beacons with infected list
 * calculating risks scores
 
 Extensions planned:
@@ -22,10 +22,10 @@ Extensions planned:
 * add display (will test SSD1306)
 * interface to
     * set time
-    * delete tokens
+    * delete beacons
     * show status
     * report infection?
-* receive infected token list (will test [Corona Warn App](https://github.com/corona-warn-app))
+* receive infected beacons list (will test [Corona Warn App](https://github.com/corona-warn-app))
 * send infected status (will test [Corona Warn App](https://github.com/corona-warn-app))
 * battery support
 * 3d print case
@@ -44,7 +44,7 @@ The following acronyms will be used in code and comments:
 * *AEM* Associated Encrypted Metadata - send and received metadata
 
 Open questions
-* now save ENIN for stored detection (documentation says timestamp), but for infection status ENIN should be enough!?
+* now save ENIN for stored beacons (documentation says timestamp), but for infection status ENIN should be enough!?
 * service UUID is send reversed, must RPI and AEM also beeing send in reverse? Don't know BLE specification enough
 * fixed change of advertise payload every 10 minutes, random value between ~15 minutes better?
 
@@ -67,6 +67,10 @@ required
 
 recommended
 * BLE Scan Duplicate (By Device Address and Advertising Data)
+
+debug options
+* Log output set to Debug
+* Exposure Notification API enable Dump storage 
  
 
 ### Build and Flash
@@ -87,29 +91,6 @@ idf.py -p PORT flash monitor
 
 (To exit the serial monitor, type ``Ctrl-]``.)
 
-## Example Output
-
-For now some debug outputs are set. Besides, after each scan a CSV output is printed with stored TEKs, temporary detections (RPI) and full detections (RPI)
-
-```
-I (1201484) ESP-ENA-advertise: payload for ENIN 2657432
-D (1201494) ESP-ENA-advertise: 0x3ffbb6c4   02 01 1a 03 03 6f fd 17  16 6f fd 9a ee 95 9a 24  |.....o...o.....$|
-D (1201494) ESP-ENA-advertise: 0x3ffbb6d4   f0 f9 8e 56 0f 6d 68 5f  ac 12 e5 7f 94 a1 47     |...V.mh_......G|
-I (1201524) ESP-ENA-scan: start scanning...
-D (1202224) ESP-ENA-detection: New temporary detection at 0 with timestamp 1594459201
-D (1202224) ESP-ENA-detection: 19 05 e3 3a 73 16 4e 74 2d 48 fc 0c 41 f6 26 3b 
-D (1202234) ESP-ENA-detection: 5e 7d a9 48 
-D (1202234) ESP-ENA-detection: RSSI -79
-#,enin,tek
-0,2657430,d5 13 92 b2 44 e4 7e b6 ca a7 20 c4 f 37 c0 1c
-#,timestamp,rpi,aem,rssi
-0,1594459201,19 5 e3 3a 73 16 4e 74 2d 48 fc c 41 f6 26 3b,5e 7d a9 48,-79
-#,enin,rpi,aem,rssi
-0,2657430,c7 2e b6 66 af 84 42 db b d1 a 0 f1 fd 86 2,4d 1 b2 d1,-76
-1,2657431,19 5 e3 3a 73 16 4e 74 2d 48 fc c 41 f6 26 3b,5e 7d a9 48,-76
-I (1231754) ESP-ENA-scan: finished scanning...
-```
-
 ## Troubleshooting
 
 Sometimes I get errors from BT-stack of ESP-IDF printed. Didn't affect functionality for now, but I also could not find out what it caused and what it means.
@@ -121,10 +102,10 @@ E (909164) BT_HCI: btu_hcif_hdl_command_complete opcode 0x2005 status 0xc
 ## Structure
 
 The project is divided in different files
+* *ena-beacon* handles scanned data by storing temporary beacons, check for threshold and store beacons permanently
 * *ena-crypto* covers cryptography part (key creation, encryption etc.)
-* *ena-storage* storage part to store own TEKs and detections
-* *ena-detection* handles scanned data by storing temporary detections, check for threshold and store full detections
-* *ena-bluetooth-scan* BLE scans for detecting other tokens
-* *ena-bluetooth-advertise* BLE advertising to send own tokens
+* *ena-storage* storage part to store own TEKs and beacons
+* *ena-bluetooth-scan* BLE scans for detecting other beacons
+* *ena-bluetooth-advertise* BLE advertising to send own beacons
 * *ena* run all together and timing for scanning and advertising
 * *main* start and run main program

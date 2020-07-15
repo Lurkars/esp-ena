@@ -13,6 +13,7 @@
 // limitations under the License.
 #include "esp_log.h"
 #include "esp_bt.h"
+#include "esp_gap_ble_api.h"
 
 #include "ena-crypto.h"
 
