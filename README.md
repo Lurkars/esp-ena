@@ -101,11 +101,27 @@ E (909164) BT_HCI: btu_hcif_hdl_command_complete opcode 0x2005 status 0xc
 
 ## Structure
 
-The project is divided in different files
-* *ena-beacon* handles scanned data by storing temporary beacons, check for threshold and store beacons permanently
+The project is divided in different components
+
+### ena
+
+The ena module contains the main functions of eps-ena with bluetooth scanning and adverting, storing data and handle beacons.
+* *ena-beacons* handles scanned data by storing temporary beacons, check for threshold and store beacons permanently
 * *ena-crypto* covers cryptography part (key creation, encryption etc.)
 * *ena-storage* storage part to store own TEKs and beacons
 * *ena-bluetooth-scan* BLE scans for detecting other beacons
 * *ena-bluetooth-advertise* BLE advertising to send own beacons
 * *ena* run all together and timing for scanning and advertising
 * *main* start and run main program
+
+### ena-interface
+
+Adds interface functionality via touch pads for control and setup.
+
+### i2c-main
+
+Just start I2C driver for display and RTC.
+
+### ssd1306
+
+I2C driver for a SSD1306 display.

@@ -1,11 +1,11 @@
 idf_component_register(
     SRCS 
-        "beacons.c"
-        "bluetooth-advertise.c"
-        "bluetooth-scan.c"
-        "crypto.c"
         "ena.c"
-        "storage.c"
+        "ena-beacons.c"
+        "ena-bluetooth-advertise.c"
+        "ena-bluetooth-scan.c"
+        "ena-crypto.c"
+        "ena-storage.c"
     INCLUDE_DIRS "include"
     PRIV_REQUIRES 
         spi_flash
