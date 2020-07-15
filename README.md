@@ -19,7 +19,7 @@ Features missing for now are:
 
 Extensions planned:
 * add RTC (will test DS3231)
-* add display (will test SSD1306)
+* add display (added SSD1306)
 * interface to
     * set time
     * delete beacons
@@ -66,11 +66,11 @@ required
 * mbedTLS enable HKDF
 
 recommended
-* BLE Scan Duplicate (By Device Address and Advertising Data)
+* BLE *Scan Duplicate* (By Device Address and Advertising Data)
 
 debug options
 * Log output set to Debug
-* Exposure Notification API enable Dump storage 
+* Exposure Notification API / Storage enable *Dump storage* 
  
 
 ### Build and Flash
@@ -101,7 +101,7 @@ E (909164) BT_HCI: btu_hcif_hdl_command_complete opcode 0x2005 status 0xc
 
 ## Structure
 
-The project is divided in different components
+The project is divided in different components. The main.c just wrap up all components.
 
 ### ena
 
@@ -112,7 +112,6 @@ The ena module contains the main functions of eps-ena with bluetooth scanning an
 * *ena-bluetooth-scan* BLE scans for detecting other beacons
 * *ena-bluetooth-advertise* BLE advertising to send own beacons
 * *ena* run all together and timing for scanning and advertising
-* *main* start and run main program
 
 ### ena-interface
 
