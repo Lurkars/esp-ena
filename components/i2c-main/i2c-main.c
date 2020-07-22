@@ -31,6 +31,7 @@ void i2c_main_init()
         .master.clk_speed = I2C_CLK_SPEED};
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &i2c_config));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
+    i2c_initialized = true;
 }
 
 bool i2c_is_initialized()

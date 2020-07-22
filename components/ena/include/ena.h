@@ -15,6 +15,7 @@
 #define _ena_H_
 
 #define ENA_LOG "ESP-ENA"                                                                              // TAG for Logging
+#define ENA_RAM (CONFIG_ENA_RAM)                                                                       // change advertising payload and therefore the BT address
 #define ENA_BT_ROTATION_TIMEOUT_INTERVAL (CONFIG_ENA_BT_ROTATION_TIMEOUT_INTERVAL)                     // change advertising payload and therefore the BT address
 #define ENA_BT_RANDOMIZE_ROTATION_TIMEOUT_INTERVAL (CONFIG_ENA_BT_RANDOMIZE_ROTATION_TIMEOUT_INTERVAL) // random intervall change for BT address change
 

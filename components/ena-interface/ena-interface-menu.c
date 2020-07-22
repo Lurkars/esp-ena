@@ -17,6 +17,7 @@
 #include "driver/touch_pad.h"
 #include "ena-interface.h"
 #include "ena-interface-datetime.h"
+#include "ena-interface-status.h"
 
 #include "ena-interface-menu.h"
 
@@ -24,17 +25,35 @@ static int interface_menu_state = ENA_INTERFACE_MENU_STATE_IDLE;
 
 void ena_interface_menu_ok(void)
 {
-    if (interface_menu_state == ENA_INTERFACE_MENU_STATE_SELECT_TIME) {
+    if (interface_menu_state == ENA_INTERFACE_MENU_STATE_SELECT_TIME)
+    {
         ena_interface_datetime_start();
+    }
+    else if (interface_menu_state == ENA_INTERFACE_MENU_STATE_SELECT_STATUS)
+    {
+        ena_interface_status_start();
+    }
+    else if (interface_menu_state == ENA_INTERFACE_MENU_STATE_IDLE)
+    {
+        if (ena_interface_get_state() == ENA_INTERFACE_STATE_MENU)
+        {
+            ena_interface_set_state(ENA_INTERFACE_STATE_IDLE);
+            ena_interface_register_touch_callback(TOUCH_PAD_UP, NULL);
+            ena_interface_register_touch_callback(TOUCH_PAD_DOWN, NULL);
+        }
+        else
+        {
+            ena_interface_menu_start();
+        }
     }
 }
 
 void ena_interface_menu_up(void)
 {
     interface_menu_state--;
-    if (interface_menu_state < 0)
+    if (interface_menu_state < ENA_INTERFACE_MENU_STATE_IDLE)
     {
-        interface_menu_state = sizeof(interface_menu_state) - 1;
+        interface_menu_state = ENA_INTERFACE_MENU_STATE_SELECT_STATUS;
     }
     ESP_LOGD(ENA_INTERFACE_LOG, "menu up to %d", interface_menu_state);
 }
@@ -42,9 +61,9 @@ void ena_interface_menu_up(void)
 void ena_interface_menu_down(void)
 {
     interface_menu_state++;
-    if (interface_menu_state == sizeof(interface_menu_state))
+    if (interface_menu_state > ENA_INTERFACE_MENU_STATE_SELECT_STATUS)
     {
-        interface_menu_state = 0;
+        interface_menu_state = ENA_INTERFACE_MENU_STATE_IDLE;
     }
     ESP_LOGD(ENA_INTERFACE_LOG, "menu down to %d", interface_menu_state);
 }

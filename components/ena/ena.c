@@ -49,8 +49,8 @@ void ena_next_rpi_timestamp(uint32_t timestamp)
 
 void ena_run(void *pvParameter)
 {
-    uint32_t unix_timestamp = 0;
-    uint32_t current_enin = 0;
+    static uint32_t unix_timestamp = 0;
+    static uint32_t current_enin = 0;
     while (1)
     {
         unix_timestamp = (uint32_t)time(NULL);
@@ -97,6 +97,7 @@ void ena_start(void)
 #if (CONFIG_ENA_STORAGE_ERASE)
     ena_storage_erase();
 #endif
+
     // init NVS for BLE
     esp_err_t ret;
     ret = nvs_flash_init();
@@ -146,7 +147,7 @@ void ena_start(void)
     ena_crypto_init();
 
     uint32_t unix_timestamp = (uint32_t)time(NULL);
-    
+
     uint32_t current_enin = ena_crypto_enin(unix_timestamp);
     uint32_t tek_count = ena_storage_read_last_tek(&last_tek);
 
@@ -172,5 +173,5 @@ void ena_start(void)
     ena_bluetooth_scan_start(ENA_SCANNING_TIME);
 
     // what is a good stack size here?
-    xTaskCreate(&ena_run, "ena_run", configMINIMAL_STACK_SIZE * 8, NULL, 5, NULL);
+    xTaskCreate(&ena_run, "ena_run", ENA_RAM, NULL, 5, NULL);
 }

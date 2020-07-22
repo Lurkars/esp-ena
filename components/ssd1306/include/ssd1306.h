@@ -91,8 +91,27 @@ void ssd1306_clear_line(uint8_t i2address, uint8_t line, bool invert);
  */
 void ssd1306_clear(uint8_t i2address);
 
+
 /**
- * @brief write text to display
+ * @brief set display on or offf
+ * 
+ * @param[in] i2address I2C address of SSD1306 
+ * @param[in] on true if display on, false if display off
+ */
+void ssd1306_on(uint8_t i2address, bool on);
+
+/**
+ * @brief write text to display line at starting column
+ * 
+ * @param[in] i2address I2C address of SSD1306
+ * @param[in] text text to display  
+ * @param[in] line the line to write to
+ * @param[in] offset number of offset chars to start
+ */
+void ssd1306_text_line_column(uint8_t i2address, char *text, uint8_t line, uint8_t offset, bool invert);
+
+/**
+ * @brief write text to display line
  * 
  * @param[in] i2address I2C address of SSD1306
  * @param[in] text text to display  

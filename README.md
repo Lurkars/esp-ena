@@ -1,28 +1,29 @@
-*worked on this a few days offtime, now here is the first working source*
-
 # esp-ena
 
-Implementation of the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with ESP-IDF). 
+Implementation of contact tracing with the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)). 
 More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is meant for people without smartphone or without smartphones with Apples/Googles implementation.
 
 [Demo Video](https://twitter.com/Lurkars/status/1282223547579019264)
 
-This implementation covers for now the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above):
+This implementation fully covers for the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above):
 * send beacons
 * store TEKs on flash (last 14)
 * receive beacons
 * received beacons are stored after 5 minutes threshold (storage is limited, ~100k beacons can be stored)
 
-Features missing for now are:
-* compare received beacons with infected list
-* calculating risks scores
-
-Extensions planned:
-* add RTC (will test DS3231)
-* add display (added SSD1306)
+Additional features for full ENA device
+* calculating risks scores (after adding reported keys and storing exposure information)
+* RTC support with DS3231
+* display support with SSD1306
 * interface to
     * set time
-    * delete beacons
+
+Features missing for now are:
+* retrieve infected list and parse from binary (started with binary parsing)
+
+Extensions planned:
+* interface to
+    * delete data
     * show status
     * report infection?
 * receive infected beacons list (will test [Corona Warn App](https://github.com/corona-warn-app))
@@ -44,9 +45,7 @@ The following acronyms will be used in code and comments:
 * *AEM* Associated Encrypted Metadata - send and received metadata
 
 Open questions
-* now save ENIN for stored beacons (documentation says timestamp), but for infection status ENIN should be enough!?
 * service UUID is send reversed, must RPI and AEM also beeing send in reverse? Don't know BLE specification enough
-* fixed change of advertise payload every 10 minutes, random value between ~15 minutes better?
 
 ## How to use
 

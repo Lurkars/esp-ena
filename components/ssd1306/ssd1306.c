@@ -80,7 +80,7 @@ void ssd1306_start(uint8_t i2address)
     // Turn the Display ON
     i2c_master_write_byte(cmd, SSD1306_CMD_ON, true);
     i2c_master_stop(cmd);
-    ESP_ERROR_CHECK(i2c_master_cmd_begin(I2C_NUM_0, cmd, 10 / portTICK_PERIOD_MS));
+    ESP_ERROR_CHECK_WITHOUT_ABORT(i2c_master_cmd_begin(I2C_NUM_0, cmd, 10 / portTICK_PERIOD_MS));
     i2c_cmd_link_delete(cmd);
 }
 
@@ -101,7 +101,7 @@ void ssd1306_init_data(uint8_t i2address)
     i2c_master_write_byte(cmd, SSD1306_CMD_PAGE, true);
 
     i2c_master_stop(cmd);
-    ESP_ERROR_CHECK(i2c_master_cmd_begin(I2C_NUM_0, cmd, 10 / portTICK_PERIOD_MS));
+    ESP_ERROR_CHECK_WITHOUT_ABORT(i2c_master_cmd_begin(I2C_NUM_0, cmd, 10 / portTICK_PERIOD_MS));
     i2c_cmd_link_delete(cmd);
 }
 
@@ -144,8 +144,46 @@ void ssd1306_clear(uint8_t i2address)
     }
 }
 
-void ssd1306_text_line(uint8_t i2address, char *text, uint8_t line, bool invert)
+void ssd1306_on(uint8_t i2address, bool on)
 {
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+
+    i2c_master_start(cmd);
+    // Begin the I2C comm with SSD1306's address (SLA+Write)
+    i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
+    // Tell the SSD1306 that a command stream is incoming
+    i2c_master_write_byte(cmd, SSD1306_CONTROL_CMD_STREAM, true);
+    if (on)
+    {
+        // Turn the Display ON
+        i2c_master_write_byte(cmd, SSD1306_CMD_ON, true);
+    }
+    else
+    {
+        // Turn the Display OFF
+        i2c_master_write_byte(cmd, SSD1306_CMD_OFF, true);
+    }
+    
+    i2c_master_stop(cmd);
+    i2c_master_cmd_begin(I2C_NUM_0, cmd, 10 / portTICK_PERIOD_MS);
+    i2c_cmd_link_delete(cmd);
+}
+
+void ssd1306_text_line_column(uint8_t i2address, char *text, uint8_t line, uint8_t offset, bool invert)
+{
+
+    uint8_t font_width = sizeof(ascii_font_5x8[0]);
+    uint8_t column = offset * font_width;
+    if (column > SSD1306_COLUMNS)
+    {
+        column = 0;
+    }
+    size_t columns = strlen(text) * font_width;
+    if (columns > (SSD1306_COLUMNS - column))
+    {
+        columns = (SSD1306_COLUMNS - column);
+    }
+
     ssd1306_init_data(i2address);
     i2c_cmd_handle_t cmd;
 
@@ -155,24 +193,23 @@ void ssd1306_text_line(uint8_t i2address, char *text, uint8_t line, bool invert)
     i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
 
     i2c_master_write_byte(cmd, SSD1306_CONTROL_CMD_STREAM, true);
-    i2c_master_write_byte(cmd, SSD1306_CMD_COLUMN_LOW, true);
-    i2c_master_write_byte(cmd, SSD1306_CMD_COLUMN_HIGH, true);
+    i2c_master_write_byte(cmd, SSD1306_CMD_COLUMN_LOW | (column & 0XF), true);
+    i2c_master_write_byte(cmd, SSD1306_CMD_COLUMN_HIGH | (column >> 4), true);
     i2c_master_write_byte(cmd, SSD1306_CMD_PAGE | line, true);
 
     i2c_master_stop(cmd);
     i2c_master_cmd_begin(I2C_NUM_0, cmd, 10 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
-    uint8_t *linedata = calloc(SSD1306_COLUMNS, sizeof(uint8_t));
-    uint8_t font_width = sizeof(ascii_font_5x8[0]);
-    for (uint8_t i = 0; i < strlen(text); i++)
+    uint8_t *linedata = calloc(columns, sizeof(uint8_t));
+    for (uint8_t i = 0; i < (columns / font_width); i++)
     {
         memcpy(&linedata[i * font_width], ascii_font_5x8[(uint8_t)text[i]], font_width);
     }
 
     if (invert)
     {
-        for (uint8_t i = 0; i < SSD1306_COLUMNS; i++)
+        for (uint8_t i = 0; i < columns; i++)
         {
             linedata[i] = ~linedata[i];
         }
@@ -183,11 +220,16 @@ void ssd1306_text_line(uint8_t i2address, char *text, uint8_t line, bool invert)
     i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
     i2c_master_write_byte(cmd, SSD1306_CONTROL_DATA_STREAM, true);
 
-    i2c_master_write(cmd, linedata, SSD1306_COLUMNS, true);
+    i2c_master_write(cmd, linedata, columns, true);
 
     i2c_master_stop(cmd);
     i2c_master_cmd_begin(I2C_NUM_0, cmd, 10 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
     free(linedata);
+}
+
+void ssd1306_text_line(uint8_t i2address, char *text, uint8_t line, bool invert)
+{
+    ssd1306_text_line_column(i2address, text, line, 0, invert);
 }

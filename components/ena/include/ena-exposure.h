@@ -1,0 +1,177 @@
+// Copyright 2020 Lukas Haubaum
+//
+// Licensed under the GNU Affero General Public License, Version 3;
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+
+//     https://www.gnu.org/licenses/agpl-3.0.html
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+#ifndef _ena_EXPOSURE_H_
+#define _ena_EXPOSURE_H_
+
+#include <stdio.h>
+#include "ena-crypto.h"
+
+#define ENA_EXPOSURE_LOG "ESP-ENA-exposure" // TAG for Logging
+
+/**
+ * @brief report type
+ */
+typedef enum
+{
+    UNKNOWN = 0,
+    CONFIRMED_TEST_LOW = 1,
+    CONFIRMED_TEST_STANDARD = 2,
+    CONFIRMED_TEST_HIGH = 3,
+    CONFIRMED_CLINICAL_DIAGNOSIS = 4,
+    SELF_REPORT = 5,
+    NEGATIVE = 6,
+    RECURSIVE = 7,
+} ena_report_type_t;
+
+/**
+ * @brief duration risk
+ */
+typedef enum
+{
+    MINUTES_0 = 0,      // D = 0 min
+    MINUTES_5 = 1,      // D <= 5 min
+    MINUTES_10 = 2,     // D <= 10 min
+    MINUTES_15 = 3,     // D <= 15 min
+    MINUTES_20 = 4,     // D <= 20 min
+    MINUTES_25 = 5,     // D <= 25 min
+    MINUTES_30 = 6,     // D <= 30 min
+    MINUTES_LONGER = 7, // D > 30 min
+} ena_duration_risk_t;
+
+/**
+ * @brief day risk
+ */
+typedef enum
+{
+    DAYS_14 = 0, // >= 14 days
+    DAYS_13 = 1, // 12-13 days
+    DAYS_11 = 2, // 10-11 days
+    DAYS_9 = 3,  // 8-9 days
+    DAYS_7 = 4,  // 6-7 days
+    DAYS_5 = 5,  // 4-5 days
+    DAYS_3 = 6,  // 2-3 days
+    DAYS_0 = 7,  // 0-1 days
+} ena_day_risk_t;
+
+/**
+ * @brief attenuation risk
+ */
+typedef enum
+{
+    ATTENUATION_73 = 0,    // A > 73 dB
+    ATTENUATION_63 = 1,    // 73 >= A > 63
+    ATTENUATION_51 = 2,    // 63 >= A > 61
+    ATTENUATION_33 = 3,    // 51 >= A > 33
+    ATTENUATION_27 = 4,    // 33 >= A > 27
+    ATTENUATION_15 = 5,    // 27 >= A > 15
+    ATTENUATION_10 = 6,    // 15 >= A > 10
+    ATTENUATION_LOWER = 7, // A <= 10
+} ena_attenuation_risk_t;
+
+/**
+ * @brief risk level from 0-8
+ */
+typedef enum
+{
+    ZERO = 0,
+    MINIMAL = 1,
+    VERY_LOW = 2,
+    LOW = 3,
+    MEDIUM = 4,
+    INCREASED = 5,
+    HIGH = 6,
+    VERY_HIGH = 7,
+    MAXIMUM = 8,
+} ena_risk_level_t;
+
+/**
+ * @brief structure for exposure configuration
+ * 
+ * The exposure configuration is used to calculate the risk score.
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint8_t transmission_risk_values[8];
+    uint8_t duration_risk_values[8];
+    uint8_t days_risk_values[8];
+    uint8_t attenuation_risk_values[8];
+} ena_exposure_config_t;
+
+/**
+ * @brief structure for exposure parameter
+ * 
+ * These parameter are obtained from an exposure information to calculate the risk score.
+ */
+typedef struct __attribute__((__packed__))
+{
+    ena_report_type_t report_type;
+    int days;
+    int duration;
+    int attenuation;
+} ena_exposure_parameter_t;
+
+/**
+ * @brief structure for exposure summary
+ * 
+ * This represents the current state of all exposures.
+ */
+typedef struct __attribute__((__packed__))
+{
+    int days_since_last_exposure; // Number of days since the most recent exposure.
+    int num_exposures;            // Number of all exposure information
+    int max_risk_score;           // max. risk score of all exposure information
+    int risk_score_sum;           // sum of all risk_scores
+} ena_exposure_summary_t;
+
+/**
+ * @brief structure for a reported TEK
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint8_t key_data[ENA_KEY_LENGTH];       // Key of infected user
+    uint32_t rolling_start_interval_number; // The interval number since epoch for which a key starts
+    uint8_t rolling_period;                 // Increments of 10 minutes describing how long a key is valid
+    ena_report_type_t report_type;          // Type of diagnosis associated with a key.
+    uint32_t days_since_onset_of_symptoms;  // Number of days elapsed between symptom onset and the TEK being used. E.g. 2 means TEK is 2 days after onset of symptoms.
+} ena_tek_reported_t;
+
+/**
+ * @brief check for exposure for a reported tek and store exposure information on finding
+ * 
+ * @param[in] tek_reported the reported tek to check
+ */
+void ena_exposure_check(ena_tek_reported_t tek_reported);
+
+/**
+ * @brief calculate risk score
+ * 
+ * @param[in] config the exposure configuration used for calculating score
+ * @param[in] params the exposure parameter to calculate with
+ */
+int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params);
+
+/**
+ * @brief returns the current exposure summary
+ * 
+ * @param[in] config the exposure configuration used for calculating scores
+ * @param[out] summary pointer to exposure summary to write to
+ */
+void ena_exposure_summary(ena_exposure_config_t *config, ena_exposure_summary_t *summary);
+
+/**
+ * @brief return a default exposure configuration
+ */
+ena_exposure_config_t *ena_exposure_default_config(void);
+
+#endif

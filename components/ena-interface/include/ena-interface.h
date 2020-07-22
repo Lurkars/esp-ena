@@ -28,15 +28,10 @@
  */
 typedef enum
 {
-    ENA_INTERFACE_STATE_IDLE = 0,    // ilde state, do nothing
-    ENA_INTERFACE_STATE_MENU,        // main menu
-    ENA_INTERFACE_STATE_SET_YEAR,    // set current year
-    ENA_INTERFACE_STATE_SET_MONTH,   // set current month
-    ENA_INTERFACE_STATE_SET_DAY,     // set current day
-    ENA_INTERFACE_STATE_SET_HOUR,    // set current hour
-    ENA_INTERFACE_STATE_SET_MINUTE,  // set current minute
-    ENA_INTERFACE_STATE_SET_SECONDS, // set current second
-    ENA_INTERFACE_STATE_STATUS,      // view current status
+    ENA_INTERFACE_STATE_IDLE = 0,     // ilde state, do nothing
+    ENA_INTERFACE_STATE_MENU,         // main menu
+    ENA_INTERFACE_STATE_SET_DATETIME, // set current date and time
+    ENA_INTERFACE_STATE_STATUS,       // current status
 } ena_interface_state;
 
 /**

@@ -33,24 +33,23 @@ void ena_interface_register_touch_callback(int touch_pad, ena_interface_touch_ca
 
 void ena_interface_run(void *pvParameter)
 {
-    uint16_t touch_value;
-    uint16_t touch_thresh;
-    bool touch_status_current[4] = {0};
+    static uint16_t touch_value;
+    static uint16_t touch_thresh;
+    static bool touch_status_current[TOUCH_PAD_MAX] = {0};
     while (1)
     {
         for (int i = 0; i < TOUCH_PAD_COUNT; i++)
         {
-            int touch_id = touch_mapping[i];
-            ESP_ERROR_CHECK_WITHOUT_ABORT(touch_pad_read_filtered(touch_id, &touch_value));
-            ESP_ERROR_CHECK_WITHOUT_ABORT(touch_pad_get_thresh(touch_id, &touch_thresh));
+            ESP_ERROR_CHECK_WITHOUT_ABORT(touch_pad_read_filtered(touch_mapping[i], &touch_value));
+            ESP_ERROR_CHECK_WITHOUT_ABORT(touch_pad_get_thresh(touch_mapping[i], &touch_thresh));
             touch_status_current[i] = touch_value < touch_thresh;
 
             if (!touch_status[i] & touch_status_current[i])
             {
-                ESP_LOGD(ENA_INTERFACE_LOG, "touch %u at %d (thresh %u)", touch_value, touch_id, touch_thresh);
-                if (touch_callbacks[touch_id] != NULL)
+                ESP_LOGD(ENA_INTERFACE_LOG, "touch %u at %d (thresh %u)", touch_value, touch_mapping[i], touch_thresh);
+                if (touch_callbacks[touch_mapping[i]] != NULL)
                 {
-                    (*touch_callbacks[touch_id])();
+                    (*touch_callbacks[touch_mapping[i]])();
                 }
             }
             touch_status[i] = touch_status_current[i];
@@ -73,22 +72,19 @@ void ena_interface_start(void)
 
     for (int i = 0; i < TOUCH_PAD_COUNT; i++)
     {
-        int touch_id = touch_mapping[i];
-        ESP_ERROR_CHECK(touch_pad_config(touch_id, 0));
+        ESP_ERROR_CHECK(touch_pad_config(touch_mapping[i], 0));
     }
 
     ESP_ERROR_CHECK(touch_pad_filter_start(TOUCHPAD_FILTER_TOUCH_PERIOD));
-
     uint16_t touch_value;
     for (int i = 0; i < TOUCH_PAD_COUNT; i++)
     {
-        int touch_id = touch_mapping[i];
-        ESP_ERROR_CHECK(touch_pad_read_filtered(touch_id, &touch_value));
-        ESP_ERROR_CHECK(touch_pad_set_thresh(touch_id, touch_value * 2 / 3));
-        ESP_LOGD(ENA_INTERFACE_LOG, "calibrate %u at %u (thresh %u)", touch_id, touch_value, (touch_value * 2 / 3));
+        ESP_ERROR_CHECK(touch_pad_read_filtered(touch_mapping[i], &touch_value));
+        ESP_ERROR_CHECK(touch_pad_set_thresh(touch_mapping[i], touch_value * 2 / 3));
+        ESP_LOGD(ENA_INTERFACE_LOG, "calibrate %u at %u (thresh %u)", touch_mapping[i], touch_value, (touch_value * 2 / 3));
     }
 
-    xTaskCreate(&ena_interface_run, "ena_interface_run", configMINIMAL_STACK_SIZE * 4, NULL, 5, NULL);
+    xTaskCreate(&ena_interface_run, "ena_interface_run", 4096, NULL, 5, NULL);
 }
 
 int ena_interface_get_state(void)
