@@ -37,7 +37,7 @@ Additional features for full ENA device
 * all parameters (scanning time, thresholds etc.)
 
 ### Questions/Problems/Annotations
-* memory is really low with BLE and WiFi enabled, unzipping a Key Export not possible for now, maybe disable BLE service for download.
+* memory is really low with BLE and WiFi enabled, unzipping a Exposure Key export not possible for now, maybe disable BLE service for download.
 * service UUID is send reversed, RPI and AEM also send in reverse? Don't know BLE specification enough
 
 The following acronyms will be used in code and comments:
@@ -109,12 +109,12 @@ The ena module contains the main functions of eps-ena with bluetooth scanning an
 * *ena-storage* storage part to store own TEKs and beacons
 * *ena-bluetooth-scan* BLE scans for detecting other beacons
 * *ena-bluetooth-advertise* BLE advertising to send own beacons
-* *ena-exposure* decode Key Export, compare with stored beacons, calculate score and risk
+* *ena-exposure* decode Exposure Key export, compare with stored beacons, calculate score and risk
 * *ena* run all together and timing for scanning and advertising
 
 ### ena-cwa
 
-Connection to german Exposure App ([Corona Warn App](https://github.com/corona-warn-app)) for download Key Export (and maybe later report infection).
+Connection to german Exposure App ([Corona Warn App](https://github.com/corona-warn-app)) for download Exposure Key export (and maybe later report infection).
 
 ### ena-interface
 
@@ -134,11 +134,11 @@ I2C driver for a SSD1306 display.
 
 ### nanopb
 
-[Nanopb](https://github.com/nanopb/nanopb) for reading Protocol Buffers of Key Export. Including already generated Headers from *.proto files.
+[Nanopb](https://github.com/nanopb/nanopb) for reading Protocol Buffers of Exposure Key export. Including already generated Headers from *.proto files.
 
 ### miniz
 
-[Miniz](https://github.com/richgel999/miniz) for unzipping Key Export (not successful for now due to memory limit)
+[Miniz](https://github.com/richgel999/miniz) for unzipping Exposure Key export (not successful for now due to memory limit)
 
 
 ## Demo
