@@ -5,7 +5,7 @@ More information about the Covid-19 Exposure Notification at [Apple](https://www
 
 The main source (the Exposure Notification API) is a separate module in [**components/ena**](components/ena).
 
-This implementation fully covers for the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above):
+This implementation fully covers the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above) and the exposure check for now:
 * send beacons
 * store TEKs on flash (last 14)
 * receive beacons
