@@ -5,23 +5,24 @@ More information about the Covid-19 Exposure Notification at [Apple](https://www
 
 The main source (the Exposure Notification API) is a separate module in [**components/ena**](components/ena).
 
-This implementation fully covers the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above) and the exposure check for now:
-* send beacons
-* store TEKs on flash (last 14)
-* receive beacons
-* received beacons are stored after 5 minutes threshold (storage is limited, ~100k beacons can be stored)
-* parse key export binaries as defined in [Exposure Key export file format and verification](https://developers.google.com/android/exposure-notifications/exposure-key-file-format) (big thanks to [nanopb](https://github.com/nanopb/nanopb) for making this easier than I thought!)
-* calculating risks scores (after adding reported keys and storing exposure information)
+This implementation fully covers the BLE part including the cryptography specifications needed and the exposure check.
+
+### Features implemented
+* send/receive BLE beacons as defined in [Bluetooth® Specification (Apple/Google)](https://blog.google/documents/70/Exposure_Notification_-_Bluetooth_Specification_v1.2.2.pdf) and [Cryptography Specification (Apple/Google)](https://blog.google/documents/69/Exposure_Notification_-_Cryptography_Specification_v1.2.1.pdf)
+* BLE privacy (change random MAC address in random interval)
+* permanent storage on flash of last keys, beacons and exposures (storage is limited, ~100k beacons can be stored)
+* parsing of Exposure Key export binaries as defined in [Exposure Key export file format and verification](https://developers.google.com/android/exposure-notifications/exposure-key-file-format) (big thanks to [nanopb](https://github.com/nanopb/nanopb) for making this easier than I thought!)
+* calculating exposure risks/scores (after adding reported keys and storing exposure information) as defined in [ENExposureConfiguration (Apple)](https://developer.apple.com/documentation/exposurenotification/enexposureconfiguration)
 
 Additional features for full ENA device
-* RTC support with DS3231
+* RTC support with DS3231 (for correct system time)
 * display support with SSD1306
 * interface to
     * set time
     * show exposure status
 
-Extensions planned:
-* automatically receive key export from web (will test [Corona Warn App](https://github.com/corona-warn-app))
+### Features in development
+* automatically receive Exposure Key export from web (started with [Corona Warn App](https://github.com/corona-warn-app))
 * send infected status (will test [Corona Warn App](https://github.com/corona-warn-app))
 * battery support
 * 3d print case
@@ -29,11 +30,15 @@ Extensions planned:
     * delete data
     * report infection
 
-Limitations/Problems
-* storage only ~2.8mb available
+### Limitations/Problems
+* storage only ~2.5mb available
 * WiFi or other external connection needed for infections status (auto-connect to open WiFis?)
 * obtaining accessibility
 * all parameters (scanning time, thresholds etc.)
+
+### Questions/Problems/Annotations
+* memory is really low with BLE and WiFi enabled, unzipping a Key Export not possible for now, maybe disable BLE service for download.
+* service UUID is send reversed, RPI and AEM also send in reverse? Don't know BLE specification enough
 
 The following acronyms will be used in code and comments:
 * *ENA* Exposure Notification Api
@@ -42,15 +47,11 @@ The following acronyms will be used in code and comments:
 * *RPI* Rolling Proximity Identifier - send and received identifer changed every 10 minutes
 * *AEM* Associated Encrypted Metadata - send and received metadata
 
-Open questions/problems
-* memory is really low with BLE and WiFi enabled, unzipping a Key Export not possible for now, maybe disable BLE service for download.
-* service UUID is send reversed, RPI and AEM also send in reverse? Don't know BLE specification enough
-
 ## How to use
 
 ### Hardware Required
 
-For now just an ESP32 is required. For full device later RTC (DS3231) and Display (SSD1306) will be required.
+For now just an ESP32 is required. DS3231 RTC and SSD1306 Display are required for a complete device.
 
 ### Configure the project
 
@@ -70,7 +71,6 @@ debug options
 * Log output set to Debug
 * Exposure Notification API / Storage enable *Dump storage* 
  
-
 ### Build and Flash
 
 May flash partition table:
