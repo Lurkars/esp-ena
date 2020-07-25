@@ -1,11 +1,9 @@
 # esp-ena
 
 Implementation of contact tracing with the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)). 
-More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is meant for people without smartphone or without smartphones with Apples/Googles implementation.
+More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is fully compatible with the official API and is meant for people without smartphone or without access to Apples/Googles implementation.
 
 The main source (the Exposure Notification API) is a separate module in [**components/ena**](components/ena).
-
-[Demo Video](https://twitter.com/Lurkars/status/1282223547579019264)
 
 This implementation fully covers for the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above):
 * send beacons
@@ -141,3 +139,8 @@ I2C driver for a SSD1306 display.
 ### miniz
 
 [Miniz](https://github.com/richgel999/miniz) for unzipping Key Export (not successful for now due to memory limit)
+
+
+## Demo
+
+[Demo Video (early stage)](https://twitter.com/Lurkars/status/1282223547579019264)
