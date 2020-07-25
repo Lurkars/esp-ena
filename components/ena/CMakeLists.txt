@@ -15,5 +15,4 @@ idf_component_register(
         nanopb
     EMBED_FILES
         "test/export.bin"
-        "test/export.sig"
 )

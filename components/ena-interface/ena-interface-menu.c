@@ -33,6 +33,9 @@ void ena_interface_menu_ok(void)
     {
         ena_interface_status_start();
     }
+    else if (interface_menu_state == ENA_INTERFACE_MENU_STATE_SELECT_DEBUG)
+    {
+    }
     else if (interface_menu_state == ENA_INTERFACE_MENU_STATE_IDLE)
     {
         if (ena_interface_get_state() == ENA_INTERFACE_STATE_MENU)

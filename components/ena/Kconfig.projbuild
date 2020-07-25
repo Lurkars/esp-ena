@@ -87,12 +87,4 @@ menu "Exposure Notification API"
         Defines the TEK rolling period in 10 minute steps. (Default 144 => 24 hours)
   endmenu
 
-  menu "Miscellaneous"
-    config ENA_RAM
-      int "ENA RAM"
-      default 100000
-      help
-        RAM required for main task. (Default 100 KB)
-  endmenu
-
 endmenu

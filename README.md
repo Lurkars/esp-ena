@@ -3,6 +3,8 @@
 Implementation of contact tracing with the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)). 
 More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is meant for people without smartphone or without smartphones with Apples/Googles implementation.
 
+The main source (the Exposure Notification API) is a separate module in [**components/ena**](components/ena).
+
 [Demo Video](https://twitter.com/Lurkars/status/1282223547579019264)
 
 This implementation fully covers for the BLE part including the cryptography specifications needed (see Bluetooth Specifications and Cryptography Specifications documents in the links above):
@@ -10,26 +12,24 @@ This implementation fully covers for the BLE part including the cryptography spe
 * store TEKs on flash (last 14)
 * receive beacons
 * received beacons are stored after 5 minutes threshold (storage is limited, ~100k beacons can be stored)
+* parse key export binaries as defined in [Exposure Key export file format and verification](https://developers.google.com/android/exposure-notifications/exposure-key-file-format) (big thanks to [nanopb](https://github.com/nanopb/nanopb) for making this easier than I thought!)
+* calculating risks scores (after adding reported keys and storing exposure information)
 
 Additional features for full ENA device
-* calculating risks scores (after adding reported keys and storing exposure information)
 * RTC support with DS3231
 * display support with SSD1306
 * interface to
     * set time
-
-Features missing for now are:
-* retrieve infected list and parse from binary (started with binary parsing)
+    * show exposure status
 
 Extensions planned:
-* interface to
-    * delete data
-    * show status
-    * report infection?
-* receive infected beacons list (will test [Corona Warn App](https://github.com/corona-warn-app))
+* automatically receive key export from web (will test [Corona Warn App](https://github.com/corona-warn-app))
 * send infected status (will test [Corona Warn App](https://github.com/corona-warn-app))
 * battery support
 * 3d print case
+* interface to
+    * delete data
+    * report infection
 
 Limitations/Problems
 * storage only ~2.8mb available
@@ -44,8 +44,9 @@ The following acronyms will be used in code and comments:
 * *RPI* Rolling Proximity Identifier - send and received identifer changed every 10 minutes
 * *AEM* Associated Encrypted Metadata - send and received metadata
 
-Open questions
-* service UUID is send reversed, must RPI and AEM also beeing send in reverse? Don't know BLE specification enough
+Open questions/problems
+* memory is really low with BLE and WiFi enabled, unzipping a Key Export not possible for now, maybe disable BLE service for download.
+* service UUID is send reversed, RPI and AEM also send in reverse? Don't know BLE specification enough
 
 ## How to use
 
@@ -100,17 +101,22 @@ E (909164) BT_HCI: btu_hcif_hdl_command_complete opcode 0x2005 status 0xc
 
 ## Structure
 
-The project is divided in different components. The main.c just wrap up all components.
+The project is divided in different components. The main.c just wrap up all components. The Exposure Notification API is in **ena** module
 
 ### ena
 
-The ena module contains the main functions of eps-ena with bluetooth scanning and adverting, storing data and handle beacons.
+The ena module contains the main functions of eps-ena with bluetooth scanning and adverting, storing data, handle beacons and check exposure.
 * *ena-beacons* handles scanned data by storing temporary beacons, check for threshold and store beacons permanently
 * *ena-crypto* covers cryptography part (key creation, encryption etc.)
 * *ena-storage* storage part to store own TEKs and beacons
 * *ena-bluetooth-scan* BLE scans for detecting other beacons
 * *ena-bluetooth-advertise* BLE advertising to send own beacons
+* *ena-exposure* decode Key Export, compare with stored beacons, calculate score and risk
 * *ena* run all together and timing for scanning and advertising
+
+### ena-cwa
+
+Connection to german Exposure App ([Corona Warn App](https://github.com/corona-warn-app)) for download Key Export (and maybe later report infection).
 
 ### ena-interface
 
@@ -120,6 +126,18 @@ Adds interface functionality via touch pads for control and setup.
 
 Just start I2C driver for display and RTC.
 
+### ds3231
+
+I2C driver for a DS3231 RTC
+
 ### ssd1306
 
 I2C driver for a SSD1306 display.
+
+### nanopb
+
+[Nanopb](https://github.com/nanopb/nanopb) for reading Protocol Buffers of Key Export. Including already generated Headers from *.proto files.
+
+### miniz
+
+[Miniz](https://github.com/richgel999/miniz) for unzipping Key Export (not successful for now due to memory limit)

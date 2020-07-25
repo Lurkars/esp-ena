@@ -15,11 +15,15 @@
 #include <time.h>
 #include <limits.h>
 
+#include "esp_err.h"
 #include "esp_log.h"
 
 #include "ena-crypto.h"
 #include "ena-storage.h"
 #include "ena-beacons.h"
+
+#include "pb_decode.h"
+#include "TemporaryExposureKeyExport.pb.h"
 
 #include "ena-exposure.h"
 
@@ -73,52 +77,8 @@ static ena_exposure_config_t DEFAULT_ENA_EXPOSURE_CONFIG = {
 static const char kFileHeader[] = "EK Export v1    ";
 static size_t kFileHeaderSize = sizeof(kFileHeader) - 1;
 
-extern const uint8_t export_bin_start[] asm("_binary_export_bin_start");
-extern const uint8_t export_bin_end[] asm("_binary_export_bin_end");
-
-void ena_exposure_keyfiletest(void)
-{
-    ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, export_bin_start, (export_bin_end - export_bin_start), ESP_LOG_INFO);
-}
-
-void ena_exposure_check(ena_tek_reported_t tek_reported)
-{
-    bool match = false;
-    ena_beacon_t beacon;
-    ena_exposure_information_t exposure_info;
-    exposure_info.duration_minutes = 0;
-    exposure_info.min_attenuation = INT_MAX;
-    exposure_info.typical_attenuation = 0;
-    exposure_info.report_type = tek_reported.report_type;
-    uint8_t rpi[ENA_KEY_LENGTH];
-    uint8_t rpik[ENA_KEY_LENGTH];
-    ena_crypto_rpik(rpik, tek_reported.key_data);
-    uint32_t beacons_count = ena_storage_beacons_count();
-    for (int i = 0; i < tek_reported.rolling_period; i++)
-    {
-        ena_crypto_rpi(rpi, rpik, tek_reported.rolling_start_interval_number + i);
-        for (int y = 0; y < beacons_count; y++)
-        {
-            ena_storage_get_beacon(y, &beacon);
-            if (memcmp(beacon.rpi, rpi, sizeof(ENA_KEY_LENGTH)) == 0)
-            {
-                match = true;
-                exposure_info.day = tek_reported.rolling_start_interval_number * ENA_TIME_WINDOW;
-                exposure_info.duration_minutes += (ENA_BEACON_TRESHOLD / 60);
-                exposure_info.typical_attenuation = (exposure_info.typical_attenuation + beacon.rssi) / 2;
-                if (beacon.rssi < exposure_info.min_attenuation)
-                {
-                    exposure_info.min_attenuation = beacon.rssi;
-                }
-            }
-        }
-    }
-
-    if (match)
-    {
-        ena_storage_add_exposure_information(&exposure_info);
-    }
-}
+extern uint8_t export_bin_start[] asm("_binary_export_bin_start"); // test data from Google or https://svc90.main.px.t-online.de/version/v1/diagnosis-keys/country/DE/date/2020-07-22
+extern uint8_t export_bin_end[] asm("_binary_export_bin_end");
 
 int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params)
 {
@@ -238,6 +198,9 @@ int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_paramete
 
 void ena_exposure_summary(ena_exposure_config_t *config, ena_exposure_summary_t *summary)
 {
+    // XXX TEST key export (should be called on other location though)
+    ESP_ERROR_CHECK_WITHOUT_ABORT(ena_exposure_check_export(export_bin_start, (export_bin_end - export_bin_start)));
+
     uint32_t count = ena_storage_exposure_information_count();
     uint32_t current_time = (uint32_t)time(NULL);
 
@@ -270,11 +233,109 @@ void ena_exposure_summary(ena_exposure_config_t *config, ena_exposure_summary_t 
         }
         summary->risk_score_sum += score;
     }
-
-    ena_exposure_keyfiletest();
 }
 
 ena_exposure_config_t *ena_exposure_default_config(void)
 {
     return &DEFAULT_ENA_EXPOSURE_CONFIG;
+}
+
+bool ena_exposure_decode_key_data(pb_istream_t *stream, const pb_field_t *field, void **arg)
+{
+    uint8_t *key_data = (uint8_t *)*arg;
+
+    if (!pb_read(stream, key_data, stream->bytes_left))
+    {
+        ESP_LOGW(ENA_EXPOSURE_LOG, "Decoding failed: %s\n", PB_GET_ERROR(stream));
+        return false;
+    }
+
+    return true;
+}
+
+bool ena_exposure_decode_key(pb_istream_t *stream, const pb_field_t *field, void **arg)
+{
+    uint8_t key_data[ENA_KEY_LENGTH] = {0};
+    TemporaryExposureKey tek = TemporaryExposureKey_init_zero;
+
+    tek.key_data = (pb_callback_t){
+        .funcs.decode = ena_exposure_decode_key_data,
+        .arg = &key_data,
+    };
+
+    if (!pb_decode(stream, TemporaryExposureKey_fields, &tek))
+    {
+        ESP_LOGW(ENA_EXPOSURE_LOG, "Decoding failed: %s\n", PB_GET_ERROR(stream));
+        return false;
+    }
+
+    ESP_LOGD(ENA_EXPOSURE_LOG,
+             "check reported tek: rolling_start_interval_number %d, rolling_period %d, days_since_last_exposure %d, report_type %d, transmission_risk_values %d",
+             tek.rolling_start_interval_number, tek.rolling_period, tek.days_since_onset_of_symptoms, tek.report_type, tek.transmission_risk_level);
+
+    ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, &key_data, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
+
+    bool match = false;
+    ena_beacon_t beacon;
+    ena_exposure_information_t exposure_info;
+    exposure_info.duration_minutes = 0;
+    exposure_info.min_attenuation = INT_MAX;
+    exposure_info.typical_attenuation = 0;
+    exposure_info.report_type = tek.report_type;
+    uint8_t rpi[ENA_KEY_LENGTH];
+    uint8_t rpik[ENA_KEY_LENGTH];
+    ena_crypto_rpik(rpik, key_data);
+    uint32_t beacons_count = ena_storage_beacons_count();
+    for (int i = 0; i < tek.rolling_period; i++)
+    {
+        ena_crypto_rpi(rpi, rpik, tek.rolling_start_interval_number + i);
+        for (int y = 0; y < beacons_count; y++)
+        {
+            ena_storage_get_beacon(y, &beacon);
+            if (memcmp(beacon.rpi, rpi, sizeof(ENA_KEY_LENGTH)) == 0)
+            {
+                match = true;
+                exposure_info.day = tek.rolling_start_interval_number * ENA_TIME_WINDOW;
+                exposure_info.duration_minutes += (ENA_BEACON_TRESHOLD / 60);
+                exposure_info.typical_attenuation = (exposure_info.typical_attenuation + beacon.rssi) / 2;
+                if (beacon.rssi < exposure_info.min_attenuation)
+                {
+                    exposure_info.min_attenuation = beacon.rssi;
+                }
+            }
+        }
+    }
+
+    if (match)
+    {
+        ena_storage_add_exposure_information(&exposure_info);
+    }
+
+    return true;
+}
+
+esp_err_t ena_exposure_check_export(uint8_t *buf, size_t size)
+{
+    // validate header
+    if (memcmp(kFileHeader, buf, kFileHeaderSize) != 0)
+    {
+        ESP_LOGW(ENA_EXPOSURE_LOG, "Wrong or missing header!");
+        return ESP_FAIL;
+    }
+
+    TemporaryExposureKeyExport tek_export = TemporaryExposureKeyExport_init_zero;
+
+    tek_export.keys = (pb_callback_t){
+        .funcs.decode = ena_exposure_decode_key,
+    };
+
+    pb_istream_t stream = pb_istream_from_buffer(&buf[kFileHeaderSize], (size - kFileHeaderSize));
+
+    if (!pb_decode(&stream, TemporaryExposureKeyExport_fields, &tek_export))
+    {
+        ESP_LOGW(ENA_EXPOSURE_LOG, "Decoding failed: %s\n", PB_GET_ERROR(&stream));
+        return ESP_FAIL;
+    }
+
+    return ESP_OK;
 }

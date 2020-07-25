@@ -14,10 +14,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-
 #include "esp_system.h"
 #include "esp_log.h"
 #include "esp_bt.h"
@@ -47,48 +43,42 @@ void ena_next_rpi_timestamp(uint32_t timestamp)
     ESP_LOGD(ENA_LOG, "next rpi at %u (%u from %u)", next_rpi_timestamp, (ENA_BT_ROTATION_TIMEOUT_INTERVAL + random_interval), timestamp);
 }
 
-void ena_run(void *pvParameter)
+void ena_run(void)
 {
     static uint32_t unix_timestamp = 0;
     static uint32_t current_enin = 0;
-    while (1)
+    unix_timestamp = (uint32_t)time(NULL);
+    current_enin = ena_crypto_enin(unix_timestamp);
+    if (current_enin - last_tek.enin >= last_tek.rolling_period)
     {
-        unix_timestamp = (uint32_t)time(NULL);
-        current_enin = ena_crypto_enin(unix_timestamp);
-        if (current_enin - last_tek.enin >= last_tek.rolling_period)
-        {
-            ena_crypto_tek(last_tek.key_data);
-            last_tek.enin = current_enin;
-            // validity only to next day 00:00
-            last_tek.rolling_period = ENA_TEK_ROLLING_PERIOD - (last_tek.enin % ENA_TEK_ROLLING_PERIOD);
-            ena_storage_write_tek(&last_tek);
-        }
+        ena_crypto_tek(last_tek.key_data);
+        last_tek.enin = current_enin;
+        // validity only to next day 00:00
+        last_tek.rolling_period = ENA_TEK_ROLLING_PERIOD - (last_tek.enin % ENA_TEK_ROLLING_PERIOD);
+        ena_storage_write_tek(&last_tek);
+    }
 
-        // change RPI
-        if (unix_timestamp >= next_rpi_timestamp)
+    // change RPI
+    if (unix_timestamp >= next_rpi_timestamp)
+    {
+        if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_SCANNING)
         {
-            if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_SCANNING)
-            {
-                ena_bluetooth_scan_stop();
-            }
-            ena_bluetooth_advertise_stop();
-            ena_bluetooth_advertise_set_payload(current_enin, last_tek.key_data);
-            ena_bluetooth_advertise_start();
-            if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_WAITING)
-            {
-                ena_bluetooth_scan_start(ENA_SCANNING_TIME);
-            }
-            ena_next_rpi_timestamp(unix_timestamp);
+            ena_bluetooth_scan_stop();
         }
-
-        // scan
-        if (unix_timestamp % ENA_SCANNING_INTERVAL == 0 && ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_NOT_SCANNING)
+        ena_bluetooth_advertise_stop();
+        ena_bluetooth_advertise_set_payload(current_enin, last_tek.key_data);
+        ena_bluetooth_advertise_start();
+        if (ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_WAITING)
         {
             ena_bluetooth_scan_start(ENA_SCANNING_TIME);
         }
+        ena_next_rpi_timestamp(unix_timestamp);
+    }
 
-        // one second loop correct?!
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    // scan
+    if (unix_timestamp % ENA_SCANNING_INTERVAL == 0 && ena_bluetooth_scan_get_status() == ENA_SCAN_STATUS_NOT_SCANNING)
+    {
+        ena_bluetooth_scan_start(ENA_SCANNING_TIME);
     }
 }
 
@@ -173,5 +163,15 @@ void ena_start(void)
     ena_bluetooth_scan_start(ENA_SCANNING_TIME);
 
     // what is a good stack size here?
-    xTaskCreate(&ena_run, "ena_run", ENA_RAM, NULL, 5, NULL);
+    // xTaskCreate(&ena_run, "ena_run", ENA_RAM, NULL, 5, NULL);
+}
+
+void ena_stop(void)
+{
+    ena_bluetooth_advertise_stop();
+    ena_bluetooth_scan_stop();
+    esp_bluedroid_disable();
+    esp_bluedroid_deinit();
+    esp_bt_controller_disable();
+    esp_bt_controller_deinit();
 }

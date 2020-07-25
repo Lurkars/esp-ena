@@ -11,19 +11,18 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef _ena_INTERFACE_MENU_H_
-#define _ena_INTERFACE_MENU_H_
+#ifndef _ena_CWA_H_
+#define _ena_CWA_H_
 
-typedef enum
-{
-    ENA_INTERFACE_MENU_STATE_IDLE = 0,
-    ENA_INTERFACE_MENU_STATE_SELECT_TIME,
-    ENA_INTERFACE_MENU_STATE_SELECT_DEBUG,
-    ENA_INTERFACE_MENU_STATE_SELECT_STATUS,
-} ena_interface_menu_state;
+#define ENA_CWA_LOG "ESP-ENA-corona-warn-app" // TAG for Logging
 
-void ena_interface_menu_start(void);
+#define ENA_CWA_KEYFILES_URL "http://svc90.main.px.t-online.de/version/v1/diagnosis-keys/country/DE/date/%s"
 
-int ena_interface_menu_get_state(void);
+/**
+ * @brief fetch key export for given date
+ * 
+ * @param[in] date_string the date to fetch the data for
+ */
+void ena_cwa_receive_keys(char *date_string);
 
 #endif

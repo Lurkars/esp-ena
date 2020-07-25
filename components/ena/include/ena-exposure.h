@@ -15,6 +15,7 @@
 #define _ena_EXPOSURE_H_
 
 #include <stdio.h>
+
 #include "ena-crypto.h"
 
 #define ENA_EXPOSURE_LOG "ESP-ENA-exposure" // TAG for Logging
@@ -135,25 +136,6 @@ typedef struct __attribute__((__packed__))
 } ena_exposure_summary_t;
 
 /**
- * @brief structure for a reported TEK
- */
-typedef struct __attribute__((__packed__))
-{
-    uint8_t key_data[ENA_KEY_LENGTH];       // Key of infected user
-    uint32_t rolling_start_interval_number; // The interval number since epoch for which a key starts
-    uint8_t rolling_period;                 // Increments of 10 minutes describing how long a key is valid
-    ena_report_type_t report_type;          // Type of diagnosis associated with a key.
-    uint32_t days_since_onset_of_symptoms;  // Number of days elapsed between symptom onset and the TEK being used. E.g. 2 means TEK is 2 days after onset of symptoms.
-} ena_tek_reported_t;
-
-/**
- * @brief check for exposure for a reported tek and store exposure information on finding
- * 
- * @param[in] tek_reported the reported tek to check
- */
-void ena_exposure_check(ena_tek_reported_t tek_reported);
-
-/**
  * @brief calculate risk score
  * 
  * @param[in] config the exposure configuration used for calculating score
@@ -173,5 +155,16 @@ void ena_exposure_summary(ena_exposure_config_t *config, ena_exposure_summary_t 
  * @brief return a default exposure configuration
  */
 ena_exposure_config_t *ena_exposure_default_config(void);
+
+/**
+ * @brief reads a Temporary Exposue Key Export binary and check for exposures
+ * 
+ * @param[in] buf the buffer containing the binary data
+ * @param[in] size the size of the buffer
+ * 
+ * @return 
+ *      esp_err_t status of reading binary
+ */
+esp_err_t ena_exposure_check_export(uint8_t *buf, size_t size);
 
 #endif

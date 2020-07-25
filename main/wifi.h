@@ -11,19 +11,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef _ena_INTERFACE_MENU_H_
-#define _ena_INTERFACE_MENU_H_
+#ifndef _wifi_H_
+#define _wifi_H_
 
-typedef enum
-{
-    ENA_INTERFACE_MENU_STATE_IDLE = 0,
-    ENA_INTERFACE_MENU_STATE_SELECT_TIME,
-    ENA_INTERFACE_MENU_STATE_SELECT_DEBUG,
-    ENA_INTERFACE_MENU_STATE_SELECT_STATUS,
-} ena_interface_menu_state;
+#define WIFI_LOG "ESP-ENA-wifi" // TAG for Logging
 
-void ena_interface_menu_start(void);
+#define WIFI_SSID (CONFIG_WIFI_SSID)
+#define WIFI_PASSWORD (CONFIG_WIFI_PASSWORD)
+#define WIFI_MAXIMUM_RETRY (CONFIG_WIFI_MAXIMUM_RETRY)
 
-int ena_interface_menu_get_state(void);
+/**
+ * @brief start wifi connection to configured AP
+ */
+void wifi_start(void);
+
+/**
+ * @brief stop wifi (restart does not work for now!)
+ */
+void wifi_stop(void);
+
+/**
+ * @brief check if a wifi is connected
+ */
+bool wifi_is_connected(void);
 
 #endif
