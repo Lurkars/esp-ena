@@ -104,6 +104,6 @@ void ena_beacon(uint32_t unix_timestamp, uint8_t *rpi, uint8_t *aem, int rssi)
         ESP_LOG_BUFFER_HEX_LEVEL(ENA_BEACON_LOG, temp_beacons[beacon_index].rpi, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
         ESP_LOG_BUFFER_HEX_LEVEL(ENA_BEACON_LOG, temp_beacons[beacon_index].aem, ENA_AEM_METADATA_LENGTH, ESP_LOG_DEBUG);
         ESP_LOGD(ENA_BEACON_LOG, "RSSI %d", temp_beacons[beacon_index].rssi);
-        ena_storage_set_temp_beacon(temp_beacons_count, &temp_beacons[temp_beacons_count]);
+        ena_storage_set_temp_beacon(beacon_index, &temp_beacons[beacon_index]);
     }
 }
