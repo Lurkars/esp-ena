@@ -1,90 +1,94 @@
 menu "Exposure Notification API"
-  
-  menu "Storage"   
-  
-    config ENA_STORAGE_DUMP
-      bool "Dump storage"
-      default false
-      help
-        Dump storage (stored TEKs, temp. beacons and perm. beacons) to serial output after scan.
 
-    config ENA_STORAGE_TEK_MAX
-      int "Max. TEKs"
-      default 14
-      help
-        Defines the maximum number of TEKs to be stored. (Default 14 [14 * 144 => 14 days])
+	menu "Storage"
+		config ENA_STORAGE_DUMP
+		bool "Dump storage"
+		default false
+		help
+			Dump storage (stored TEKs, temp. beacons and perm. beacons) to serial output after scan.
 
-    config ENA_STORAGE_EXPOSURE_INFORMATION_MAX
-      int "Max. exporure information"
-      default 500
-      help
-        Defines the maximum number of exposure information to be stored. (Default 500)
+		config ENA_STORAGE_TEK_MAX
+		int "Max. TEKs"
+		default 14
+		help
+			Defines the maximum number of TEKs to be stored. (Default 14 [14 * 144 => 14 days])
 
-    config ENA_STORAGE_TEMP_BEACONS_MAX
-      int "Max. temporary beacons"
-      default 1000
-      help
-        Defines the maximum number of temporary beacons to be stored. (Default 1000)
+		config ENA_STORAGE_EXPOSURE_INFORMATION_MAX
+		int "Max. exporure information"
+		default 500
+		help
+			Defines the maximum number of exposure information to be stored. (Default 500)
 
-    config ENA_STORAGE_START_ADDRESS
-      int "Storage start address"
-      default 0
-      help
-        Defines the start address on partition. (Default 0)
+		config ENA_STORAGE_TEMP_BEACONS_MAX
+		int "Max. temporary beacons"
+		default 1000
+		help
+			Defines the maximum number of temporary beacons to be stored. (Default 1000)
 
-    config ENA_STORAGE_PARTITION_NAME
-      string "Partition name"
-      default "ena"
-      help
-        Name of the partition used for storage. (Default "ena", see partitions.csv)
+		config ENA_STORAGE_START_ADDRESS
+		int "Storage start address"
+		default 0
+		help
+			Defines the start address on partition. (Default 0)
 
-    config ENA_STORAGE_ERASE
-      bool "Erase storage (!)"
-      default false
-      help
-        Erases the complete(!) partition on startup and reset counters.
+		config ENA_STORAGE_PARTITION_NAME
+		string "Partition name"
+		default "ena"
+		help
+			Name of the partition used for storage. (Default "ena", see partitions.csv)
 
-  endmenu
-  
-  menu "Scanning"
-    config ENA_BEACON_TRESHOLD
-      int "Contact threshold"
-      default 300
-      help
-        Threshold in seconds after a received beacon is stored permanently. (Default 5 minutes)
+		config ENA_STORAGE_ERASE
+		bool "Erase storage (!)"
+		default false
+		help
+			Erases the complete(!) partition on startup and reset counters.
 
-    config ENA_SCANNING_TIME
-      int "Scanning time"
-      default 30
-      help
-        Time in seconds how long a scan should run. (Default 30 seconds)
+	endmenu
 
-    config ENA_SCANNING_INTERVAL
-      int "Scanning interval"
-      default 300
-      help
-        Interval in seconds for the next scan to happen. (Default 5 minutes)
-  endmenu
+	menu "Scanning"
+		config ENA_BEACON_TRESHOLD
+		int "Contact threshold"
+		default 300
+		help
+			Threshold in seconds after a received beacon is stored permanently. (Default 5 minutes)
 
-  menu "Advertising"
+		config ENA_BEACON_CLEANUP_TRESHOLD
+		int "Clean-Up threshold"
+		default 14
+		help
+			Threshold in days after stored beacons to be removed.
 
-    config ENA_BT_ROTATION_TIMEOUT_INTERVAL
-      int "Rotation timeout interval"
-      default 900
-      help
-        Base rotation timeout interval in seconds for changing BT address and therefore the advertised beacon. (Default 5 minutes)
+		config ENA_SCANNING_TIME
+		int "Scanning time"
+		default 30
+		help
+			Time in seconds how long a scan should run. (Default 30 seconds)
 
-    config ENA_BT_RANDOMIZE_ROTATION_TIMEOUT_INTERVAL
-      int "Randomize rotation timeout interval"
-      default 150
-      help
-        Range in seconds for randomize the rotation timeout interval. (Default +/- ~2.5 minutes)
+		config ENA_SCANNING_INTERVAL
+		int "Scanning interval"
+		default 300
+		help
+			Interval in seconds for the next scan to happen. (Default 5 minutes)
+	endmenu
 
-    config ENA_TEK_ROLLING_PERIOD
-      int "TEK rolling period"
-      default 144
-      help
-        Defines the TEK rolling period in 10 minute steps. (Default 144 => 24 hours)
-  endmenu
+	menu "Advertising"
+		config ENA_BT_ROTATION_TIMEOUT_INTERVAL
+		int "Rotation timeout interval"
+		default 900
+		help
+			Base rotation timeout interval in seconds for BT address change & therefore the advertised beacon.(Default 5 minutes)
+
+		config ENA_BT_RANDOMIZE_ROTATION_TIMEOUT_INTERVAL
+		int "Randomize rotation timeout interval"
+		default 150
+		help
+			Range in seconds for randomize the rotation timeout interval. (Default +/- ~2.5 minutes)
+
+		config ENA_TEK_ROLLING_PERIOD
+		int "TEK rolling period"
+		default 144
+		help
+			Defines the TEK rolling period in 10 minute steps. (Default 144 => 24 hours)
+	endmenu
 
 endmenu

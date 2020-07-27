@@ -11,6 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+/**
+ * @file
+ * 
+ * @brief storage part to store own TEKs and beacons
+ * 
+ */
 #ifndef _ena_STORAGE_H_
 #define _ena_STORAGE_H_
 
@@ -189,6 +195,13 @@ void ena_storage_get_beacon(uint32_t index, ena_beacon_t *beacon);
  * @param[in]   beacon   new beacon to permanently store 
  */
 void ena_storage_add_beacon(ena_beacon_t *beacon);
+
+/**
+ * @brief       remove beacon at given index
+ * 
+ * @param[in]   index       the index of the beacon to remove
+ */
+void ena_storage_remove_beacon(uint32_t index);
 
 /**
  * @brief       erase the storage

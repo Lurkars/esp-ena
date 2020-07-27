@@ -25,9 +25,10 @@
 #include "ena-exposure.h"
 #include "ena-bluetooth-advertise.h"
 #include "ena-bluetooth-scan.h"
-#include "ena-interface.h"
+#include "interface.h"
 #include "ena-cwa.h"
 #include "ds3231.h"
+#include "display-interface.h"
 #include "wifi.h"
 
 #include "sdkconfig.h"
@@ -43,7 +44,7 @@ void app_main(void)
     esp_log_level_set(ENA_EXPOSURE_LOG, ESP_LOG_DEBUG);
     esp_log_level_set(ENA_STORAGE_LOG, ESP_LOG_INFO);
     esp_log_level_set(ENA_CWA_LOG, ESP_LOG_DEBUG);
-    esp_log_level_set(ENA_INTERFACE_LOG, ESP_LOG_DEBUG);
+    esp_log_level_set(INTERFACE_LOG, ESP_LOG_DEBUG);
     esp_log_level_set(WIFI_LOG, ESP_LOG_DEBUG);
 
     // set system time from DS3231
@@ -55,12 +56,14 @@ void app_main(void)
     tv.tv_sec = curtime;
     settimeofday(&tv, NULL);
 
-    // Hardcoded timezome of UTC+2 for now (consider POSIX notation!)
+    // Hardcoded timezone of UTC+2 for now (consider POSIX notation!)
     setenv("TZ", "UTC-2", 1);
     tzset();
 
     ena_start();
 
+    display_interface_start();
+    
     while (1)
     {
         ena_run();

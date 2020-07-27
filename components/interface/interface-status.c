@@ -15,23 +15,23 @@
 
 #include "esp_log.h"
 #include "driver/touch_pad.h"
-#include "ena-interface.h"
-#include "ena-interface-menu.h"
+#include "interface.h"
+#include "interface-menu.h"
 
-#include "ena-interface-status.h"
+#include "interface-status.h"
 
-void ena_interface_status_esc(void)
+void interface_status_esc(void)
 {
-    ena_interface_menu_start();
+    interface_menu_start();
 }
 
-void ena_interface_status_start(void)
+void interface_status_start(void)
 {
-    ena_interface_set_state(ENA_INTERFACE_STATE_STATUS);
-    ena_interface_register_touch_callback(TOUCH_PAD_ESC, &ena_interface_status_esc);
-    ena_interface_register_touch_callback(TOUCH_PAD_OK, NULL);
-    ena_interface_register_touch_callback(TOUCH_PAD_UP, NULL);
-    ena_interface_register_touch_callback(TOUCH_PAD_DOWN, NULL);
+    interface_set_state(INTERFACE_STATE_STATUS);
+    interface_register_touch_callback(TOUCH_PAD_ESC, &interface_status_esc);
+    interface_register_touch_callback(TOUCH_PAD_OK, NULL);
+    interface_register_touch_callback(TOUCH_PAD_UP, NULL);
+    interface_register_touch_callback(TOUCH_PAD_DOWN, NULL);
 
-    ESP_LOGD(ENA_INTERFACE_LOG, "start status interface");
+    ESP_LOGD(INTERFACE_LOG, "start status interface");
 }

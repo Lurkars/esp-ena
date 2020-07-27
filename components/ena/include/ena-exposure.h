@@ -11,6 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+/**
+ * @file
+ * 
+ * @brief decode Exposure Key export, compare with stored beacons, calculate score and risk
+ * 
+ */
 #ifndef _ena_EXPOSURE_H_
 #define _ena_EXPOSURE_H_
 

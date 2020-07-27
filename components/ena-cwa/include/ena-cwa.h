@@ -11,6 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+/**
+ * @file
+ * 
+ * @brief connection to german Exposure Notification App (Corona Warn App)
+ * 
+ * This is for receiving the Exposure Key export for germany and for report own infection inside germany.
+ * 
+ */
 #ifndef _ena_CWA_H_
 #define _ena_CWA_H_
 

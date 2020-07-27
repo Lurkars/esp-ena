@@ -18,20 +18,20 @@
 #include "driver/touch_pad.h"
 #include "esp_log.h"
 
-#include "ena-interface.h"
+#include "interface.h"
 
-static int interface_state = ENA_INTERFACE_STATE_IDLE;
+static int current_interface_state = INTERFACE_STATE_IDLE;
 
 static int touch_mapping[TOUCH_PAD_COUNT] = {0};
 static bool touch_status[TOUCH_PAD_COUNT] = {0};
-static ena_interface_touch_callback touch_callbacks[TOUCH_PAD_MAX];
+static interface_touch_callback touch_callbacks[TOUCH_PAD_MAX];
 
-void ena_interface_register_touch_callback(int touch_pad, ena_interface_touch_callback callback)
+void interface_register_touch_callback(int touch_pad, interface_touch_callback callback)
 {
     touch_callbacks[touch_pad] = callback;
 }
 
-void ena_interface_run(void *pvParameter)
+void interface_run(void *pvParameter)
 {
     static uint16_t touch_value;
     static uint16_t touch_thresh;
@@ -46,7 +46,7 @@ void ena_interface_run(void *pvParameter)
 
             if (!touch_status[i] & touch_status_current[i])
             {
-                ESP_LOGD(ENA_INTERFACE_LOG, "touch %u at %d (thresh %u)", touch_value, touch_mapping[i], touch_thresh);
+                ESP_LOGD(INTERFACE_LOG, "touch %u at %d (thresh %u)", touch_value, touch_mapping[i], touch_thresh);
                 if (touch_callbacks[touch_mapping[i]] != NULL)
                 {
                     (*touch_callbacks[touch_mapping[i]])();
@@ -59,7 +59,7 @@ void ena_interface_run(void *pvParameter)
     }
 }
 
-void ena_interface_start(void)
+void interface_start(void)
 {
     ESP_ERROR_CHECK(touch_pad_init());
     ESP_ERROR_CHECK(touch_pad_set_voltage(TOUCH_HVOLT_2V7, TOUCH_LVOLT_0V5, TOUCH_HVOLT_ATTEN_1V));
@@ -81,18 +81,18 @@ void ena_interface_start(void)
     {
         ESP_ERROR_CHECK(touch_pad_read_filtered(touch_mapping[i], &touch_value));
         ESP_ERROR_CHECK(touch_pad_set_thresh(touch_mapping[i], touch_value * 2 / 3));
-        ESP_LOGD(ENA_INTERFACE_LOG, "calibrate %u at %u (thresh %u)", touch_mapping[i], touch_value, (touch_value * 2 / 3));
+        ESP_LOGD(INTERFACE_LOG, "calibrate %u at %u (thresh %u)", touch_mapping[i], touch_value, (touch_value * 2 / 3));
     }
 
-    xTaskCreate(&ena_interface_run, "ena_interface_run", 4096, NULL, 5, NULL);
+    xTaskCreate(&interface_run, "interface_run", 4096, NULL, 5, NULL);
 }
 
-int ena_interface_get_state(void)
+int interface_get_state(void)
 {
-    return interface_state;
+    return current_interface_state;
 }
 
-void ena_interface_set_state(ena_interface_state state)
+void interface_set_state(interface_state_t state)
 {
-    interface_state = state;
+    current_interface_state = state;
 }

@@ -116,7 +116,7 @@ The ena module contains the main functions of eps-ena with bluetooth scanning an
 
 Connection to german Exposure App ([Corona Warn App](https://github.com/corona-warn-app)) for download Exposure Key export (and maybe later report infection).
 
-### ena-interface
+### interface
 
 Adds interface functionality via touch pads for control and setup.
 

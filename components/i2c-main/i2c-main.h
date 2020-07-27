@@ -11,6 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+/**
+ * @file
+ * 
+ * @brief start I2C driver for display and RTC.
+ *  
+ */
 #ifndef _i2c_main_H_
 #define _i2c_main_H_
 

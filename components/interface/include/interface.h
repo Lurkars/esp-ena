@@ -11,10 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef _ena_INTERFACE_H_
-#define _ena_INTERFACE_H_
+/**
+ * @file
+ * 
+ * @brief interface functionality via touch pads for control and setup
+ *  
+ */
+#ifndef _interface__H_
+#define _interface__H_
 
-#define ENA_INTERFACE_LOG "ESP-ENA-interface" // TAG for Logging
+#define INTERFACE_LOG "INTERFACE" // TAG for Logging
 
 #define TOUCHPAD_FILTER_TOUCH_PERIOD (10)
 #define TOUCH_PAD_COUNT (4)
@@ -28,16 +34,16 @@
  */
 typedef enum
 {
-    ENA_INTERFACE_STATE_IDLE = 0,     // ilde state, do nothing
-    ENA_INTERFACE_STATE_MENU,         // main menu
-    ENA_INTERFACE_STATE_SET_DATETIME, // set current date and time
-    ENA_INTERFACE_STATE_STATUS,       // current status
-} ena_interface_state;
+    INTERFACE_STATE_IDLE = 0,     // ilde state, do nothing
+    INTERFACE_STATE_MENU,         // main menu
+    INTERFACE_STATE_SET_DATETIME, // set current date and time
+    INTERFACE_STATE_STATUS,       // current status
+} interface_state_t;
 
 /**
  * @brief       callback function on touch event
  */
-typedef void (*ena_interface_touch_callback)(void);
+typedef void (*interface_touch_callback)(void);
 
 /**
  * @brief       register a callback function for touch event
@@ -45,7 +51,7 @@ typedef void (*ena_interface_touch_callback)(void);
  * @param[in]   touch_pad   id of the touchpad to listen touch
  * @param[in]   callback    callback function
  */
-void ena_interface_register_touch_callback(int touch_pad, ena_interface_touch_callback callback);
+void interface_register_touch_callback(int touch_pad, interface_touch_callback callback);
 
 /**
  * @brief       get current interface state
@@ -53,14 +59,14 @@ void ena_interface_register_touch_callback(int touch_pad, ena_interface_touch_ca
  * @return
  *              current state the interface is in
  */
-int ena_interface_get_state(void);
+int interface_get_state(void);
 
 /**
  * @brief       set current interface state
  * 
  * @param[in]   state   new state to set
  */
-void ena_interface_set_state(ena_interface_state state);
+void interface_set_state(interface_state_t state);
 
 /**
  * @brief       start interface logic
@@ -68,6 +74,6 @@ void ena_interface_set_state(ena_interface_state state);
  * This will initialize the touch controls and start a task to listen to touch
  * inputs and calling the callbacks
  */
-void ena_interface_start(void);
+void interface_start(void);
 
 #endif

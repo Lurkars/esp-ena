@@ -74,6 +74,20 @@ void ena_beacons_temp_refresh(uint32_t unix_timestamp)
 #endif
 }
 
+void ena_beacons_cleanup(uint32_t unix_timestamp)
+{
+    uint32_t count = ena_storage_beacons_count();
+    ena_beacon_t beacon;
+    for (int i = count - 1; i >= 0; i--)
+    {
+        ena_storage_get_beacon(i, &beacon);
+        if (((unix_timestamp - beacon.timestamp_last) / (60 * 60 * 24)) > ENA_BEACON_CLEANUP_TRESHOLD)
+        {
+            ena_storage_remove_beacon(i);
+        }
+    }
+}
+
 void ena_beacon(uint32_t unix_timestamp, uint8_t *rpi, uint8_t *aem, int rssi)
 {
     uint32_t beacon_index = ena_get_temp_beacon_index(rpi, aem);

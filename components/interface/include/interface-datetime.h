@@ -11,19 +11,27 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef _ena_INTERFACE_MENU_H_
-#define _ena_INTERFACE_MENU_H_
+/**
+ * @file
+ * 
+ * @brief interface for changing current date and time
+ *  
+ */
+#ifndef _interface__DATETIME_H_
+#define _interface__DATETIME_H_
 
 typedef enum
 {
-    ENA_INTERFACE_MENU_STATE_IDLE = 0,
-    ENA_INTERFACE_MENU_STATE_SELECT_TIME,
-    ENA_INTERFACE_MENU_STATE_SELECT_DEBUG,
-    ENA_INTERFACE_MENU_STATE_SELECT_STATUS,
-} ena_interface_menu_state;
+    INTERFACE_DATETIME_STATE_YEAR = 0,
+    INTERFACE_DATETIME_STATE_MONTH,
+    INTERFACE_DATETIME_STATE_DAY,
+    INTERFACE_DATETIME_STATE_HOUR,
+    INTERFACE_DATETIME_STATE_MINUTE,
+    INTERFACE_DATETIME_STATE_SECONDS,
+} interface_datetime_state_t;
 
-void ena_interface_menu_start(void);
+void interface_datetime_start(void);
 
-int ena_interface_menu_get_state(void);
+int interface_datetime_state(void);
 
 #endif

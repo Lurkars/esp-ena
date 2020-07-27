@@ -276,6 +276,19 @@ void ena_storage_add_beacon(ena_beacon_t *beacon)
     ESP_LOG_BUFFER_HEXDUMP(ENA_STORAGE_LOG, beacon->aem, ENA_AEM_METADATA_LENGTH, ESP_LOG_DEBUG);
 }
 
+void ena_storage_remove_beacon(uint32_t index)
+{
+    uint32_t count = ena_storage_beacons_count();
+    size_t address_from = ENA_STORAGE_BEACONS_START_ADDRESS + index * sizeof(ena_beacon_t);
+    size_t address_to = ENA_STORAGE_BEACONS_START_ADDRESS + count * sizeof(ena_beacon_t);
+
+    ena_storage_shift_delete(address_from, address_to, sizeof(ena_beacon_t));
+
+    count--;
+    ena_storage_write(ENA_STORAGE_BEACONS_COUNT_ADDRESS, &count, sizeof(uint32_t));
+    ESP_LOGD(ENA_STORAGE_LOG, "remove beacon: %u", index);
+}
+
 void ena_storage_erase(void)
 {
     const esp_partition_t *partition = esp_partition_find_first(

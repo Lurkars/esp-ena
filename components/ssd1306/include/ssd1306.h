@@ -11,6 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+/**
+ * @file
+ * 
+ * @brief I2C driver for SSD1306 display
+ *  
+ */
 #ifndef _ssd1306_H_
 #define _ssd1306_H_
 
@@ -81,6 +87,7 @@ void ssd1306_start(uint8_t i2address);
  * 
  * @param[in] i2address I2C address of SSD1306 
  * @param[in] line the line to clear
+ * @param[in] invert if true, image is inverted
  */
 void ssd1306_clear_line(uint8_t i2address, uint8_t line, bool invert);
 
@@ -107,6 +114,7 @@ void ssd1306_on(uint8_t i2address, bool on);
  * @param[in] length length of data
  * @param[in] line the line to write to
  * @param[in] offset number of offset chars to start
+ * @param[in] invert if true, image is inverted
  */
 void ssd1306_data(uint8_t i2address, uint8_t *data, size_t length, uint8_t line, uint8_t offset, bool invert);
 
@@ -117,6 +125,7 @@ void ssd1306_data(uint8_t i2address, uint8_t *data, size_t length, uint8_t line,
  * @param[in] text text to display  
  * @param[in] line the line to write to
  * @param[in] offset number of offset chars to start
+ * @param[in] invert if true, image is inverted
  */
 void ssd1306_text_line_column(uint8_t i2address, char *text, uint8_t line, uint8_t offset, bool invert);
 
@@ -126,6 +135,7 @@ void ssd1306_text_line_column(uint8_t i2address, char *text, uint8_t line, uint8
  * @param[in] i2address I2C address of SSD1306
  * @param[in] text text to display  
  * @param[in] line the line to write to
+ * @param[in] invert if true, image is inverted
  */
 void ssd1306_text_line(uint8_t i2address, char *text, uint8_t line, bool invert);
 

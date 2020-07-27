@@ -26,6 +26,7 @@
 #include "ena-storage.h"
 #include "ena-bluetooth-scan.h"
 #include "ena-bluetooth-advertise.h"
+#include "ena-beacons.h"
 
 #include "ena.h"
 
@@ -56,6 +57,8 @@ void ena_run(void)
         // validity only to next day 00:00
         last_tek.rolling_period = ENA_TEK_ROLLING_PERIOD - (last_tek.enin % ENA_TEK_ROLLING_PERIOD);
         ena_storage_write_tek(&last_tek);
+        // clean up old beacons
+        ena_beacons_cleanup(unix_timestamp);
     }
 
     // change RPI

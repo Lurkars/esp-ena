@@ -11,6 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+/**
+ * @file
+ * 
+ * @brief I2C driver for DS3231 Real Time Clock
+ * 
+ */
 #ifndef _ds3231_H_
 #define _ds3231_H_
 

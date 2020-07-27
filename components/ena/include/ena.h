@@ -11,6 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+/**
+ * @file
+ * 
+ * @brief run all other ena parts together to time scanning, advertising and exposure checks
+ * 
+ */
 #ifndef _ena_H_
 #define _ena_H_
 
