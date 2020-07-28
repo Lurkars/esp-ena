@@ -7,10 +7,17 @@ The main source (the Exposure Notification API) is a separate module in [**compo
 
 This implementation fully covers the BLE part including the cryptography specifications needed and the exposure check.
 
+The following acronyms will be used in code and comments:
+* *ENA* Exposure Notification Api
+* *ENIN* ENIntervalNumber - timestamp with 10 minutes resolution
+* *TEK* Temporary Exposure Key - personal secret key changed every 24h, published when infected
+* *RPI* Rolling Proximity Identifier - send and received identifer changed every 10 minutes
+* *AEM* Associated Encrypted Metadata - send and received metadata
+
 ### Features implemented
 * send/receive BLE beacons as defined in [Bluetooth® Specification (Apple/Google)](https://blog.google/documents/70/Exposure_Notification_-_Bluetooth_Specification_v1.2.2.pdf) and [Cryptography Specification (Apple/Google)](https://blog.google/documents/69/Exposure_Notification_-_Cryptography_Specification_v1.2.1.pdf)
 * BLE privacy (change random MAC address in random interval)
-* permanent storage on flash of last keys, beacons and exposures (storage is limited, ~100k beacons can be stored)
+* permanent storage on flash of last keys, beacons and exposures (storage is limited, see [storage math](#some-storage-math) for details)
 * parsing of Exposure Key export binaries as defined in [Exposure Key export file format and verification](https://developers.google.com/android/exposure-notifications/exposure-key-file-format) (big thanks to [nanopb](https://github.com/nanopb/nanopb) for making this easier than I thought!)
 * calculating exposure risks/scores (after adding reported keys and storing exposure information) as defined in [ENExposureConfiguration (Apple)](https://developer.apple.com/documentation/exposurenotification/enexposureconfiguration)
 
@@ -30,22 +37,35 @@ Additional features for full ENA device
     * delete data
     * report infection
 
-### Limitations/Problems
-* storage only ~2.5mb available
+### Limitations/Problems/Questions
 * WiFi or other external connection needed for infections status (auto-connect to open WiFis?)
 * obtaining accessibility
 * all parameters (scanning time, thresholds etc.)
-
-### Questions/Problems/Annotations
-* memory is really low with BLE and WiFi enabled, unzipping a Exposure Key export not possible for now, maybe disable BLE service for download.
+* memory (RAM) is really low with BLE and WiFi enabled, unzipping a Exposure Key export not possible for now, maybe disable BLE service for download.
 * service UUID is send reversed, RPI and AEM also send in reverse? Don't know BLE specification enough
 
-The following acronyms will be used in code and comments:
-* *ENA* Exposure Notification Api
-* *ENIN* ENIntervalNumber - timestamp with 10 minutes resolution
-* *TEK* Temporary Exposure Key - personal secret key changed every 24h, published when infected
-* *RPI* Rolling Proximity Identifier - send and received identifer changed every 10 minutes
-* *AEM* Associated Encrypted Metadata - send and received metadata
+### some storage math
+
+Due to limited storage, I made some calculations. I have fixed counting of TEKs (14 for two weeks), temporary beacons (1000, longest period for temp. storage is 20 minutes, so recognizing about 1000 different beacons in 20 minutes is possible) and exposure information (choose 500, this is like a limit of infected keys to be met). So the biggest limitation is to store beacons permanently after threshold of 5 minutes. That's what those calculations are for to check, if storage is enough for practical use.
+
+overview of storage in bytes without permanent beacons:
+|               | size (B) |  num | overall (B) |
+| :-----------: | -------: | ---: | ----------: |
+|      TEK      |       21 |   14 |         294 |
+| Exposure Info |       20 |  500 |       10000 |
+| temp. Beacon  |       32 | 1000 |       32000 |
+
+Additional 4 bytes counting for every type gives overall 42310B used without perm. beacons.
+
+For now, a partition size of 2494464B will leave 2452154B free for met beacons which leads to a total storage of 76629
+beacons. This gives the following table, where I added some lower boundaries to calculate with.
+| total beacons | aver. per day | aver. for 10 minute window |
+| ------------: | ------------: | -------------------------: |
+|         50000 |          3571 |                         24 |
+|         70000 |          5000 |                         34 |
+|         76629 |          5473 |                         38 |
+
+So on average it is possible to meet 38 (24 on a lower boundary) different devices inside of 10 minutes. I have no practical experience/numbers how many beacons are stored on average for a 14-days period in currently running ENA-Apps. But I think regarding the average is calculated for 24h (which is quite unpractical because of sleep and hours without meeting many people), the storage should be enough for the purpose of contact tracing.   
 
 ## How to use
 
