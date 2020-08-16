@@ -82,16 +82,24 @@ idf.py menuconfig
 
 required
 * enable bluetooth (BLE)
+  > Component config -> Bluetooth -> [*] Bluetooth
 * add partition-table for storage (currently hardcoded name "ena")
+  > Partition Table -> Partition table -> (x) Custom partition table CSV
 * mbedTLS enable HKDF
+  > Component config -> mbedTLS -> [*] HKDF algorithm (RFC 5869)
+* flash size > 3.9GB
+  > Serial flasher config -> Flash size ->  (x) 4MB
 
 recommended
 * BLE *Scan Duplicate* (By Device Address and Advertising Data)
+  > Component config -> Bluetooth -> Bluetooth controller -> Scan Duplicate Type -> (X) Scan Duplicate By Device Address And Advertising Data
 
 debug options
 * Log output set to Debug
-* Exposure Notification API / Storage enable *Dump storage* 
- 
+  > Component config -> Log output -> Default log verbosity -> (X) Debug
+* Exposure Notification API / Storage enable *Dump storage*
+  > Exposure Notification API -> Storage -> [X] Dump storage 
+
 ### Build and Flash
 
 May flash partition table:
