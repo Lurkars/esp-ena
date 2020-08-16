@@ -25,16 +25,17 @@
 #include "ena-exposure.h"
 #include "ena-bluetooth-advertise.h"
 #include "ena-bluetooth-scan.h"
-#include "interface.h"
 #include "ena-cwa.h"
+#include "interface.h"
 #include "ds3231.h"
-#include "display-interface.h"
-#include "wifi.h"
+#include "ssd1306.h"
+#include "wifi-controller.h"
 
 #include "sdkconfig.h"
 
 void app_main(void)
 {
+
     // debug only own LOG TAGs
     esp_log_level_set("*", ESP_LOG_WARN);
     esp_log_level_set(ENA_LOG, ESP_LOG_DEBUG);
@@ -46,6 +47,9 @@ void app_main(void)
     esp_log_level_set(ENA_CWA_LOG, ESP_LOG_DEBUG);
     esp_log_level_set(INTERFACE_LOG, ESP_LOG_DEBUG);
     esp_log_level_set(WIFI_LOG, ESP_LOG_DEBUG);
+
+    // start interface
+    interface_start();
 
     // set system time from DS3231
     struct tm rtc_time;
@@ -62,11 +66,13 @@ void app_main(void)
 
     ena_start();
 
-    display_interface_start();
-    
+    // start with main interface
+    interface_main_start();
+
     while (1)
     {
         ena_run();
+        ena_cwa_run();
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }

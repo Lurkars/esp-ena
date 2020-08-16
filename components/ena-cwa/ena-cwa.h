@@ -22,15 +22,22 @@
 #ifndef _ena_CWA_H_
 #define _ena_CWA_H_
 
-#define ENA_CWA_LOG "ESP-ENA-corona-warn-app" // TAG for Logging
+#include "esp_err.h"
 
-#define ENA_CWA_KEYFILES_URL "http://svc90.main.px.t-online.de/version/v1/diagnosis-keys/country/DE/date/%s"
+#define ENA_CWA_LOG "ESP-ENA-cwa" // TAG for Logging
+
+#define ENA_CWA_KEYFILES_URL "https://svc90.main.px.t-online.de/version/v1/diagnosis-keys/country/DE/date/%s"
 
 /**
  * @brief fetch key export for given date
  * 
  * @param[in] date_string the date to fetch the data for
  */
-void ena_cwa_receive_keys(char *date_string);
+esp_err_t ena_cwa_receive_keys(char *date_string);
+
+/**
+ * @brief start ena CWA
+ */
+void ena_cwa_run(void);
 
 #endif

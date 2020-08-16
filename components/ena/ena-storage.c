@@ -22,7 +22,8 @@
 
 #define BLOCK_SIZE (4096)
 
-const int ENA_STORAGE_TEK_COUNT_ADDRESS = (ENA_STORAGE_START_ADDRESS); // starting address for TEK COUNT
+const int ENA_STORAGE_LAST_EXPOSURE_DATE_ADDRESS = (ENA_STORAGE_START_ADDRESS);
+const int ENA_STORAGE_TEK_COUNT_ADDRESS = (ENA_STORAGE_LAST_EXPOSURE_DATE_ADDRESS + sizeof(uint32_t));
 const int ENA_STORAGE_TEK_START_ADDRESS = (ENA_STORAGE_TEK_COUNT_ADDRESS + sizeof(uint32_t));
 const int ENA_STORAGE_EXPOSURE_INFORMATION_COUNT_ADDRESS = (ENA_STORAGE_TEK_START_ADDRESS + sizeof(ena_tek_t) * ENA_STORAGE_TEK_MAX);
 const int ENA_STORAGE_EXPOSURE_INFORMATION_START_ADDRESS = (ENA_STORAGE_EXPOSURE_INFORMATION_COUNT_ADDRESS + sizeof(uint32_t));
@@ -142,6 +143,18 @@ void ena_storage_shift_delete(size_t address, size_t end_address, size_t size)
         ena_storage_shift_delete(block1_address, block2_address, data1_size);
         ena_storage_shift_delete(block2_address, end_address - data1_size, data2_size);
     }
+}
+
+uint32_t ena_storage_read_last_exposure_date(void)
+{
+    uint32_t timestamp = 0;
+    ena_storage_read(ENA_STORAGE_LAST_EXPOSURE_DATE_ADDRESS, &timestamp, sizeof(uint32_t));
+    return timestamp;
+}
+
+void ena_storage_write_last_exposure_date(uint32_t timestamp)
+{
+    ena_storage_write(ENA_STORAGE_LAST_EXPOSURE_DATE_ADDRESS, &timestamp, sizeof(uint32_t));
 }
 
 uint32_t ena_storage_read_last_tek(ena_tek_t *tek)
@@ -298,6 +311,7 @@ void ena_storage_erase(void)
     ESP_LOGI(ENA_STORAGE_LOG, "erased partition %s!", ENA_STORAGE_PARTITION_NAME);
 
     uint32_t count = 0;
+    ena_storage_write(ENA_STORAGE_LAST_EXPOSURE_DATE_ADDRESS, &count, sizeof(uint32_t));
     ena_storage_write(ENA_STORAGE_TEK_COUNT_ADDRESS, &count, sizeof(uint32_t));
     ena_storage_write(ENA_STORAGE_EXPOSURE_INFORMATION_COUNT_ADDRESS, &count, sizeof(uint32_t));
     ena_storage_write(ENA_STORAGE_TEMP_BEACONS_COUNT_ADDRESS, &count, sizeof(uint32_t));

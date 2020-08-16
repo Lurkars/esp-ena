@@ -22,11 +22,11 @@
 
 #include "ena-crypto.h"
 
-#define ENA_STORAGE_LOG "ESP-ENA-storage"                                    // TAG for Logging
-#define ENA_STORAGE_PARTITION_NAME (CONFIG_ENA_STORAGE_PARTITION_NAME)       // name of partition to use for storing
-#define ENA_STORAGE_START_ADDRESS (CONFIG_ENA_STORAGE_START_ADDRESS)         // start address of storage
-#define ENA_STORAGE_TEK_MAX (CONFIG_ENA_STORAGE_TEK_MAX)                     // Period of storing TEKs                                                                            // length of a stored beacon -> RPI keysize + AEM size + 4 Bytes for ENIN + 4 Bytes for RSSI
-#define ENA_STORAGE_TEMP_BEACONS_MAX (CONFIG_ENA_STORAGE_TEMP_BEACONS_MAX)   // Maximum number of temporary stored beacons                                                    // length of a stored beacon -> RPI keysize + AEM size + 4 Bytes for ENIN + 4 Bytes for RSSI
+#define ENA_STORAGE_LOG "ESP-ENA-storage"                                                  // TAG for Logging
+#define ENA_STORAGE_PARTITION_NAME (CONFIG_ENA_STORAGE_PARTITION_NAME)                     // name of partition to use for storing
+#define ENA_STORAGE_START_ADDRESS (CONFIG_ENA_STORAGE_START_ADDRESS)                       // start address of storage
+#define ENA_STORAGE_TEK_MAX (CONFIG_ENA_STORAGE_TEK_MAX)                                   // Period of storing TEKs                                                                            // length of a stored beacon -> RPI keysize + AEM size + 4 Bytes for ENIN + 4 Bytes for RSSI
+#define ENA_STORAGE_TEMP_BEACONS_MAX (CONFIG_ENA_STORAGE_TEMP_BEACONS_MAX)                 // Maximum number of temporary stored beacons                                                    // length of a stored beacon -> RPI keysize + AEM size + 4 Bytes for ENIN + 4 Bytes for RSSI
 #define ENA_STORAGE_EXPOSURE_INFORMATION_MAX (CONFIG_ENA_STORAGE_EXPOSURE_INFORMATION_MAX) // Maximum number of stored exposure information
 
 /**
@@ -59,7 +59,7 @@ typedef struct __attribute__((__packed__))
     uint32_t day;            // Day of the exposure, using UTC, encapsulated as the time of the beginning of that day.
     int typical_attenuation; // Aggregation of the attenuations of all of a given diagnosis key's beacons received during the scan, in dB.
     int min_attenuation;     // Minimum attenuation of all of a given diagnosis key's beacons received during the scan, in dB.
-    int duration_minutes;     //The duration of the exposure in minutes.
+    int duration_minutes;    //The duration of the exposure in minutes.
     int report_type;         // Type of diagnosis associated with a key.
 } ena_exposure_information_t;
 
@@ -89,6 +89,21 @@ void ena_storage_write(size_t address, void *data, size_t size);
  * @param[in] size          how many bytes to delete
  */
 void ena_storage_shift_delete(size_t address, size_t end_address, size_t size);
+
+/**
+ * @brief       get timestamp of most recent exposure data
+ * 
+ * @return 
+ *              unix timestamp
+ */
+uint32_t ena_storage_read_last_exposure_date(void);
+
+/**
+ * @brief       set timestamp of most recent exposure data
+ * 
+ * @param[in] timestamp unix timestamp
+ */
+void ena_storage_write_last_exposure_date(uint32_t timestamp);
 
 /**
  * @brief       get last stored TEK
@@ -218,7 +233,6 @@ void ena_storage_erase(void);
  */
 void ena_storage_erase_tek(void);
 
-
 /**
  * @brief       erase all stored exposure information
  * 
@@ -247,7 +261,6 @@ void ena_storage_erase_beacon(void);
  * the following CSV format: #,enin,tek
  */
 void ena_storage_dump_teks(void);
-
 
 /**
  * @brief       dump all stored exposure information to serial output

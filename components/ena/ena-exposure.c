@@ -27,6 +27,8 @@
 
 #include "ena-exposure.h"
 
+static ena_exposure_summary_t *current_summary;
+
 static ena_exposure_config_t DEFAULT_ENA_EXPOSURE_CONFIG = {
     // transmission_risk_values
     {
@@ -77,14 +79,13 @@ static ena_exposure_config_t DEFAULT_ENA_EXPOSURE_CONFIG = {
 static const char kFileHeader[] = "EK Export v1    ";
 static size_t kFileHeaderSize = sizeof(kFileHeader) - 1;
 
-extern uint8_t export_bin_start[] asm("_binary_export_bin_start"); // test data from Google or https://svc90.main.px.t-online.de/version/v1/diagnosis-keys/country/DE/date/2020-07-22
-extern uint8_t export_bin_end[] asm("_binary_export_bin_end");
-
-int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params)
+int ena_exposure_transmission_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params)
 {
-    int score = 1;
-    score *= config->transmission_risk_values[params.report_type];
+    return config->transmission_risk_values[params.report_type];
+}
 
+int ena_exposure_duration_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params)
+{
     // calc duration level
     int duration_level = MINUTES_0;
     if (params.duration > 0)
@@ -118,8 +119,12 @@ int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_paramete
             duration_level = MINUTES_LONGER;
         }
     }
-    score *= config->duration_risk_values[duration_level];
 
+    return config->duration_risk_values[duration_level];
+}
+
+int ena_exposure_days_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params)
+{
     // calc days level
     int days_level = DAYS_14;
 
@@ -152,8 +157,11 @@ int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_paramete
         days_level = DAYS_13;
     }
 
-    score *= config->days_risk_values[days_level];
+    return config->days_risk_values[days_level];
+}
 
+int ena_exposure_attenuation_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params)
+{
     // calc attenuation level
     int attenuation_level = ATTENUATION_73;
 
@@ -186,7 +194,19 @@ int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_paramete
         attenuation_level = ATTENUATION_63;
     }
 
-    score *= config->attenuation_risk_values[attenuation_level];
+    return config->attenuation_risk_values[attenuation_level];
+}
+
+int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params)
+{
+    int score = 1;
+    score *= ena_exposure_transmission_risk_score(config, params);
+
+    score *= ena_exposure_duration_risk_score(config, params);
+
+    score *= ena_exposure_days_risk_score(config, params);
+
+    score *= ena_exposure_attenuation_risk_score(config, params);
 
     if (score > 255)
     {
@@ -196,22 +216,25 @@ int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_paramete
     return score;
 }
 
-void ena_exposure_summary(ena_exposure_config_t *config, ena_exposure_summary_t *summary)
+void ena_exposure_summary(ena_exposure_config_t *config)
 {
-    // XXX TEST key export (should be called on other location though)
-    ESP_ERROR_CHECK_WITHOUT_ABORT(ena_exposure_check_export(export_bin_start, (export_bin_end - export_bin_start)));
-
     uint32_t count = ena_storage_exposure_information_count();
     uint32_t current_time = (uint32_t)time(NULL);
 
-    summary->days_since_last_exposure = INT_MAX;
-    summary->max_risk_score = 0;
-    summary->risk_score_sum = 0;
-    summary->num_exposures = count;
+    if (current_summary == NULL)
+    {
+        current_summary = malloc(sizeof(ena_exposure_summary_t));
+    }
+
+    current_summary->last_update = ena_storage_read_last_exposure_date();
+    current_summary->days_since_last_exposure = INT_MAX;
+    current_summary->max_risk_score = 0;
+    current_summary->risk_score_sum = 0;
+    current_summary->num_exposures = count;
 
     if (count == 0)
     {
-        summary->days_since_last_exposure = -1;
+        current_summary->days_since_last_exposure = -1;
     }
 
     ena_exposure_information_t exposure_info;
@@ -220,19 +243,29 @@ void ena_exposure_summary(ena_exposure_config_t *config, ena_exposure_summary_t 
     {
         ena_storage_get_exposure_information(i, &exposure_info);
         params.days = (current_time - exposure_info.day) / (60 * 60 * 24); // difference in days
-        if (params.days < summary->days_since_last_exposure)
+        if (params.days < current_summary->days_since_last_exposure)
         {
-            summary->days_since_last_exposure = params.days;
+            current_summary->days_since_last_exposure = params.days;
         }
         params.duration = exposure_info.duration_minutes;
         params.attenuation = exposure_info.typical_attenuation;
         int score = ena_exposure_risk_score(config, params);
-        if (score > summary->max_risk_score)
+        if (score > current_summary->max_risk_score)
         {
-            summary->max_risk_score = score;
+            current_summary->max_risk_score = score;
         }
-        summary->risk_score_sum += score;
+        current_summary->risk_score_sum += score;
     }
+}
+
+ena_exposure_summary_t *ena_exposure_current_summary(void)
+{
+    if (current_summary == NULL)
+    {
+        ena_exposure_summary(ena_exposure_default_config());
+    }
+
+    return current_summary;
 }
 
 ena_exposure_config_t *ena_exposure_default_config(void)
