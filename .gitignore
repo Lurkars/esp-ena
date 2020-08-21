@@ -1,3 +1,4 @@
+.pio
 .config
 *.o
 *.pyc
