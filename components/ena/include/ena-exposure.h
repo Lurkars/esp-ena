@@ -21,7 +21,7 @@
 #define _ena_EXPOSURE_H_
 
 #include <stdio.h>
-
+#include "esp_err.h"
 #include "ena-crypto.h"
 
 #define ENA_EXPOSURE_LOG "ESP-ENA-exposure" // TAG for Logging
@@ -135,6 +135,7 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
+    uint32_t last_update;         // timestamp of last update of exposure data
     int days_since_last_exposure; // Number of days since the most recent exposure.
     int num_exposures;            // Number of all exposure information
     int max_risk_score;           // max. risk score of all exposure information
@@ -142,10 +143,52 @@ typedef struct __attribute__((__packed__))
 } ena_exposure_summary_t;
 
 /**
- * @brief calculate risk score
+ * @brief calculate transmission risk score
  * 
  * @param[in] config the exposure configuration used for calculating score
  * @param[in] params the exposure parameter to calculate with
+ * 
+ * @return
+ */
+int ena_exposure_transmission_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params);
+
+/**
+ * @brief calculate duration risk score
+ * 
+ * @param[in] config the exposure configuration used for calculating score
+ * @param[in] params the exposure parameter to calculate with
+ * 
+ * @return
+ */
+int ena_exposure_duration_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params);
+
+/**
+ * @brief calculate days risk score
+ * 
+ * @param[in] config the exposure configuration used for calculating score
+ * @param[in] params the exposure parameter to calculate with
+ * 
+ * @return
+ */
+int ena_exposure_days_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params);
+
+/**
+ * @brief calculate attenuation risk score
+ * 
+ * @param[in] config the exposure configuration used for calculating score
+ * @param[in] params the exposure parameter to calculate with
+ * 
+ * @return
+ */
+int ena_exposure_attenuation_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params);
+
+/**
+ * @brief calculate overall risk score
+ * 
+ * @param[in] config the exposure configuration used for calculating score
+ * @param[in] params the exposure parameter to calculate with
+ * 
+ * @return
  */
 int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_parameter_t params);
 
@@ -153,12 +196,22 @@ int ena_exposure_risk_score(ena_exposure_config_t *config, ena_exposure_paramete
  * @brief returns the current exposure summary
  * 
  * @param[in] config the exposure configuration used for calculating scores
- * @param[out] summary pointer to exposure summary to write to
  */
-void ena_exposure_summary(ena_exposure_config_t *config, ena_exposure_summary_t *summary);
+void ena_exposure_summary(ena_exposure_config_t *config);
+
+/**
+ * @brief return the current exposure summary
+ * 
+ * @return
+ *          ena_exposure_summary_t pointer to the current exposure summary
+ */
+ena_exposure_summary_t *ena_exposure_current_summary(void);
 
 /**
  * @brief return a default exposure configuration
+ * 
+ * @return
+ *      ena_exposure_config_t   default exposure configuration
  */
 ena_exposure_config_t *ena_exposure_default_config(void);
 

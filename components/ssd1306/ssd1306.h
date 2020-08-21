@@ -20,6 +20,8 @@
 #ifndef _ssd1306_H_
 #define _ssd1306_H_
 
+#include "esp_system.h"
+
 #define SSD1306_ADDRESS (0x3C)
 #define SSD1306_COLUMNS (128)
 #define SSD1306_PAGES (8)
@@ -75,6 +77,8 @@
 // 1. Charge Pump Command Table
 #define SSD1306_CMD_CHARGE_PUMP (0x8D)
 
+void ssd1306_utf8_to_ascii(char *input, char *output);
+
 /**
  * @brief initalize SSD1306 with I2C at given address
  * 
@@ -107,6 +111,11 @@ void ssd1306_clear(uint8_t i2address);
 void ssd1306_on(uint8_t i2address, bool on);
 
 /**
+ * 
+ */
+uint8_t *ssd1306_text_to_data(char *text, size_t text_length, size_t *length);
+
+/**
  * @brief write raw bytes to display line at starting column
  * 
  * @param[in] i2address I2C address of SSD1306
@@ -117,6 +126,18 @@ void ssd1306_on(uint8_t i2address, bool on);
  * @param[in] invert if true, image is inverted
  */
 void ssd1306_data(uint8_t i2address, uint8_t *data, size_t length, uint8_t line, uint8_t offset, bool invert);
+
+/**
+ * @brief write chars to display
+ * 
+ * @param[in] i2address I2C address of SSD1306
+ * @param[in] text text to display  
+ * @param[in] length length of text
+ * @param[in] line the line to write to
+ * @param[in] offset number of offset chars to start
+ * @param[in] invert if true, image is inverted
+ */
+void ssd1306_chars(uint8_t i2address, char *text, size_t length, uint8_t line, uint8_t offset, bool invert);
 
 /**
  * @brief write text to display line at starting column
@@ -138,5 +159,25 @@ void ssd1306_text_line_column(uint8_t i2address, char *text, uint8_t line, uint8
  * @param[in] invert if true, image is inverted
  */
 void ssd1306_text_line(uint8_t i2address, char *text, uint8_t line, bool invert);
+
+/**
+ * @brief display a button element
+ * 
+ * @param[in] i2address I2C address of SSD1306
+ * @param[in] text button text
+ * @param[in] selected is button selected
+ * @param[in] primary is button primary
+ */
+void ssd1306_set_button(uint8_t i2address, char *text, bool selected, bool primary);
+
+/**
+ * @brief display a menu headline
+ * 
+ * @param[in] i2address I2C address of SSD1306
+ * @param[in] text headline text
+ * @param[in] arrows if left right arrows should be displays
+ * @param[in] line line the line to write to
+ */
+void ssd1306_menu_headline(uint8_t i2address, char *text, bool arrows, uint8_t line);
 
 #endif

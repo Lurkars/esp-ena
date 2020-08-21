@@ -91,6 +91,11 @@ void ena_start(void)
     ena_storage_erase();
 #endif
 
+    if (ena_storage_read_last_exposure_date() == 0xFFFFFFFF)
+    {
+        ena_storage_erase();
+    }
+
     // init NVS for BLE
     esp_err_t ret;
     ret = nvs_flash_init();

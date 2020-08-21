@@ -19,23 +19,24 @@ The following acronyms will be used in code and comments:
 * BLE privacy (change random MAC address in random interval)
 * permanent storage on flash of last keys, beacons and exposures (storage is limited, see [storage math](#some-storage-math) for details)
 * parsing of Exposure Key export binaries as defined in [Exposure Key export file format and verification](https://developers.google.com/android/exposure-notifications/exposure-key-file-format) (big thanks to [nanopb](https://github.com/nanopb/nanopb) for making this easier than I thought!)
-* calculating exposure risks/scores (after adding reported keys and storing exposure information) as defined in [ENExposureConfiguration (Apple)](https://developer.apple.com/documentation/exposurenotification/enexposureconfiguration)
+* calculating exposure risks/scores (after adding reported keys and storing exposure information) as defined in [ENExposureConfiguration (Apple)](https://developer.apple.com/documentation/exposurenotification/enexposureconfiguration/calculating_the_exposure_risk_value_in_exposurenotification_version_1)
 
 Additional features for full ENA device
 * RTC support with DS3231 (for correct system time)
 * display support with SSD1306
-* interface to
-    * set time
+* interface with a 7 button control (joystick up,down,left,right,enter,cancel,ok) to
     * show exposure status
+    * set time
+    * connect to wifi
+    * delete data
+    * set language
+    * enter tan for infection status (dummy for now)
 
 ### Features in development
 * automatically receive Exposure Key export from web (started with [Corona Warn App](https://github.com/corona-warn-app))
 * send infected status (will test [Corona Warn App](https://github.com/corona-warn-app))
 * battery support
 * 3d print case
-* interface to
-    * delete data
-    * report infection
 
 ### Limitations/Problems/Questions
 * WiFi or other external connection needed for infections status (auto-connect to open WiFis?)
@@ -71,7 +72,7 @@ So on average it is possible to meet 38 (24 on a lower boundary) different devic
 
 ### Hardware Required
 
-For now just an ESP32 is required. DS3231 RTC and SSD1306 Display are required for a complete device.
+For base functionality just an ESP32 is required. DS3231 RTC, SSD1306 Display and 7 buttons are required for a complete device.
 
 ### Configure the project
 
