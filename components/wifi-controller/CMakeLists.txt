@@ -1,6 +1,6 @@
 idf_component_register(
     SRCS 
-        "wifi-controller.c"
+        "espidf-v4.0.c"
     INCLUDE_DIRS "."
     PRIV_REQUIRES
         esp_wifi
