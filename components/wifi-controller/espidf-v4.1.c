@@ -1,4 +1,3 @@
-#ifdef FRAMEWORK_espidf
 // Copyright 2020 Lukas Haubaum
 //
 // Licensed under the GNU Affero General Public License, Version 3;
@@ -184,4 +183,3 @@ wifi_ap_record_t *wifi_controller_connection(void)
     }
     return NULL;
 }
-#endif
