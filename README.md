@@ -1,6 +1,6 @@
-# esp-ena
+# esp-ena (zephyr branch)
 
-Implementation of contact tracing with the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)). 
+Implementation of contact tracing with the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with [zephyr](https://docs.zephyrproject.org/latest/boards/xtensa/esp32/doc/index.html)). 
 More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is fully compatible with the official API and is meant for people without smartphone or without access to Apples/Googles implementation.
 
 The main source (the Exposure Notification API) is a separate module in [**components/ena**](components/ena).
@@ -74,7 +74,7 @@ So on average it is possible to meet 38 (24 on a lower boundary) different devic
 
 For base functionality just an ESP32 is required. DS3231 RTC, SSD1306 Display and 7 buttons are required for a complete device.
 
-### Configure the project
+### Configure the project (maybe outdated)
 
 ```
 idf.py menuconfig
