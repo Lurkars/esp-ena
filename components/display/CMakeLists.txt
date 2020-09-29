@@ -1,5 +1,6 @@
 idf_component_register(
     SRCS 
-        "miniz.c"
+        "display.c"
+        "display-gfx.c"
     INCLUDE_DIRS "."
 )

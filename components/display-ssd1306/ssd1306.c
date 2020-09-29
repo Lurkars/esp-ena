@@ -17,54 +17,12 @@
 #include "esp_log.h"
 
 #include "i2c-main.h"
-#include "ssd1306-gfx.h"
 
+#include "display.h"
+#include "display-gfx.h"
 #include "ssd1306.h"
 
-uint8_t ssd1306_utf8_to_ascii_char(uint8_t ascii)
-{
-    static uint8_t c1;
-    if (ascii < 128) // Standard ASCII-set 0..0x7F handling
-    {
-        c1 = 0;
-        return (ascii);
-    }
-
-    // get previous input
-    uint8_t last = c1; // get last char
-    c1 = ascii;        // remember actual character
-
-    switch (last) // conversion depending on first UTF8-character
-    {
-    case 0xC2:
-        return (ascii);
-        break;
-    case 0xC3:
-        return (ascii | 0xC0);
-        break;
-    case 0x82:
-        if (ascii == 0xAC)
-            return (0x80); // special case Euro-symbol
-    }
-
-    return (0); // otherwise: return zero, if character has to be ignored
-}
-
-void ssd1306_utf8_to_ascii(char *input, char *output)
-{
-    strcpy(output, input);
-    int k = 0;
-    char c;
-    for (int i = 0; i < strlen(output); i++)
-    {
-        c = ssd1306_utf8_to_ascii_char(output[i]);
-        if (c != 0)
-            output[k++] = c;
-    }
-    output[k] = 0;
-}
-
-void ssd1306_start(uint8_t i2address)
+void display_start(void)
 {
     if (!i2c_is_initialized())
     {
@@ -75,7 +33,7 @@ void ssd1306_start(uint8_t i2address)
 
     i2c_master_start(cmd);
     // Begin the I2C comm with SSD1306's address (SLA+Write)
-    i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, (SSD1306_ADDRESS << 1) | I2C_MASTER_WRITE, true);
     // Tell the SSD1306 that a command stream is incoming
     i2c_master_write_byte(cmd, SSD1306_CONTROL_CMD_STREAM, true);
     // Turn the Display OFF
@@ -127,12 +85,12 @@ void ssd1306_start(uint8_t i2address)
     i2c_cmd_link_delete(cmd);
 }
 
-void ssd1306_init_data(uint8_t i2address)
+void display_init_data(void)
 {
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     // Begin the I2C comm with SSD1306's address (SLA+Write)
-    i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, (SSD1306_ADDRESS << 1) | I2C_MASTER_WRITE, true);
     // Tell the SSD1306 that a command stream is incoming
     i2c_master_write_byte(cmd, SSD1306_CONTROL_CMD_STREAM, true);
 
@@ -148,14 +106,14 @@ void ssd1306_init_data(uint8_t i2address)
     i2c_cmd_link_delete(cmd);
 }
 
-void ssd1306_clear_line(uint8_t i2address, uint8_t line, bool invert)
+void display_clear_line(uint8_t line, bool invert)
 {
     i2c_cmd_handle_t cmd;
     uint8_t *zeros = calloc(SSD1306_COLUMNS, sizeof(uint8_t));
     // set line
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, (SSD1306_ADDRESS << 1) | I2C_MASTER_WRITE, true);
 
     i2c_master_write_byte(cmd, SSD1306_CONTROL_CMD_STREAM, true);
     i2c_master_write_byte(cmd, SSD1306_CMD_COLUMN_LOW, true);
@@ -169,7 +127,7 @@ void ssd1306_clear_line(uint8_t i2address, uint8_t line, bool invert)
     // fill line with zeros
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, (SSD1306_ADDRESS << 1) | I2C_MASTER_WRITE, true);
     i2c_master_write_byte(cmd, SSD1306_CONTROL_DATA_STREAM, true);
     i2c_master_write(cmd, zeros, SSD1306_COLUMNS, true);
     i2c_master_stop(cmd);
@@ -179,21 +137,21 @@ void ssd1306_clear_line(uint8_t i2address, uint8_t line, bool invert)
     free(zeros);
 }
 
-void ssd1306_clear(uint8_t i2address)
+void display_clear(void)
 {
     for (uint8_t i = 0; i < SSD1306_PAGES; i++)
     {
-        ssd1306_clear_line(i2address, i, false);
+        display_clear_line(i, false);
     }
 }
 
-void ssd1306_on(uint8_t i2address, bool on)
+void display_on(bool on)
 {
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 
     i2c_master_start(cmd);
     // Begin the I2C comm with SSD1306's address (SLA+Write)
-    i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, (SSD1306_ADDRESS << 1) | I2C_MASTER_WRITE, true);
     // Tell the SSD1306 that a command stream is incoming
     i2c_master_write_byte(cmd, SSD1306_CONTROL_CMD_STREAM, true);
     if (on)
@@ -212,7 +170,7 @@ void ssd1306_on(uint8_t i2address, bool on)
     i2c_cmd_link_delete(cmd);
 }
 
-void ssd1306_data(uint8_t i2address, uint8_t *data, size_t length, uint8_t line, uint8_t offset, bool invert)
+void display_data(uint8_t *data, size_t length, uint8_t line, uint8_t offset, bool invert)
 {
 
     uint8_t column = offset;
@@ -226,13 +184,13 @@ void ssd1306_data(uint8_t i2address, uint8_t *data, size_t length, uint8_t line,
         columns = (SSD1306_COLUMNS - column);
     }
 
-    ssd1306_init_data(i2address);
+    display_init_data();
     i2c_cmd_handle_t cmd;
 
     // set line
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, (SSD1306_ADDRESS << 1) | I2C_MASTER_WRITE, true);
 
     i2c_master_write_byte(cmd, SSD1306_CONTROL_CMD_STREAM, true);
     i2c_master_write_byte(cmd, SSD1306_CMD_COLUMN_LOW | (column & 0XF), true);
@@ -253,7 +211,7 @@ void ssd1306_data(uint8_t i2address, uint8_t *data, size_t length, uint8_t line,
 
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (i2address << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, (SSD1306_ADDRESS << 1) | I2C_MASTER_WRITE, true);
     i2c_master_write_byte(cmd, SSD1306_CONTROL_DATA_STREAM, true);
 
     i2c_master_write(cmd, data, columns, true);
@@ -263,47 +221,17 @@ void ssd1306_data(uint8_t i2address, uint8_t *data, size_t length, uint8_t line,
     i2c_cmd_link_delete(cmd);
 }
 
-uint8_t *ssd1306_text_to_data(char *text, size_t text_length, size_t *length)
+void display_text_line_column(char *text, uint8_t line, uint8_t offset, bool invert)
 {
-    char target_text[strlen(text)];
-    ssd1306_utf8_to_ascii(text, target_text);
-
-    uint8_t font_width = sizeof(ssd1306_gfx_font[0]);
-
-    *length = text_length * font_width;
-
-    uint8_t *data = calloc(*length, sizeof(uint8_t));
-    for (uint8_t i = 0; i < text_length; i++)
-    {
-        memcpy(&data[i * font_width], ssd1306_gfx_font[(uint8_t)target_text[i] - 32], font_width);
-    }
-
-    return data;
+    display_chars(text, strlen(text), line, offset, invert);
 }
 
-void ssd1306_chars(uint8_t i2address, char *text, size_t length, uint8_t line, uint8_t offset, bool invert)
+void display_text_line(char *text, uint8_t line, bool invert)
 {
-    if (length > 0)
-    {
-        uint8_t font_width = sizeof(ssd1306_gfx_font[0]);
-        size_t res_length = 0;
-        uint8_t *textdata = ssd1306_text_to_data(text, length, &res_length);
-        ssd1306_data(i2address, textdata, res_length, line, offset * font_width, invert);
-        free(textdata);
-    }
+    display_text_line_column(text, line, 0, invert);
 }
 
-void ssd1306_text_line_column(uint8_t i2address, char *text, uint8_t line, uint8_t offset, bool invert)
-{
-    ssd1306_chars(i2address, text, strlen(text), line, offset, invert);
-}
-
-void ssd1306_text_line(uint8_t i2address, char *text, uint8_t line, bool invert)
-{
-    ssd1306_text_line_column(i2address, text, line, 0, invert);
-}
-
-void ssd1306_text_input(uint8_t i2address, char *text, uint8_t position)
+void display_text_input(char *text, uint8_t position)
 {
     size_t start = 0;
     if (position > 13)
@@ -314,11 +242,11 @@ void ssd1306_text_input(uint8_t i2address, char *text, uint8_t position)
     uint8_t cur_char = (uint8_t)text[start + position] - 32;
 
     // arrow
-    ssd1306_data(i2address, ssd1306_gfx_arrow_left, 8, 2, 0, false);
+    display_data(display_gfx_arrow_left, 8, 2, 0, false);
     // bounday
-    ssd1306_text_line_column(i2address, "______________", 2, 1, false);
+    display_text_line_column("______________", 2, 1, false);
     // arrow
-    ssd1306_data(i2address, ssd1306_gfx_arrow_right, 8, 2, 15 * 8, false);
+    display_data(display_gfx_arrow_right, 8, 2, 15 * 8, false);
     // text
     size_t text_length = strlen(text);
     if (strlen(text) > 14)
@@ -326,22 +254,22 @@ void ssd1306_text_input(uint8_t i2address, char *text, uint8_t position)
         text_length = 14;
     }
     size_t length = 0;
-    uint8_t *textdata = ssd1306_text_to_data(text, text_length, &length);
-    ssd1306_data(i2address, textdata, length, 2, 8, true);
+    uint8_t *textdata = display_text_to_data(text, text_length, &length);
+    display_data(textdata, length, 2, 8, true);
     free(textdata);
     // arrow
-    ssd1306_data(i2address, ssd1306_gfx_arrow_up, 8, 0, (position + 1) * 8, false);
+    display_data(display_gfx_arrow_up, 8, 0, (position + 1) * 8, false);
     // upper char
-    ssd1306_data(i2address, ssd1306_gfx_font[cur_char - 1], 8, 1, (position + 1) * 8, false);
+    display_data(display_gfx_font[cur_char - 1], 8, 1, (position + 1) * 8, false);
     // sel char
-    ssd1306_data(i2address, ssd1306_gfx_font[cur_char], 8, 2, (position + 1) * 8, false);
+    display_data(display_gfx_font[cur_char], 8, 2, (position + 1) * 8, false);
     // lower char
-    ssd1306_data(i2address, ssd1306_gfx_font[cur_char + 1], 8, 3, (position + 1) * 8, false);
+    display_data(display_gfx_font[cur_char + 1], 8, 3, (position + 1) * 8, false);
     // arrow
-    ssd1306_data(i2address, ssd1306_gfx_arrow_down, 8, 4, (position + 1) * 8, false);
+    display_data(display_gfx_arrow_down, 8, 4, (position + 1) * 8, false);
 }
 
-void ssd1306_set_button(uint8_t i2address, char *text, bool selected, bool primary)
+void display_set_button(char *text, bool selected, bool primary)
 {
     uint8_t start = 0;
     if (primary)
@@ -350,15 +278,15 @@ void ssd1306_set_button(uint8_t i2address, char *text, bool selected, bool prima
     }
     if (selected)
     {
-        ssd1306_data(i2address, ssd1306_gfx_button_sel[0], 64, 5, start, false);
-        ssd1306_data(i2address, ssd1306_gfx_button_sel[1], 64, 6, start, false);
-        ssd1306_data(i2address, ssd1306_gfx_button_sel[2], 64, 7, start, false);
+        display_data(display_gfx_button_sel[0], 64, 5, start, false);
+        display_data(display_gfx_button_sel[1], 64, 6, start, false);
+        display_data(display_gfx_button_sel[2], 64, 7, start, false);
     }
     else
     {
-        ssd1306_data(i2address, ssd1306_gfx_button[0], 64, 5, start, false);
-        ssd1306_data(i2address, ssd1306_gfx_button[1], 64, 6, start, false);
-        ssd1306_data(i2address, ssd1306_gfx_button[2], 64, 7, start, false);
+        display_data(display_gfx_button[0], 64, 5, start, false);
+        display_data(display_gfx_button[1], 64, 6, start, false);
+        display_data(display_gfx_button[2], 64, 7, start, false);
     }
     // text
     size_t text_length = strlen(text);
@@ -367,7 +295,7 @@ void ssd1306_set_button(uint8_t i2address, char *text, bool selected, bool prima
         text_length = 6;
     }
     size_t length = 0;
-    uint8_t *textdata = ssd1306_text_to_data(text, text_length, &length);
+    uint8_t *textdata = display_text_to_data(text, text_length, &length);
 
     uint8_t offset = 0;
     if (text_length < 6)
@@ -375,19 +303,19 @@ void ssd1306_set_button(uint8_t i2address, char *text, bool selected, bool prima
         offset = (6 - text_length) / 2 * 8;
     }
 
-    ssd1306_data(i2address, textdata, length, 6, start + 8 + offset, selected);
+    display_data(textdata, length, 6, start + 8 + offset, selected);
     free(textdata);
 }
 
-void ssd1306_menu_headline(uint8_t i2address, char *text, bool arrows, uint8_t line)
+void display_menu_headline(char *text, bool arrows, uint8_t line)
 {
     if (arrows)
     {
-        ssd1306_data(i2address, ssd1306_gfx_arrow_left, 8, line, 0, false);
-        ssd1306_data(i2address, ssd1306_gfx_arrow_right, 8, line, 15 * 8, false);
+        display_data(display_gfx_arrow_left, 8, line, 0, false);
+        display_data(display_gfx_arrow_right, 8, line, 15 * 8, false);
     }
     // bounday
-    ssd1306_data(i2address, ssd1306_gfx_menu_head, 112, line, 8, false);
+    display_data(display_gfx_menu_head, 112, line, 8, false);
 
     // text
     size_t text_length = strlen(text);
@@ -396,7 +324,7 @@ void ssd1306_menu_headline(uint8_t i2address, char *text, bool arrows, uint8_t l
         text_length = 10;
     }
     size_t length = 0;
-    uint8_t *textdata = ssd1306_text_to_data(text, text_length, &length);
+    uint8_t *textdata = display_text_to_data(text, text_length, &length);
 
     uint8_t offset = 0;
     if (text_length < 10)
@@ -404,6 +332,6 @@ void ssd1306_menu_headline(uint8_t i2address, char *text, bool arrows, uint8_t l
         offset = (10 - text_length) / 2 * 8;
     }
 
-    ssd1306_data(i2address, textdata, length, line, 24 + offset, true);
+    display_data(textdata, length, line, 24 + offset, true);
     free(textdata);
 }

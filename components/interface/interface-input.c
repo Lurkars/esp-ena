@@ -19,13 +19,13 @@
 #include "esp_log.h"
 #include "driver/gpio.h"
 
-#include "ssd1306.h"
-#include "ssd1306-gfx.h"
+#include "display.h"
+#include "display-gfx.h"
 
 #include "interface.h"
 
-static interface_input_callback current_input_callback_rst;
-static interface_input_callback current_input_callback_set;
+static interface_text_callback current_input_callback_rst;
+static interface_text_callback current_input_callback_set;
 static char current_text[255];
 static uint8_t current_cursor;
 static char current_char_set[32];
@@ -186,8 +186,8 @@ void interface_input_display(void)
 {
 
     // buttons
-    ssd1306_set_button(SSD1306_ADDRESS, interface_get_label_text(&interface_text_button_cancel), true, false);
-    ssd1306_set_button(SSD1306_ADDRESS, interface_get_label_text(&interface_text_button_ok), false, true);
+    display_set_button( interface_get_label_text(&interface_text_button_cancel), true, false);
+    display_set_button( interface_get_label_text(&interface_text_button_ok), false, true);
 
     size_t start = 0;
     uint8_t display_cursor = current_cursor + 1;
@@ -200,22 +200,22 @@ void interface_input_display(void)
     // arrow
     if (current_cursor > 0)
     {
-        ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_arrow_left, 8, 2, 0, false);
+        display_data( display_gfx_arrow_left, 8, 2, 0, false);
     }
     else
     {
-        ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_clear, 8, 2, 0, false);
+        display_data( display_gfx_clear, 8, 2, 0, false);
     }
     // bounday
-    ssd1306_text_line_column(SSD1306_ADDRESS, "______________", 2, 1, false);
+    display_text_line_column( "______________", 2, 1, false);
     // arrow
     if (current_cursor < current_limit)
     {
-        ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_arrow_right, 8, 2, 15 * 8, false);
+        display_data( display_gfx_arrow_right, 8, 2, 15 * 8, false);
     }
     else
     {
-        ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_clear, 8, 2, 15 * 8, false);
+        display_data( display_gfx_clear, 8, 2, 15 * 8, false);
     }
     // text
     size_t text_length = strlen(current_text);
@@ -227,17 +227,17 @@ void interface_input_display(void)
     uint8_t *textdata = calloc(length, sizeof(uint8_t));
     for (uint8_t i = 0; i < text_length; i++)
     {
-        memcpy(&textdata[i * 8], ssd1306_gfx_font[(uint8_t)current_text[i + start] - 32], 8);
+        memcpy(&textdata[i * 8], display_gfx_font[(uint8_t)current_text[i + start] - 32], 8);
     }
 
-    ssd1306_data(SSD1306_ADDRESS, textdata, length, 2, 8, true);
+    display_data( textdata, length, 2, 8, true);
     free(textdata);
 
     // clear
-    ssd1306_clear_line(SSD1306_ADDRESS, 0, false);
-    ssd1306_clear_line(SSD1306_ADDRESS, 1, false);
-    ssd1306_clear_line(SSD1306_ADDRESS, 3, false);
-    ssd1306_clear_line(SSD1306_ADDRESS, 4, false);
+    display_clear_line( 0, false);
+    display_clear_line( 1, false);
+    display_clear_line( 3, false);
+    display_clear_line( 4, false);
 
     uint8_t current_char = (uint8_t)current_char_set[current_char_index] - 32;
     uint8_t prev_char = (uint8_t)current_char_set[current_char_index - 1] - 32;
@@ -254,38 +254,38 @@ void interface_input_display(void)
     }
 
     // arrow
-    ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_arrow_up, 8, 0, display_cursor * 8, false);
+    display_data( display_gfx_arrow_up, 8, 0, display_cursor * 8, false);
     // upper char
-    ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_font[prev_char], 8, 1, display_cursor * 8, false);
+    display_data( display_gfx_font[prev_char], 8, 1, display_cursor * 8, false);
     // sel char
-    ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_font[current_char], 8, 2, display_cursor * 8, false);
+    display_data( display_gfx_font[current_char], 8, 2, display_cursor * 8, false);
     // lower char
-    ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_font[next_char], 8, 3, display_cursor * 8, false);
+    display_data( display_gfx_font[next_char], 8, 3, display_cursor * 8, false);
     // arrow
-    ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_arrow_down, 8, 4, display_cursor * 8, false);
+    display_data( display_gfx_arrow_down, 8, 4, display_cursor * 8, false);
 }
 
 void interface_input_set_text(char *text)
 {
-    ssd1306_utf8_to_ascii(text, current_text);
+    display_utf8_to_ascii(text, current_text);
     current_cursor = strlen(current_text) - 1;
     current_max_index = current_cursor;
     interface_input_set_char_set();
 }
 
-void interface_input(interface_input_callback callback_rst, interface_input_callback callback_set, uint8_t limit)
+void interface_input(interface_text_callback callback_rst, interface_text_callback callback_set, uint8_t limit)
 {
     current_input_callback_rst = callback_rst;
     current_input_callback_set = callback_set;
     current_cursor = 0;
     current_limit = limit - 1;
 
-    ssd1306_utf8_to_ascii("ABCDEFGHIJKLMNOPQRSTUVWXYZ", char_set_uppercase);
-    ssd1306_utf8_to_ascii("abcdefghijklmnopqrstuvwxyz", char_set_lowercase);
-    ssd1306_utf8_to_ascii(" !\"#$%&'()*+,-,&:;<=>@[\\]^_´`{}", char_set_special1);
-    ssd1306_utf8_to_ascii("0123456789", char_set_numeric);
-    ssd1306_utf8_to_ascii("ÄÖÜ", char_set_special_uppercasecase);
-    ssd1306_utf8_to_ascii("äöü", char_set_special_lowercase);
+    display_utf8_to_ascii("ABCDEFGHIJKLMNOPQRSTUVWXYZ", char_set_uppercase);
+    display_utf8_to_ascii("abcdefghijklmnopqrstuvwxyz", char_set_lowercase);
+    display_utf8_to_ascii(" !\"#$%&'()*+,-,&:;<=>@[\\]^_´`{}", char_set_special1);
+    display_utf8_to_ascii("0123456789", char_set_numeric);
+    display_utf8_to_ascii("ÄÖÜ", char_set_special_uppercasecase);
+    display_utf8_to_ascii("äöü", char_set_special_lowercase);
 
     strcpy(current_char_set, char_set_uppercase);
 
@@ -305,13 +305,13 @@ void interface_input(interface_input_callback callback_rst, interface_input_call
 
     current_text[current_cursor] = current_char_set[current_char_index];
 
-    interface_register_button_callback(INTERFACE_BUTTON_RST, &interface_input_rst);
-    interface_register_button_callback(INTERFACE_BUTTON_SET, &interface_input_set);
-    interface_register_button_callback(INTERFACE_BUTTON_LFT, &interface_input_lft);
-    interface_register_button_callback(INTERFACE_BUTTON_RHT, &interface_input_rht);
-    interface_register_button_callback(INTERFACE_BUTTON_MID, &interface_input_mid);
-    interface_register_button_callback(INTERFACE_BUTTON_UP, &interface_input_up);
-    interface_register_button_callback(INTERFACE_BUTTON_DWN, &interface_input_dwn);
+    interface_register_command_callback(INTERFACE_COMMAND_RST, &interface_input_rst);
+    interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_input_set);
+    interface_register_command_callback(INTERFACE_COMMAND_LFT, &interface_input_lft);
+    interface_register_command_callback(INTERFACE_COMMAND_RHT, &interface_input_rht);
+    interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_input_mid);
+    interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_input_up);
+    interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_input_dwn);
 
     interface_set_display_function(&interface_input_display);
     ESP_LOGD(INTERFACE_LOG, "start input interface");

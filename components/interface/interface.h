@@ -24,17 +24,26 @@
 
 #define INTERFACE_LOG "INTERFACE" // TAG for Logging
 
-#define INTERFACE_BUTTON_RST GPIO_NUM_32
-#define INTERFACE_BUTTON_SET GPIO_NUM_33
-#define INTERFACE_BUTTON_MID GPIO_NUM_25
-#define INTERFACE_BUTTON_RHT GPIO_NUM_26
-#define INTERFACE_BUTTON_LFT GPIO_NUM_27
-#define INTERFACE_BUTTON_DWN GPIO_NUM_14
-#define INTERFACE_BUTTON_UP GPIO_NUM_12
+
 
 #define INTERFACE_FORMAT_TIME "%X"
 
 #define INTERFACE_NUM_LOCALE 2
+
+/**
+ * @brief available commands
+ */
+typedef enum
+{
+    INTERFACE_COMMAND_RST = 0,
+    INTERFACE_COMMAND_SET,
+    INTERFACE_COMMAND_MID,
+    INTERFACE_COMMAND_RHT,
+    INTERFACE_COMMAND_LFT,
+    INTERFACE_COMMAND_DWN,
+    INTERFACE_COMMAND_UP,
+    INTERFACE_COMMANDS_SIZE,
+} interface_command_t;
 
 /**
  * @brief available locales
@@ -78,9 +87,9 @@ interface_label_t interface_texts_weekday[7];
 interface_label_t interface_texts_month[12];
 
 /**
- * @brief       callback function for button press
+ * @brief       callback function for command input (button press)
  */
-typedef void (*interface_button_callback)(void);
+typedef void (*interface_command_callback)(void);
 
 /**
  * @brief       current display function
@@ -93,7 +102,7 @@ typedef void (*interface_display_function)(void);
  * @param[in]   text    the text from input
  * @param[in]   cursor  current cursor position 
  */
-typedef void (*interface_input_callback)(char *text, uint8_t cursor);
+typedef void (*interface_text_callback)(char *text, uint8_t cursor);
 
 /**
  * @brief       init label
@@ -123,12 +132,19 @@ interface_locale_t interface_get_locale(void);
 void interface_set_locale(interface_locale_t locale);
 
 /**
- * @brief       register a callback function for button event
+ * @brief       register a callback function for command event
  * 
- * @param[in]   button_gpio id of the button to listen to
+ * @param[in]   command     id of the command to listen to
  * @param[in]   callback    callback function
  */
-void interface_register_button_callback(int button_gpio, interface_button_callback callback);
+void interface_register_command_callback(interface_command_t command, interface_command_callback callback);
+
+/**
+ * @brief       execute a command
+ * 
+ * @param[in]   command     id of the command to trigger
+ */
+void interface_execute_command(interface_command_t command);
 
 /**
  * @brief       set the display function
@@ -181,7 +197,7 @@ void interface_settings_start(void);
  * @param[in]   callback_set    function to call on SET
  * @param[in]   limit           max character allowed (0=255)   
  */
-void interface_input(interface_input_callback callback_rst, interface_input_callback callback_set, uint8_t limit);
+void interface_input(interface_text_callback callback_rst, interface_text_callback callback_set, uint8_t limit);
 
 /**
  * @brief       set text for input interface

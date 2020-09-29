@@ -16,15 +16,16 @@
 #include "esp_log.h"
 #include "esp_event.h"
 #include "esp_http_client.h"
-#include "miniz.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "ena-storage.h"
 #include "ena-exposure.h"
-#include "ena-cwa.h"
+#include "ena-binary-export.h"
 #include "wifi-controller.h"
+
+#include "ena-cwa.h"
 
 extern uint8_t export_bin_start[] asm("_binary_export_bin_start"); // test data from Google or https://svc90.main.px.t-online.de/version/v1/diagnosis-keys/country/DE/date/2020-07-22
 extern uint8_t export_bin_end[] asm("_binary_export_bin_end");
@@ -63,7 +64,7 @@ esp_err_t ena_cwa_http_event_handler(esp_http_client_event_t *evt)
             free(output_buffer);
             output_buffer = NULL;
             output_len = 0;
-            ESP_ERROR_CHECK_WITHOUT_ABORT(ena_exposure_check_export(export_bin_start, (export_bin_end - export_bin_start)));
+            ESP_ERROR_CHECK_WITHOUT_ABORT(ena_binary_export_check_export(export_bin_start, (export_bin_end - export_bin_start)));
         }
         else
         {

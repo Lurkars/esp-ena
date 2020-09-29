@@ -17,46 +17,46 @@
  * @brief gfx elements: font, icons, elements
  *  
  */
-#ifndef _ssd1306_GFX_H_
-#define _ssd1306_GFX_H_
+#ifndef _display_GFX_H_
+#define _display_GFX_H_
 
 #include <stdint.h>
 
-uint8_t ssd1306_gfx_clear[8];
+uint8_t display_gfx_clear[8];
 
 // Dogica Font https://www.dafont.com/de/dogica.font starting at space (32)
-uint8_t ssd1306_gfx_font[224][8];
+uint8_t display_gfx_font[224][8];
 
-uint8_t ssd1306_gfx_button[3][64];
+uint8_t display_gfx_button[3][64];
 
-uint8_t ssd1306_gfx_button_sel[3][64];
+uint8_t display_gfx_button_sel[3][64];
 
-uint8_t ssd1306_gfx_clock[8];
+uint8_t display_gfx_clock[8];
 
-uint8_t ssd1306_gfx_menu_head[112];
+uint8_t display_gfx_menu_head[112];
 
-uint8_t ssd1306_gfx_sad[4][24];
+uint8_t display_gfx_sad[4][24];
 
-uint8_t ssd1306_gfx_smile[4][24];
+uint8_t display_gfx_smile[4][24];
 
-uint8_t ssd1306_gfx_question[4][24];
+uint8_t display_gfx_question[4][24];
 
-uint8_t ssd1306_gfx_wifi[8];
+uint8_t display_gfx_wifi[8];
 
-uint8_t ssd1306_gfx_wifi_low[8];
+uint8_t display_gfx_wifi_low[8];
 
-uint8_t ssd1306_gfx_wifi_lowest[8];
+uint8_t display_gfx_wifi_lowest[8];
 
-uint8_t ssd1306_gfx_arrow_down[8];
+uint8_t display_gfx_arrow_down[8];
 
-uint8_t ssd1306_gfx_arrow_left[8];
+uint8_t display_gfx_arrow_left[8];
 
-uint8_t ssd1306_gfx_arrow_right[8];
+uint8_t display_gfx_arrow_right[8];
 
-uint8_t ssd1306_gfx_arrow_up[8];
+uint8_t display_gfx_arrow_up[8];
 
-uint8_t ssd1306_gfx_cross[8];
+uint8_t display_gfx_cross[8];
 
-uint8_t ssd1306_gfx_logo[8][64];
+uint8_t display_gfx_logo[8][64];
 
 #endif

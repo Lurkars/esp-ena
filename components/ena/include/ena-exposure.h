@@ -14,7 +14,7 @@
 /**
  * @file
  * 
- * @brief decode Exposure Key export, compare with stored beacons, calculate score and risk
+ * @brief compare temporary exposure keys with stored beacons, calculate score and risk
  * 
  */
 #ifndef _ena_EXPOSURE_H_
@@ -143,6 +143,21 @@ typedef struct __attribute__((__packed__))
 } ena_exposure_summary_t;
 
 /**
+ * @brief structure for temporary exposure key
+ * 
+ * The temporary exposure key is used to check for exposure.
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint8_t key_data[ENA_KEY_LENGTH];
+    uint8_t transmission_risk_level;
+    uint8_t rolling_start_interval_number;
+    uint8_t rolling_period;
+    ena_report_type_t report_type;
+    uint32_t days_since_onset_of_symptoms;
+} ena_temporary_exposure_key_t;
+
+/**
  * @brief calculate transmission risk score
  * 
  * @param[in] config the exposure configuration used for calculating score
@@ -216,14 +231,10 @@ ena_exposure_summary_t *ena_exposure_current_summary(void);
 ena_exposure_config_t *ena_exposure_default_config(void);
 
 /**
- * @brief reads a Temporary Exposue Key Export binary and check for exposures
+ * @brief reads Temporary Exposue Key and check for exposures
  * 
- * @param[in] buf the buffer containing the binary data
- * @param[in] size the size of the buffer
- * 
- * @return 
- *      esp_err_t status of reading binary
+ * @param[in] temporary_exposure_key    the temporary exposure keys to check
  */
-esp_err_t ena_exposure_check_export(uint8_t *buf, size_t size);
+void ena_exposure_check_temporary_exposure_key(ena_temporary_exposure_key_t temporary_exposure_key);
 
 #endif

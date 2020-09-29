@@ -26,10 +26,13 @@
 #include "ena-bluetooth-advertise.h"
 #include "ena-bluetooth-scan.h"
 #include "ena-cwa.h"
-#include "interface.h"
 #include "ds3231.h"
 #include "ssd1306.h"
+#include "interface.h"
+#include "button-input.h"
+#include "rtc.h"
 #include "wifi-controller.h"
+
 
 #include "sdkconfig.h"
 
@@ -51,9 +54,9 @@ void app_main(void)
     // start interface
     interface_start();
 
-    // set system time from DS3231
+    // set system time from RTC
     struct tm rtc_time;
-    ds3231_get_time(&rtc_time);
+    rtc_get_time(&rtc_time);
 
     time_t curtime = mktime(&rtc_time);
     struct timeval tv = {0};
@@ -68,6 +71,9 @@ void app_main(void)
 
     // start with main interface
     interface_main_start();
+
+    // start button input
+    button_input_start();
 
     while (1)
     {

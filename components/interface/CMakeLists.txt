@@ -12,7 +12,9 @@ idf_component_register(
     INCLUDE_DIRS "."
     PRIV_REQUIRES 
         ena
-        ssd1306
-        ds3231
+        display
+        display-ssd1306
+        rtc
+        rtc-ds3231
         wifi-controller
 )

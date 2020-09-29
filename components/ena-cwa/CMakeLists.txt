@@ -4,8 +4,8 @@ idf_component_register(
     INCLUDE_DIRS "."
     PRIV_REQUIRES
         esp_http_client
-        miniz
         ena
+        ena-binary-export
         wifi-controller
     EMBED_FILES
         "certs/telekom.pem"

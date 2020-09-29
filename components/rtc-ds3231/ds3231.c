@@ -17,6 +17,7 @@
 #include "driver/i2c.h"
 #include "esp_log.h"
 
+#include "rtc.h"
 #include "i2c-main.h"
 
 #include "ds3231.h"
@@ -31,7 +32,7 @@ uint8_t ds3231_bcd2dec(uint8_t value)
     return ((value / 16 * 10) + (value % 16));
 }
 
-void ds3231_get_time(struct tm *time)
+void rtc_get_time(struct tm *time)
 {
     if (!i2c_is_initialized())
     {
@@ -80,7 +81,7 @@ void ds3231_get_time(struct tm *time)
     time->tm_isdst = 0;
 }
 
-void ds3231_set_time(struct tm *time)
+void rtc_set_time(struct tm *time)
 {
     if (!i2c_is_initialized())
     {

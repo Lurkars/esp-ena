@@ -17,57 +17,31 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 
-#include "ssd1306.h"
-#include "ssd1306-gfx.h"
+#include "display.h"
+#include "display-gfx.h"
 
 #include "interface.h"
 
-static int old_button_states[GPIO_PIN_COUNT];
-static int button_states[GPIO_PIN_COUNT];
-static interface_button_callback button_callbacks[GPIO_PIN_COUNT];
+static interface_command_callback command_callbacks[INTERFACE_COMMANDS_SIZE];
 static interface_display_function current_display_function;
 
-void interface_register_button_callback(int button_gpio, interface_button_callback callback)
+void interface_register_command_callback(interface_command_t command, interface_command_callback callback)
 {
-    button_callbacks[button_gpio] = callback;
+    command_callbacks[command] = callback;
 }
 
 void interface_set_display_function(interface_display_function display_function)
 {
-    ssd1306_clear(SSD1306_ADDRESS);
+    display_clear();
     current_display_function = display_function;
 }
 
-void interface_input_check(uint8_t gpio)
+void interface_execute_command(interface_command_t command)
 {
-    button_states[gpio] = gpio_get_level(gpio);
-
-    if (old_button_states[gpio] != 0 && old_button_states[gpio] != 1)
+    if (command_callbacks[command] != NULL)
     {
-        old_button_states[gpio] = 1;
-    }
-
-    if (button_states[gpio] == 0 && button_states[gpio] != old_button_states[gpio] && button_callbacks[gpio] != NULL)
-    {
-        ssd1306_clear(SSD1306_ADDRESS);
-        (*button_callbacks[gpio])();
-    }
-
-    old_button_states[gpio] = button_states[gpio];
-}
-
-void interface_input_task(void *pvParameter)
-{
-    while (1)
-    {
-        interface_input_check(INTERFACE_BUTTON_RST);
-        interface_input_check(INTERFACE_BUTTON_SET);
-        interface_input_check(INTERFACE_BUTTON_LFT);
-        interface_input_check(INTERFACE_BUTTON_RHT);
-        interface_input_check(INTERFACE_BUTTON_MID);
-        interface_input_check(INTERFACE_BUTTON_UP);
-        interface_input_check(INTERFACE_BUTTON_DWN);
-        vTaskDelay(20 / portTICK_PERIOD_MS);
+        display_clear();
+        (*command_callbacks[command])();
     }
 }
 
@@ -85,30 +59,16 @@ void interface_display_task(void *pvParameter)
 
 void interface_start(void)
 {
-
-    gpio_config_t io_conf;
-
-    io_conf.pin_bit_mask = (1ULL << INTERFACE_BUTTON_RST) | (1ULL << INTERFACE_BUTTON_SET) |
-                           (1ULL << INTERFACE_BUTTON_MID) | (1ULL << INTERFACE_BUTTON_RHT) |
-                           (1ULL << INTERFACE_BUTTON_LFT) | (1ULL << INTERFACE_BUTTON_DWN) |
-                           (1ULL << INTERFACE_BUTTON_UP);
-    io_conf.intr_type = GPIO_INTR_DISABLE;
-    io_conf.mode = GPIO_MODE_INPUT;
-    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    gpio_config(&io_conf);
-
-    xTaskCreate(&interface_input_task, "interface_input_task", 4096, NULL, 5, NULL);
     xTaskCreate(&interface_display_task, "interface_display_task", 4096, NULL, 5, NULL);
 
     // init label
     interface_init_label();
 
-    ssd1306_start(SSD1306_ADDRESS);
-    ssd1306_clear(SSD1306_ADDRESS);
+    display_start();
+    display_clear();
 
     for (int i = 0; i < 8; i++)
     {
-        ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_logo[i], 64, i, 32, false);
+        display_data(display_gfx_logo[i], 64, i, 32, false);
     }
 }

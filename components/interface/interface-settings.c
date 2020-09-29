@@ -19,8 +19,8 @@
 #include "esp_log.h"
 #include "driver/gpio.h"
 
-#include "ssd1306.h"
-#include "ssd1306-gfx.h"
+#include "display.h"
+#include "display-gfx.h"
 
 #include "ena-storage.h"
 
@@ -62,12 +62,12 @@ void interface_settings_mid(void)
         current_interface_settings_state = INTERFACE_SETTINGS_LOCALE;
     }
 
-    ssd1306_clear_line(SSD1306_ADDRESS, 2, false);
-    ssd1306_clear_line(SSD1306_ADDRESS, 3, false);
-    ssd1306_clear_line(SSD1306_ADDRESS, 4, false);
-    ssd1306_clear_line(SSD1306_ADDRESS, 5, false);
-    ssd1306_clear_line(SSD1306_ADDRESS, 6, false);
-    ssd1306_clear_line(SSD1306_ADDRESS, 7, false);
+    display_clear_line( 2, false);
+    display_clear_line( 3, false);
+    display_clear_line( 4, false);
+    display_clear_line( 5, false);
+    display_clear_line( 6, false);
+    display_clear_line( 7, false);
 }
 
 void interface_settings_up(void)
@@ -103,30 +103,30 @@ void interface_settings_dwn(void)
 
 void interface_settings_display(void)
 {
-    ssd1306_menu_headline(SSD1306_ADDRESS, interface_get_label_text(&interface_text_headline_settings), true, 0);
+    display_menu_headline( interface_get_label_text(&interface_text_headline_settings), true, 0);
 
-    ssd1306_text_line_column(SSD1306_ADDRESS, interface_get_label_text(&interface_text_settings_locale), 3, 1, false);
+    display_text_line_column( interface_get_label_text(&interface_text_settings_locale), 3, 1, false);
 
-    ssd1306_text_line_column(SSD1306_ADDRESS, interface_get_label_text(&interface_text_settings_timezone), 6, 1, false);
+    display_text_line_column( interface_get_label_text(&interface_text_settings_timezone), 6, 1, false);
 
     if (current_interface_settings_state == INTERFACE_SETTINGS_LOCALE)
     {
-        ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_arrow_up, 8, 2, 12 * 8 + 4, false);
-        ssd1306_text_line_column(SSD1306_ADDRESS,
+        display_data( display_gfx_arrow_up, 8, 2, 12 * 8 + 4, false);
+        display_text_line_column(
                                  interface_get_label_text(&interface_text_settings_locales[interface_get_locale()]), 3, 12, true);
-        ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_arrow_down, 8, 4, 12 * 8 + 4, false);
+        display_data( display_gfx_arrow_down, 8, 4, 12 * 8 + 4, false);
     }
     else
     {
-        ssd1306_text_line_column(SSD1306_ADDRESS,
+        display_text_line_column(
                                  interface_get_label_text(&interface_text_settings_locales[interface_get_locale()]), 3, 12, true);
     }
 
     if (current_interface_settings_state == INTERFACE_SETTINGS_TIMEZONE)
     {
 
-        ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_arrow_up, 8, 5, 12 * 8 + 4, false);
-        ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_arrow_down, 8, 7, 12 * 8 + 4, false);
+        display_data( display_gfx_arrow_up, 8, 5, 12 * 8 + 4, false);
+        display_data( display_gfx_arrow_down, 8, 7, 12 * 8 + 4, false);
     }
 }
 
@@ -134,13 +134,13 @@ void interface_settings_start(void)
 {
     current_interface_settings_state = INTERFACE_SETTINGS_LOCALE;
 
-    interface_register_button_callback(INTERFACE_BUTTON_RST, &interface_settings_rst);
-    interface_register_button_callback(INTERFACE_BUTTON_SET, &interface_settings_set);
-    interface_register_button_callback(INTERFACE_BUTTON_LFT, &interface_settings_lft);
-    interface_register_button_callback(INTERFACE_BUTTON_RHT, &interface_settings_rht);
-    interface_register_button_callback(INTERFACE_BUTTON_MID, &interface_settings_mid);
-    interface_register_button_callback(INTERFACE_BUTTON_UP, &interface_settings_up);
-    interface_register_button_callback(INTERFACE_BUTTON_DWN, &interface_settings_dwn);
+    interface_register_command_callback(INTERFACE_COMMAND_RST, &interface_settings_rst);
+    interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_settings_set);
+    interface_register_command_callback(INTERFACE_COMMAND_LFT, &interface_settings_lft);
+    interface_register_command_callback(INTERFACE_COMMAND_RHT, &interface_settings_rht);
+    interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_settings_mid);
+    interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_settings_up);
+    interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_settings_dwn);
     interface_set_display_function(&interface_settings_display);
 
     ESP_LOGD(INTERFACE_LOG, "start settings interface");

@@ -19,8 +19,8 @@
 #include "esp_log.h"
 #include "driver/gpio.h"
 
-#include "ssd1306.h"
-#include "ssd1306-gfx.h"
+#include "display.h"
+#include "display-gfx.h"
 #include "wifi-controller.h"
 
 #include "interface.h"
@@ -113,13 +113,13 @@ void interface_wifi_dwn(void)
 
 void interface_wifi_display(void)
 {
-    ssd1306_menu_headline(SSD1306_ADDRESS, interface_get_label_text(&interface_text_headline_wifi), true, 0);
+    display_menu_headline( interface_get_label_text(&interface_text_headline_wifi), true, 0);
 
     if (ap_count > 0)
     {
-        ssd1306_clear_line(SSD1306_ADDRESS, 2, false);
-        ssd1306_clear_line(SSD1306_ADDRESS, 4, false);
-        ssd1306_clear_line(SSD1306_ADDRESS, 6, false);
+        display_clear_line( 2, false);
+        display_clear_line( 4, false);
+        display_clear_line( 6, false);
         for (int i = 0; i < 3; i++)
         {
             int index = i + ap_index;
@@ -127,48 +127,48 @@ void interface_wifi_display(void)
             {
                 if (index == ap_selected)
                 {
-                    ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_arrow_right, 8, i * 2 + 2, 8, false);
+                    display_data( display_gfx_arrow_right, 8, i * 2 + 2, 8, false);
                 }
 
                 if (sizeof(ap_info[i].ssid) > 0)
                 {
-                    ssd1306_text_line_column(SSD1306_ADDRESS, (char *)ap_info[index].ssid, i * 2 + 2, 2, false);
+                    display_text_line_column( (char *)ap_info[index].ssid, i * 2 + 2, 2, false);
                 }
                 else
                 {
-                    ssd1306_text_line_column(SSD1306_ADDRESS, " / ", i * 2 + 2, 2, false);
+                    display_text_line_column( " / ", i * 2 + 2, 2, false);
                 }
 
                 if (ap_info[index].rssi >= -67)
                 {
-                    ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_wifi, 8, i * 2 + 2, 112, false);
+                    display_data( display_gfx_wifi, 8, i * 2 + 2, 112, false);
                 }
                 else if (ap_info[index].rssi >= -80)
                 {
-                    ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_wifi_low, 8, i * 2 + 2, 112, false);
+                    display_data( display_gfx_wifi_low, 8, i * 2 + 2, 112, false);
                 }
                 else if (ap_info[index].rssi >= -90)
                 {
-                    ssd1306_data(SSD1306_ADDRESS, ssd1306_gfx_wifi_lowest, 8, i * 2 + 2, 112, false);
+                    display_data( display_gfx_wifi_lowest, 8, i * 2 + 2, 112, false);
                 }
             }
         }
     }
     else
     {
-        ssd1306_text_line_column(SSD1306_ADDRESS, interface_get_label_text(&interface_text_wifi_scanning), 4, 1, false);
+        display_text_line_column( interface_get_label_text(&interface_text_wifi_scanning), 4, 1, false);
     }
 }
 
 void interface_wifi_start(void)
 {
-    interface_register_button_callback(INTERFACE_BUTTON_SET, &interface_wifi_set);
-    interface_register_button_callback(INTERFACE_BUTTON_LFT, &interface_wifi_lft);
-    interface_register_button_callback(INTERFACE_BUTTON_RHT, &interface_wifi_rht);
-    interface_register_button_callback(INTERFACE_BUTTON_MID, &interface_wifi_mid);
-    interface_register_button_callback(INTERFACE_BUTTON_UP, &interface_wifi_up);
-    interface_register_button_callback(INTERFACE_BUTTON_DWN, &interface_wifi_dwn);
-    interface_register_button_callback(INTERFACE_BUTTON_RST, NULL);
+    interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_wifi_set);
+    interface_register_command_callback(INTERFACE_COMMAND_LFT, &interface_wifi_lft);
+    interface_register_command_callback(INTERFACE_COMMAND_RHT, &interface_wifi_rht);
+    interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_wifi_mid);
+    interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_wifi_up);
+    interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_wifi_dwn);
+    interface_register_command_callback(INTERFACE_COMMAND_RST, NULL);
 
     interface_set_display_function(&interface_wifi_display);
 

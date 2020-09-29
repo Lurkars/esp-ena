@@ -3,7 +3,7 @@
 Implementation of contact tracing with the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)). 
 More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is fully compatible with the official API and is meant for people without smartphone or without access to Apples/Googles implementation.
 
-The main source (the Exposure Notification API) is a separate module in [**components/ena**](components/ena).
+The main source (the Exposure Notification API) is a separate branch in [**component**](https://github.com/Lurkars/esp-ena/tree/component).
 
 This implementation fully covers the BLE part including the cryptography specifications needed and the exposure check.
 
@@ -130,8 +130,12 @@ The ena module contains the main functions of eps-ena with bluetooth scanning an
 * *ena-storage* storage part to store own TEKs and beacons
 * *ena-bluetooth-scan* BLE scans for detecting other beacons
 * *ena-bluetooth-advertise* BLE advertising to send own beacons
-* *ena-exposure* decode Exposure Key export, compare with stored beacons, calculate score and risk
+* *ena-exposure* compare exposed keys with stored beacons, calculate score and risk
 * *ena* run all together and timing for scanning and advertising
+
+### ena-binary-export
+
+Module to decode Exposure Key export.
 
 ### ena-cwa
 
@@ -139,29 +143,32 @@ Connection to german Exposure App ([Corona Warn App](https://github.com/corona-w
 
 ### interface
 
-Adds interface functionality via touch pads for control and setup.
+Adds interface functionality for control and setup.
+
+### display
+
+General module for display and gfx.
+
+### rtc
+
+General module for set/get time from RTC.
 
 ### i2c-main
 
 Just start I2C driver for display and RTC.
 
-### ds3231
+### interface-input-buttons
 
-I2C driver for a DS3231 RTC
+Interface with 7 button input
 
-### ssd1306
+### rtc-ds3231
 
-I2C driver for a SSD1306 display.
+I2C driver for a DS3231 RTC, implementation of [rtc](#-rtc) module
+
+### display-ssd1306
+
+I2C driver for a SSD1306 display, implementation of [display](#-display) module
 
 ### nanopb
 
 [Nanopb](https://github.com/nanopb/nanopb) for reading Protocol Buffers of Exposure Key export. Including already generated Headers from *.proto files.
-
-### miniz
-
-[Miniz](https://github.com/richgel999/miniz) for unzipping Exposure Key export (not successful for now due to memory limit)
-
-
-## Demo
-
-[Demo Video (early stage)](https://twitter.com/Lurkars/status/1282223547579019264)

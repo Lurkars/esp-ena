@@ -11,8 +11,4 @@ idf_component_register(
     PRIV_REQUIRES
         spi_flash
         mbedtls
-        bt
-        nanopb
-    EMBED_FILES
-        "test/export.bin"
-)
+        bt)

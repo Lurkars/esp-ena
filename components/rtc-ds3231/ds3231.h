@@ -71,14 +71,4 @@
 #define DS3231_12_HOUR_MASK 0x1F
 #define DS3231_MONTH_MASK 0x1F
 
-/**
- * @brief Read time from DS3231
- */
-void ds3231_get_time(struct tm *time);
-
-/**
- * @brief Write time to DS3231
- */
-void ds3231_set_time(struct tm *time);
-
 #endif
