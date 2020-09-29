@@ -59,6 +59,19 @@ For base functionality just an ESP32 is required.
 
 ### Include into project
 
+To include these components into an esp-idf project, include the following into the CMakeLists.txt
+
+```
+include(FetchContent)
+FetchContent_Declare(
+  esp-ena
+  GIT_REPOSITORY https://github.com/Lurkars/esp-ena.git
+  GIT_TAG        origin/component
+)
+FetchContent_MakeAvailable(esp-ena)
+set(EXTRA_COMPONENT_DIRS ${esp-ena_SOURCE_DIR}/components)
+```
+
 ## Structure
 
 The project is divided in different components. The main.c just wrap up all components. The Exposure Notification API is in **ena** module
