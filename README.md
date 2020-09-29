@@ -3,7 +3,7 @@
 Implementation of contact tracing with the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)). 
 More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is fully compatible with the official API and is meant for people without smartphone or without access to Apples/Googles implementation.
 
-The main source (the Exposure Notification API) is a separate branch in [**component**](https://github.com/Lurkars/esp-ena/tree/component).
+This is the main source (the Exposure Notification API). Full device is in the [**main branch**](https://github.com/Lurkars/esp-ena/).
 
 This implementation fully covers the BLE part including the cryptography specifications needed and the exposure check.
 
@@ -20,23 +20,6 @@ The following acronyms will be used in code and comments:
 * permanent storage on flash of last keys, beacons and exposures (storage is limited, see [storage math](#some-storage-math) for details)
 * parsing of Exposure Key export binaries as defined in [Exposure Key export file format and verification](https://developers.google.com/android/exposure-notifications/exposure-key-file-format) (big thanks to [nanopb](https://github.com/nanopb/nanopb) for making this easier than I thought!)
 * calculating exposure risks/scores (after adding reported keys and storing exposure information) as defined in [ENExposureConfiguration (Apple)](https://developer.apple.com/documentation/exposurenotification/enexposureconfiguration/calculating_the_exposure_risk_value_in_exposurenotification_version_1)
-
-Additional features for full ENA device
-* RTC support with DS3231 (for correct system time)
-* display support with SSD1306
-* interface with a 7 button control (joystick up,down,left,right,enter,cancel,ok) to
-    * show exposure status
-    * set time
-    * connect to wifi
-    * delete data
-    * set language
-    * enter tan for infection status (dummy for now)
-
-### Features in development
-* automatically receive Exposure Key export from web (started with [Corona Warn App](https://github.com/corona-warn-app))
-* send infected status (will test [Corona Warn App](https://github.com/corona-warn-app))
-* battery support
-* 3d print case
 
 ### Limitations/Problems/Questions
 * WiFi or other external connection needed for infections status (auto-connect to open WiFis?)
@@ -72,51 +55,9 @@ So on average it is possible to meet 38 (24 on a lower boundary) different devic
 
 ### Hardware Required
 
-For base functionality just an ESP32 is required. DS3231 RTC, SSD1306 Display and 7 buttons are required for a complete device.
+For base functionality just an ESP32 is required.
 
-### Configure the project
-
-```
-idf.py menuconfig
-```
-
-required
-* enable bluetooth (BLE)
-* add partition-table for storage (currently hardcoded name "ena")
-* mbedTLS enable HKDF
-
-recommended
-* BLE *Scan Duplicate* (By Device Address and Advertising Data)
-
-debug options
-* Log output set to Debug
-* Exposure Notification API / Storage enable *Dump storage* 
- 
-### Build and Flash
-
-May flash partition table:
-
-```
-idf.py partition_table-flash
-```
-
-Build the project and flash it to the board, then run monitor tool to view serial output:
-
-```
-idf.py -p PORT flash monitor
-```
-
-(Replace PORT with the name of the serial port to use.)
-
-(To exit the serial monitor, type ``Ctrl-]``.)
-
-## Troubleshooting
-
-Sometimes I get errors from BT-stack of ESP-IDF printed. Didn't affect functionality for now, but I also could not find out what it caused and what it means.
-
-```
-E (909164) BT_HCI: btu_hcif_hdl_command_complete opcode 0x2005 status 0xc
-```
+### Include into project
 
 ## Structure
 
@@ -136,38 +77,6 @@ The ena module contains the main functions of eps-ena with bluetooth scanning an
 ### ena-binary-export
 
 Module to decode Exposure Key export.
-
-### ena-cwa
-
-Connection to german Exposure App ([Corona Warn App](https://github.com/corona-warn-app)) for download Exposure Key export (and maybe later report infection).
-
-### interface
-
-Adds interface functionality for control and setup.
-
-### display
-
-General module for display and gfx.
-
-### rtc
-
-General module for set/get time from RTC.
-
-### i2c-main
-
-Just start I2C driver for display and RTC.
-
-### interface-input-buttons
-
-Interface with 7 button input
-
-### rtc-ds3231
-
-I2C driver for a DS3231 RTC, implementation of [rtc](#-rtc) module
-
-### display-ssd1306
-
-I2C driver for a SSD1306 display, implementation of [display](#-display) module
 
 ### nanopb
 
