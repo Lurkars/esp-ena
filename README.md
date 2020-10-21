@@ -3,7 +3,7 @@
 Implementation of contact tracing with the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)). 
 More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is fully compatible with the official API and is meant for people without smartphone or without access to Apples/Googles implementation.
 
-The main source (the Exposure Notification API) is a separate branch in [**component**](https://github.com/Lurkars/esp-ena/tree/component).
+The main source (the Exposure Notification API) is also available in a separate branch in [**component**](https://github.com/Lurkars/esp-ena/tree/component).
 
 This implementation fully covers the BLE part including the cryptography specifications needed and the exposure check.
 

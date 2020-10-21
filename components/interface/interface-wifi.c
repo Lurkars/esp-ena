@@ -75,6 +75,7 @@ void interface_wifi_mid(void)
     memset(&current_wifi_config, 0, sizeof(wifi_config_t));
     memcpy(current_wifi_config.sta.ssid, ap_info[ap_selected].ssid, strlen((char *)ap_info[ap_selected].ssid));
     interface_input(&interface_wifi_input_rst, &interface_wifi_input_set, 64);
+    interface_input_set_text("muffimuffi");
 }
 void interface_wifi_up(void)
 {

@@ -78,7 +78,7 @@ void interface_data_rst(void)
             ena_storage_write_last_exposure_date(0);
             break;
         case INTERFACE_DATA_DEL_ALL:
-            ena_storage_erase();
+            ena_storage_erase_all();
             break;
         }
 
