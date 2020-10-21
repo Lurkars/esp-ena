@@ -92,6 +92,28 @@ void ena_storage_write(size_t address, void *data, size_t size)
     }
 }
 
+void ena_storage_erase(size_t address, size_t size)
+{
+    const int block_num = address / BLOCK_SIZE;
+    // check for overflow
+    if (address + size <= (block_num + 1) * BLOCK_SIZE)
+    {
+        uint8_t *zeros = calloc(size, sizeof(uint8_t));
+        ena_storage_write(address, zeros, size);
+        free(zeros);
+    }
+    else
+    {
+        const size_t block2_address = (block_num + 1) * BLOCK_SIZE;
+        const size_t data2_size = address + size - block2_address;
+        const size_t data1_size = size - data2_size;
+        uint8_t *zeros = calloc(data1_size, sizeof(uint8_t));
+        ena_storage_write(address, zeros, data1_size);
+        free(zeros);
+        ena_storage_erase(block2_address, data2_size);
+    }
+}
+
 void ena_storage_shift_delete(size_t address, size_t end_address, size_t size)
 {
     int block_num_start = address / BLOCK_SIZE;
@@ -302,7 +324,7 @@ void ena_storage_remove_beacon(uint32_t index)
     ESP_LOGD(ENA_STORAGE_LOG, "remove beacon: %u", index);
 }
 
-void ena_storage_erase(void)
+void ena_storage_erase_all(void)
 {
     const esp_partition_t *partition = esp_partition_find_first(
         ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, ENA_STORAGE_PARTITION_NAME);
@@ -330,9 +352,7 @@ void ena_storage_erase_tek(void)
     }
 
     size_t size = sizeof(uint32_t) + stored * sizeof(ena_tek_t);
-    uint8_t *zeros = calloc(size, sizeof(uint8_t));
-    ena_storage_write(ENA_STORAGE_TEK_COUNT_ADDRESS, zeros, size);
-    free(zeros);
+    ena_storage_erase(ENA_STORAGE_TEK_COUNT_ADDRESS, size);
     ESP_LOGI(ENA_STORAGE_LOG, "erased %d teks (size %u at %u)", stored, size, ENA_STORAGE_TEK_COUNT_ADDRESS);
 }
 
@@ -347,9 +367,7 @@ void ena_storage_erase_exposure_information(void)
     }
 
     size_t size = sizeof(uint32_t) + stored * sizeof(ena_exposure_information_t);
-    uint8_t *zeros = calloc(size, sizeof(uint8_t));
-    ena_storage_write(ENA_STORAGE_EXPOSURE_INFORMATION_COUNT_ADDRESS, zeros, size);
-    free(zeros);
+    ena_storage_erase(ENA_STORAGE_EXPOSURE_INFORMATION_COUNT_ADDRESS, size);
     ESP_LOGI(ENA_STORAGE_LOG, "erased %d exposure information (size %u at %u)", stored, size, ENA_STORAGE_EXPOSURE_INFORMATION_COUNT_ADDRESS);
 }
 
@@ -365,9 +383,7 @@ void ena_storage_erase_temporary_beacon(void)
     }
 
     size_t size = sizeof(uint32_t) + stored * sizeof(ena_beacon_t);
-    uint8_t *zeros = calloc(size, sizeof(uint8_t));
-    ena_storage_write(ENA_STORAGE_TEMP_BEACONS_COUNT_ADDRESS, zeros, size);
-    free(zeros);
+    ena_storage_erase(ENA_STORAGE_TEMP_BEACONS_COUNT_ADDRESS, size);
 
     ESP_LOGI(ENA_STORAGE_LOG, "erased %d temporary beacons (size %u at %u)", stored, size, ENA_STORAGE_TEMP_BEACONS_COUNT_ADDRESS);
 }
@@ -378,10 +394,7 @@ void ena_storage_erase_beacon(void)
     ena_storage_read(ENA_STORAGE_BEACONS_COUNT_ADDRESS, &beacon_count, sizeof(uint32_t));
 
     size_t size = sizeof(uint32_t) + beacon_count * sizeof(ena_beacon_t);
-    uint8_t *zeros = calloc(size, sizeof(uint8_t));
-    ena_storage_write(ENA_STORAGE_BEACONS_COUNT_ADDRESS, zeros, size);
-    free(zeros);
-
+    ena_storage_erase(ENA_STORAGE_BEACONS_COUNT_ADDRESS, size);
     ESP_LOGI(ENA_STORAGE_LOG, "erased %d beacons (size %u at %u)", beacon_count, size, ENA_STORAGE_BEACONS_COUNT_ADDRESS);
 }
 

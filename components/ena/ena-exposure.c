@@ -267,29 +267,38 @@ ena_exposure_config_t *ena_exposure_default_config(void)
     return &DEFAULT_ENA_EXPOSURE_CONFIG;
 }
 
-void ena_exposure_check_temporary_exposure_key(ena_temporary_exposure_key_t temporary_exposure_key)
+void ena_exposure_check(ena_beacon_t beacon, ena_temporary_exposure_key_t temporary_exposure_key)
 {
-    bool match = false;
-    ena_beacon_t beacon;
-    ena_exposure_information_t exposure_info;
-    exposure_info.duration_minutes = 0;
-    exposure_info.min_attenuation = INT_MAX;
-    exposure_info.typical_attenuation = 0;
-    exposure_info.report_type = temporary_exposure_key.report_type;
-    uint8_t rpi[ENA_KEY_LENGTH];
-    uint8_t rpik[ENA_KEY_LENGTH];
-    ena_crypto_rpik(rpik, temporary_exposure_key.key_data);
-    uint32_t beacons_count = ena_storage_beacons_count();
-    for (int i = 0; i < temporary_exposure_key.rolling_period; i++)
+    uint32_t timestamp_day_start = temporary_exposure_key.rolling_start_interval_number * ENA_TIME_WINDOW;
+    uint32_t timestamp_day_end = temporary_exposure_key.rolling_start_interval_number * ENA_TIME_WINDOW + temporary_exposure_key.rolling_period * ENA_TIME_WINDOW;
+
+    if (beacon.timestamp_first > timestamp_day_start && beacon.timestamp_last < timestamp_day_end)
     {
-        ena_crypto_rpi(rpi, rpik, temporary_exposure_key.rolling_start_interval_number + i);
-        for (int y = 0; y < beacons_count; y++)
+        ESP_LOGD(ENA_EXPOSURE_LOG, "matched timestamps!");
+
+        ESP_LOGD(ENA_EXPOSURE_LOG, "Beacon: %u,%u,%d", beacon.timestamp_first, beacon.timestamp_last, beacon.rssi);
+        ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, beacon.rpi, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
+        ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, beacon.aem, ENA_AEM_METADATA_LENGTH, ESP_LOG_DEBUG);
+
+        ESP_LOGD(ENA_EXPOSURE_LOG, "Key: %u,%u,%d", timestamp_day_start, timestamp_day_end, temporary_exposure_key.rolling_period);
+        ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, temporary_exposure_key.key_data, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
+        bool match = false;
+        ena_exposure_information_t exposure_info;
+        exposure_info.duration_minutes = 0;
+        exposure_info.min_attenuation = INT_MAX;
+        exposure_info.typical_attenuation = 0;
+        exposure_info.report_type = temporary_exposure_key.report_type;
+        uint8_t rpi[ENA_KEY_LENGTH];
+        uint8_t rpik[ENA_KEY_LENGTH];
+        ena_crypto_rpik(rpik, temporary_exposure_key.key_data);
+
+        for (int i = 0; i < temporary_exposure_key.rolling_period; i++)
         {
-            ena_storage_get_beacon(y, &beacon);
+            ena_crypto_rpi(rpi, rpik, temporary_exposure_key.rolling_start_interval_number + i);
             if (memcmp(beacon.rpi, rpi, sizeof(ENA_KEY_LENGTH)) == 0)
             {
                 match = true;
-                exposure_info.day = temporary_exposure_key.rolling_start_interval_number * ENA_TIME_WINDOW;
+                exposure_info.day = timestamp_day_start;
                 exposure_info.duration_minutes += (ENA_BEACON_TRESHOLD / 60);
                 exposure_info.typical_attenuation = (exposure_info.typical_attenuation + beacon.rssi) / 2;
                 if (beacon.rssi < exposure_info.min_attenuation)
@@ -298,10 +307,21 @@ void ena_exposure_check_temporary_exposure_key(ena_temporary_exposure_key_t temp
                 }
             }
         }
-    }
 
-    if (match)
+        if (match)
+        {
+            ena_storage_add_exposure_information(&exposure_info);
+        }
+    }
+}
+
+void ena_exposure_check_temporary_exposure_key(ena_temporary_exposure_key_t temporary_exposure_key)
+{
+    ena_beacon_t beacon;
+    uint32_t beacons_count = ena_storage_beacons_count();
+    for (int y = 0; y < beacons_count; y++)
     {
-        ena_storage_add_exposure_information(&exposure_info);
+        ena_storage_get_beacon(y, &beacon);
+        ena_exposure_check(beacon, temporary_exposure_key);
     }
 }

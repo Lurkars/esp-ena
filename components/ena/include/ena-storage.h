@@ -82,6 +82,14 @@ void ena_storage_read(size_t address, void *data, size_t size);
 void ena_storage_write(size_t address, void *data, size_t size);
 
 /**
+ * @brief       erase storage at given address
+ * 
+ * @param[in]   address     the address to erase from
+ * @param[in]   size        how many bytes to erase
+ */
+void ena_storage_erase(size_t address, size_t size);
+
+/**
  * @brief       deletes bytes at given address and shift other data back
  * 
  * @param[in] address       the address to delete from
@@ -224,7 +232,7 @@ void ena_storage_remove_beacon(uint32_t index);
  * This function completely deletes all stored data and resets the counters 
  * of TEKs, temporary beacon and beacon to zero.
  */
-void ena_storage_erase(void);
+void ena_storage_erase_all(void);
 
 /**
  * @brief       erase all stored TEKs
@@ -253,6 +261,11 @@ void ena_storage_erase_temporary_beacon(void);
  * This function deletes all stored beacons and resets counter to zero.
  */
 void ena_storage_erase_beacon(void);
+
+/**
+ * @brief       helper to dump a byte array as hash
+ */
+void ena_storage_dump_hash_array(uint8_t *data, size_t size);
 
 /**
  * @brief       dump all stored TEKs to serial output

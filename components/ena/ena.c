@@ -88,12 +88,12 @@ void ena_run(void)
 void ena_start(void)
 {
 #if (CONFIG_ENA_STORAGE_ERASE)
-    ena_storage_erase();
+    ena_storage_erase_all();
 #endif
 
     if (ena_storage_read_last_exposure_date() == 0xFFFFFFFF)
     {
-        ena_storage_erase();
+        ena_storage_erase_all();
     }
 
     // init NVS for BLE
