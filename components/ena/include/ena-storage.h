@@ -114,6 +114,14 @@ uint32_t ena_storage_read_last_exposure_date(void);
 void ena_storage_write_last_exposure_date(uint32_t timestamp);
 
 /**
+ * @brief       get number of stored TEKs
+ * 
+ * @return
+ *              total number of TEKs stored
+ */
+uint32_t ena_storage_tek_count(void);
+
+/**
  * @brief       get last stored TEK
  * 
  * @param[out]  tek         pointer to write last TEK to
@@ -122,6 +130,15 @@ void ena_storage_write_last_exposure_date(uint32_t timestamp);
  *              total number of TEKs stored
  */
 uint32_t ena_storage_read_last_tek(ena_tek_t *tek);
+
+/**
+ * @brief       get stored TEK at given index
+ * 
+ * @param[in]   index       the index of the TEK to read
+ * @param[out]  tek         pointer to write TEK to
+ * 
+ */
+void ena_storage_get_tek(uint32_t index, ena_tek_t *tek);
 
 /**
  * @brief       store given TEK

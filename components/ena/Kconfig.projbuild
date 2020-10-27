@@ -7,6 +7,12 @@ menu "Exposure Notification API"
 		help
 			Dump storage (stored TEKs, temp. beacons and perm. beacons) to serial output after scan.
 
+		config ENA_RESET_LAST_CHECK
+		bool "Reset last exposure check"
+		default false
+		help
+			Resets the last exposure check date on start.
+
 		config ENA_STORAGE_TEK_MAX
 		int "Max. TEKs"
 		default 14
@@ -90,5 +96,6 @@ menu "Exposure Notification API"
 		help
 			Defines the TEK rolling period in 10 minute steps. (Default 144 => 24 hours)
 	endmenu
+
 
 endmenu
