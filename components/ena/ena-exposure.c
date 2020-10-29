@@ -274,14 +274,6 @@ void ena_exposure_check(ena_beacon_t beacon, ena_temporary_exposure_key_t tempor
 
     if (beacon.timestamp_first > timestamp_day_start && beacon.timestamp_last < timestamp_day_end)
     {
-        ESP_LOGD(ENA_EXPOSURE_LOG, "matched timestamps!");
-
-        ESP_LOGD(ENA_EXPOSURE_LOG, "Beacon: %u,%u,%d", beacon.timestamp_first, beacon.timestamp_last, beacon.rssi);
-        ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, beacon.rpi, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
-        ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, beacon.aem, ENA_AEM_METADATA_LENGTH, ESP_LOG_DEBUG);
-
-        ESP_LOGD(ENA_EXPOSURE_LOG, "Key: %u,%u,%d", timestamp_day_start, timestamp_day_end, temporary_exposure_key.rolling_period);
-        ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, temporary_exposure_key.key_data, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
         bool match = false;
         ena_exposure_information_t exposure_info;
         exposure_info.duration_minutes = 0;
