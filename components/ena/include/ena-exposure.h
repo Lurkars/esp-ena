@@ -240,6 +240,20 @@ ena_exposure_config_t *ena_exposure_default_config(void);
 void ena_exposure_check(ena_beacon_t beacon, ena_temporary_exposure_key_t temporary_exposure_key);
 
 /**
+ * @brief find minimal key index of beacons for a certain timestamp
+ * 
+ * @param[in] timestamp              the timestamp to check against
+ */
+int ena_expore_check_find_min(uint32_t timestamp);
+
+/**
+ * @brief find maximum key index of beacons for a certain timestamp
+ * 
+ * @param[in] timestamp              the timestamp to check against
+ */
+int ena_expore_check_find_max(uint32_t timestamp);
+
+/**
  * @brief reads Temporary Exposue Key and check for exposures with all beacons
  * 
  * @param[in] temporary_exposure_key    the temporary exposure keys to check

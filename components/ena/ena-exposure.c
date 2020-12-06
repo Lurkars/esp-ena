@@ -243,6 +243,7 @@ void ena_exposure_summary(ena_exposure_config_t *config)
         }
         params.duration = exposure_info.duration_minutes;
         params.attenuation = exposure_info.typical_attenuation;
+        params.report_type = exposure_info.report_type;
         int score = ena_exposure_risk_score(config, params);
         if (score > current_summary->max_risk_score)
         {
@@ -270,20 +271,13 @@ ena_exposure_config_t *ena_exposure_default_config(void)
 void ena_exposure_check(ena_beacon_t beacon, ena_temporary_exposure_key_t temporary_exposure_key)
 {
     uint32_t timestamp_day_start = temporary_exposure_key.rolling_start_interval_number * ENA_TIME_WINDOW;
-    uint32_t timestamp_day_end = temporary_exposure_key.rolling_start_interval_number * ENA_TIME_WINDOW + temporary_exposure_key.rolling_period * ENA_TIME_WINDOW;
+    uint32_t timestamp_day_end = (temporary_exposure_key.rolling_start_interval_number + temporary_exposure_key.rolling_period) * ENA_TIME_WINDOW;
 
     if (beacon.timestamp_first > timestamp_day_start && beacon.timestamp_last < timestamp_day_end)
     {
-        ESP_LOGD(ENA_EXPOSURE_LOG, "matched timestamps!");
-
-        ESP_LOGD(ENA_EXPOSURE_LOG, "Beacon: %u,%u,%d", beacon.timestamp_first, beacon.timestamp_last, beacon.rssi);
-        ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, beacon.rpi, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
-        ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, beacon.aem, ENA_AEM_METADATA_LENGTH, ESP_LOG_DEBUG);
-
-        ESP_LOGD(ENA_EXPOSURE_LOG, "Key: %u,%u,%d", timestamp_day_start, timestamp_day_end, temporary_exposure_key.rolling_period);
-        ESP_LOG_BUFFER_HEXDUMP(ENA_EXPOSURE_LOG, temporary_exposure_key.key_data, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
         bool match = false;
         ena_exposure_information_t exposure_info;
+        exposure_info.day = timestamp_day_start;
         exposure_info.duration_minutes = 0;
         exposure_info.min_attenuation = INT_MAX;
         exposure_info.typical_attenuation = 0;
@@ -298,8 +292,7 @@ void ena_exposure_check(ena_beacon_t beacon, ena_temporary_exposure_key_t tempor
             if (memcmp(beacon.rpi, rpi, sizeof(ENA_KEY_LENGTH)) == 0)
             {
                 match = true;
-                exposure_info.day = timestamp_day_start;
-                exposure_info.duration_minutes += (ENA_BEACON_TRESHOLD / 60);
+                exposure_info.duration_minutes += ((beacon.timestamp_last - beacon.timestamp_first) / 60);
                 exposure_info.typical_attenuation = (exposure_info.typical_attenuation + beacon.rssi) / 2;
                 if (beacon.rssi < exposure_info.min_attenuation)
                 {
@@ -315,11 +308,90 @@ void ena_exposure_check(ena_beacon_t beacon, ena_temporary_exposure_key_t tempor
     }
 }
 
+int ena_expore_check_find_min_rec(int min, int max, uint32_t timestamp)
+{
+
+    if (min < 0)
+    {
+        return -1;
+    }
+
+    if (min >= max - 1)
+    {
+        return min;
+    }
+
+    ena_beacon_t beacon;
+    int mid = min + (max - min) / 2;
+    ena_storage_get_beacon(min, &beacon);
+
+    if (beacon.timestamp_first < timestamp)
+    {
+        return ena_expore_check_find_min_rec(mid, max, timestamp);
+    }
+    else if (beacon.timestamp_first > timestamp)
+    {
+        return ena_expore_check_find_min_rec(min - ((max - min) / 2), mid, timestamp);
+    }
+    else
+    {
+        return min;
+    }
+}
+
+int ena_expore_check_find_min(uint32_t timestamp)
+{
+    return ena_expore_check_find_min_rec(0, (ena_storage_beacons_count() - 1), timestamp);
+}
+
+int ena_expore_check_find_max_rec(int min, int max, int max_max, uint32_t timestamp)
+{
+    if (max > max_max)
+    {
+        return -1;
+    }
+
+    if (max <= (min + 1))
+    {
+        return max;
+    }
+
+    ena_beacon_t beacon;
+    int mid = min + (max - min) / 2;
+    ena_storage_get_beacon(max, &beacon);
+    if (beacon.timestamp_first > timestamp)
+    {
+        return ena_expore_check_find_max_rec(min, mid, max_max, timestamp);
+    }
+    else if (beacon.timestamp_first < timestamp)
+    {
+        return ena_expore_check_find_max_rec(mid, max + ((max - min) / 2), max_max, timestamp);
+    }
+    else
+    {
+        return max;
+    }
+}
+
+int ena_expore_check_find_max(uint32_t timestamp)
+{
+    return ena_expore_check_find_max_rec(0, (ena_storage_beacons_count() - 1), (ena_storage_beacons_count() - 1), timestamp);
+}
+
 void ena_exposure_check_temporary_exposure_key(ena_temporary_exposure_key_t temporary_exposure_key)
 {
+    uint32_t timestamp_start = temporary_exposure_key.rolling_start_interval_number * ENA_TIME_WINDOW;
+    uint32_t timestamp_end = (temporary_exposure_key.rolling_start_interval_number + temporary_exposure_key.rolling_period) * ENA_TIME_WINDOW;
+
+    int min = ena_expore_check_find_min(timestamp_start);
+    int max = ena_expore_check_find_max(timestamp_end);
+    if (min == -1 || max == -1)
+    {
+        return;
+    }
+
     ena_beacon_t beacon;
-    uint32_t beacons_count = ena_storage_beacons_count();
-    for (int y = 0; y < beacons_count; y++)
+    for (int y = min; y <= max; y++)
     {
         ena_storage_get_beacon(y, &beacon);
         ena_exposure_check(beacon, temporary_exposure_key);

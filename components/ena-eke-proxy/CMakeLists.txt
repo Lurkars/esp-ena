@@ -1,10 +1,11 @@
 idf_component_register(
     SRCS 
-        "ena-binary-export.c"
+        "ena-eke-proxy.c"
     INCLUDE_DIRS "."
     PRIV_REQUIRES
+        esp_http_client
         ena
-        nanopb
+        wifi-controller
     EMBED_FILES
-        "test/export.bin"
+        "certs/cert.pem"
 )

@@ -1,0 +1,51 @@
+menu "ENA Exposue Key Export Proxy"
+	
+	config ENA_EKE_PROXY_KEYFILES_DAILY_URL
+		string "Url to fetch daily keys"
+		default "https://cwa-proxy.champonthis.de/version/v1/diagnosis-keys/country/DE/date/%s?page=%u&size=%u"
+		help
+			Defines the url to fetch keys. Datestring of ENA_EKE_PROXY_KEYFILES_DAILY_FORMAT (%s), page (%u) and size (%u) are passed as paramter. (Default https://cwa-proxy.champonthis.de/version/v1/diagnosis-keys/country/DE/date/%s?page=%u&size=%u)
+
+	config ENA_EKE_PROXY_KEYFILES_HOURLY
+		bool "Also fetch keys hourly"
+		default true
+		help
+			If enabled, the hourly keys will be fetched for current day.
+
+	config ENA_EKE_PROXY_KEYFILES_HOURLY_URL
+		string "Url to fetch daily keys"
+		depends on ENA_EKE_PROXY_KEYFILES_HOURLY
+		default "https://cwa-proxy.champonthis.de/version/v1/diagnosis-keys/country/DE/date/%s/hour/%u?page=%u&size=%u"
+		help
+			Defines the url to fetch keys. Datestring of ENA_EKE_PROXY_KEYFILES_DAILY_FORMAT (%s), hour (%u), page (%u) and size (%u) are passed as paramter. (Default https://cwa-proxy.champonthis.de/version/v1/diagnosis-keys/country/DE/date/%s/hour/%u?page=%u&size=%u)
+
+	config ENA_EKE_PROXY_KEYFILES_DAILY_FORMAT
+		string "Format of date to fetch"
+		default "%Y-%m-%d"
+		help
+			Defines the Datestring (%s) for setting the date in fetch url. (Default %Y-%m-%d)
+
+	config ENA_EKE_PROXY_KEYFILES_UPLOAD_URL
+		string "Url to upload keys"
+		default "https://cwa-proxy.champonthis.de/version/v1/diagnosis-keys"
+		help
+			Defines the url to upload keys to. (Default https://cwa-proxy.champonthis.de/version/v1/diagnosis-keys)
+		
+	config ENA_EKE_PROXY_KEY_LIMIT
+		int "Limit of keys to receive"
+		default 500
+		help
+			Defines the limit of keys to receive in one request from server. (Default 500)
+
+	config ENA_EKE_PROXY_MAX_PAST_DAYS
+		int "Max. days to retrieve keys"
+		default 14
+		help
+			Defines the maximum number of days to receive missed keys from server. (Default 14)
+
+	config ENA_EKE_PROXY_AUTHORIZATION
+		string "Authorization Header value (PanTra)"
+		help
+			Defines the value to put in Authorization header during key upload. (For PanTra key server)
+
+endmenu
