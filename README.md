@@ -31,11 +31,10 @@ Additional features for full ENA device
     * connect to wifi
     * delete data
     * set language
-    * enter tan for infection status (dummy for now)
+    * enter tan and uploading own exposure keys
 * battery support with ESP32 dev-boards with integrated LiPo support
 
 ### Features in development
-* send infected status (will test [Corona Warn App](https://github.com/corona-warn-app))
 * 3d print case
 
 ### Limitations/Problems/Questions
