@@ -1,0 +1,15 @@
+menu "I²C"
+	
+	config I2C_SDA_PIN
+		int "I²C sda pin"
+		default 22
+
+	config I2C_SCL_PIN
+		int "I²C scl pin"
+		default 23
+
+	config I2C_CLOCKSPEED
+		int "I²C clock speed"
+		default 1000000
+
+endmenu

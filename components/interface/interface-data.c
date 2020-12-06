@@ -91,12 +91,12 @@ void interface_data_rst(void)
 
 void interface_data_lft(void)
 {
-    interface_wifi_start();
+    interface_datetime_start();
 }
 
 void interface_data_rht(void)
 {
-    interface_settings_start();
+    interface_info_start();
 }
 
 void interface_data_mid(void)
@@ -190,6 +190,7 @@ void interface_data_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_data_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_data_dwn);
     interface_set_display_function(&interface_data_display);
+    interface_set_display_refresh_function(NULL);
 
     ESP_LOGD(INTERFACE_LOG, "start delete data interface");
 }

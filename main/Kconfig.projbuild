@@ -1,0 +1,9 @@
+menu "WiFi STA"
+
+	config WIFI_STA_SSID
+	string "Wifi SSID"
+
+	config WIFI_STA_PASSWORD
+	string "Wifi Password"
+
+endmenu

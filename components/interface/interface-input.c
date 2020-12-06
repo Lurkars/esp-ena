@@ -154,6 +154,7 @@ void interface_input_mid(void)
     current_text[current_cursor] = current_char_set[current_char_index];
     printf("current_char_set: %d %s\n", strlen(current_char_set), current_char_set);
 }
+
 void interface_input_up(void)
 {
     if (current_char_index == 0)
@@ -314,5 +315,6 @@ void interface_input(interface_text_callback callback_rst, interface_text_callba
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_input_dwn);
 
     interface_set_display_function(&interface_input_display);
+    interface_set_display_refresh_function(NULL);
     ESP_LOGD(INTERFACE_LOG, "start input interface");
 }

@@ -17,6 +17,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include "esp_system.h"
+#include "esp_sntp.h"
 #include "esp_log.h"
 
 #include "ena.h"
@@ -25,7 +26,7 @@
 #include "ena-exposure.h"
 #include "ena-bluetooth-advertise.h"
 #include "ena-bluetooth-scan.h"
-#include "ena-cwa.h"
+#include "ena-eke-proxy.h"
 #include "ds3231.h"
 #include "ssd1306.h"
 #include "interface.h"
@@ -33,26 +34,36 @@
 #include "rtc.h"
 #include "wifi-controller.h"
 
-
 #include "sdkconfig.h"
+
+void time_sync_notification_cb(struct timeval *tv)
+{
+    time_t time = (time_t)tv->tv_sec;
+    struct tm *rtc_time = gmtime(&time);
+    rtc_set_time(rtc_time);
+    settimeofday(tv, NULL);
+    ESP_LOGD(ENA_LOG, "NTP time:%lu %s", tv->tv_sec, asctime(rtc_time));
+}
 
 void app_main(void)
 {
-
     // debug only own LOG TAGs
     esp_log_level_set("*", ESP_LOG_WARN);
     esp_log_level_set(ENA_LOG, ESP_LOG_DEBUG);
-    esp_log_level_set(ENA_BEACON_LOG, ESP_LOG_DEBUG);
-    esp_log_level_set(ENA_ADVERTISE_LOG, ESP_LOG_DEBUG);
-    esp_log_level_set(ENA_SCAN_LOG, ESP_LOG_DEBUG);
+    esp_log_level_set(ENA_BEACON_LOG, ESP_LOG_INFO);
+    esp_log_level_set(ENA_ADVERTISE_LOG, ESP_LOG_INFO);
+    esp_log_level_set(ENA_SCAN_LOG, ESP_LOG_INFO);
     esp_log_level_set(ENA_EXPOSURE_LOG, ESP_LOG_DEBUG);
     esp_log_level_set(ENA_STORAGE_LOG, ESP_LOG_INFO);
-    esp_log_level_set(ENA_CWA_LOG, ESP_LOG_DEBUG);
-    esp_log_level_set(INTERFACE_LOG, ESP_LOG_DEBUG);
-    esp_log_level_set(WIFI_LOG, ESP_LOG_DEBUG);
+    esp_log_level_set(ENA_EKE_PROXY_LOG, ESP_LOG_DEBUG);
+    esp_log_level_set(INTERFACE_LOG, ESP_LOG_INFO);
+    esp_log_level_set(WIFI_LOG, ESP_LOG_INFO);
 
-    // start interface
-    interface_start();
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, "pool.ntp.org");
+    sntp_set_time_sync_notification_cb(time_sync_notification_cb);
+    sntp_set_sync_mode(SNTP_SYNC_MODE_SMOOTH);
+    sntp_init();
 
     // set system time from RTC
     struct tm rtc_time;
@@ -63,11 +74,10 @@ void app_main(void)
     tv.tv_sec = curtime;
     settimeofday(&tv, NULL);
 
-    // Hardcoded timezone of UTC+2 for now (consider POSIX notation!)
-    setenv("TZ", "UTC-2", 1);
-    tzset();
-
     ena_start();
+
+    // start interface
+    interface_start();
 
     // start with main interface
     interface_main_start();
@@ -75,10 +85,12 @@ void app_main(void)
     // start button input
     button_input_start();
 
+    wifi_controller_reconnect(NULL);
+
     while (1)
     {
         ena_run();
-        ena_cwa_run();
+        ena_eke_proxy_run();
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }

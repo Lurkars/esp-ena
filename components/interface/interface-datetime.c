@@ -49,12 +49,12 @@ void interface_datetime_set(void)
 
 void interface_datetime_lft(void)
 {
-    interface_settings_start();
+    interface_wifi_start();
 }
 
 void interface_datetime_rht(void)
 {
-    interface_wifi_start();
+    interface_data_start();
 }
 
 void interface_datetime_mid(void)
@@ -106,7 +106,8 @@ void interface_datetime_display(void)
     display_clear_line( edit_line + 1, false);
 
     time(&current_timstamp);
-    current_tm = localtime(&current_timstamp);
+    current_tm = gmtime(&current_timstamp);
+    current_tm->tm_hour = current_tm->tm_hour + (interface_get_timezone_offset()) % 24;
 
     strftime(time_buffer, 16, INTERFACE_FORMAT_TIME, current_tm);
     display_text_line_column( time_buffer, 3, 4, false);
@@ -168,6 +169,7 @@ void interface_datetime_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_datetime_dwn);
     interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_datetime_set);
     interface_register_command_callback(INTERFACE_COMMAND_RST, NULL);
-    interface_set_display_function(&interface_datetime_display);
+    interface_set_display_function(NULL);
+    interface_set_display_refresh_function(&interface_datetime_display);
     ESP_LOGD(INTERFACE_LOG, "start datetime interface");
 }

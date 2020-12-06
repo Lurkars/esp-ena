@@ -91,6 +91,10 @@ void ena_start(void)
     ena_storage_erase_all();
 #endif
 
+#ifdef CONFIG_ENA_RESET_LAST_CHECK
+    ena_storage_write_last_exposure_date(0);
+#endif
+
     if (ena_storage_read_last_exposure_date() == 0xFFFFFFFF)
     {
         ena_storage_erase_all();

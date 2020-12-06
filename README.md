@@ -20,6 +20,7 @@ The following acronyms will be used in code and comments:
 * permanent storage on flash of last keys, beacons and exposures (storage is limited, see [storage math](#some-storage-math) for details)
 * parsing of Exposure Key export binaries as defined in [Exposure Key export file format and verification](https://developers.google.com/android/exposure-notifications/exposure-key-file-format) (big thanks to [nanopb](https://github.com/nanopb/nanopb) for making this easier than I thought!)
 * calculating exposure risks/scores (after adding reported keys and storing exposure information) as defined in [ENExposureConfiguration (Apple)](https://developer.apple.com/documentation/exposurenotification/enexposureconfiguration/calculating_the_exposure_risk_value_in_exposurenotification_version_1)
+* receive Exposue Key export from an ENA Exposure Key export proxy server [ena-eke-proxy module](#ena-eke-proxy), see [ena-eke-proxy server reference implemenation](https://github.com/Lurkars/ena-eke-proxy)
 
 Additional features for full ENA device
 * RTC support with DS3231 (for correct system time)
@@ -31,18 +32,16 @@ Additional features for full ENA device
     * delete data
     * set language
     * enter tan for infection status (dummy for now)
+* battery support with ESP32 dev-boards with integrated LiPo support
 
 ### Features in development
-* automatically receive Exposure Key export from web (started with [Corona Warn App](https://github.com/corona-warn-app))
 * send infected status (will test [Corona Warn App](https://github.com/corona-warn-app))
-* battery support
 * 3d print case
 
 ### Limitations/Problems/Questions
 * WiFi or other external connection needed for infections status (auto-connect to open WiFis?)
 * obtaining accessibility
 * all parameters (scanning time, thresholds etc.)
-* memory (RAM) is really low with BLE and WiFi enabled, unzipping a Exposure Key export not possible for now, maybe disable BLE service for download.
 * service UUID is send reversed, RPI and AEM also send in reverse? Don't know BLE specification enough
 
 ### some storage math
@@ -133,13 +132,15 @@ The ena module contains the main functions of eps-ena with bluetooth scanning an
 * *ena-exposure* compare exposed keys with stored beacons, calculate score and risk
 * *ena* run all together and timing for scanning and advertising
 
-### ena-binary-export
+### ena-eke-proxy
 
-Module to decode Exposure Key export.
+This module is for connecting to an Exposue Key export proxy server. The server must provide daily (and could hourly) fetch of daily keys in binary blob batches with the following format
 
-### ena-cwa
+| Key Data | Rolling Start Interval Number | Rolling Period | Days Since Onset Of Symptoms |
+| :------: | :---------------------------: | :------------: | :--------------------------: |
+| 16 bytes |            4 bytes            |    4 bytes     |           4 bytes            |
 
-Connection to german Exposure App ([Corona Warn App](https://github.com/corona-warn-app)) for download Exposure Key export (and maybe later report infection).
+Request url is parametrized with {day-string},({hour} in hourly mode,) {page}, {page-size}.
 
 ### interface
 
@@ -169,6 +170,14 @@ I2C driver for a DS3231 RTC, implementation of [rtc](#-rtc) module
 
 I2C driver for a SSD1306 display, implementation of [display](#-display) module
 
-### nanopb
+### ena-binary-export  \[deprecared\]
 
-[Nanopb](https://github.com/nanopb/nanopb) for reading Protocol Buffers of Exposure Key export. Including already generated Headers from *.proto files.
+Module to decode Exposure Key export. \[Depracated through ena-eke-proxy module\]
+
+### ena-cwa \[deprecared\]
+
+Connection to german Exposure App ([Corona Warn App](https://github.com/corona-warn-app)) for download Exposure Key export (and maybe later report infection). \[Depracated through ena-eke-proxy module\]
+
+### nanopb \[deprecared\]
+
+[Nanopb](https://github.com/nanopb/nanopb) for reading Protocol Buffers of Exposure Key export. Including already generated Headers from *.proto files.  \[Depracated through ena-eke-proxy module\]

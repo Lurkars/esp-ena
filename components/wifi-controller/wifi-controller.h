@@ -20,6 +20,11 @@
 #define WIFI_LOG "wifi-controller" // TAG for Logging
 
 /**
+ * @brief       callback function after successfull wifi connect
+ */
+typedef void (*wifi_connected_callback)(void);
+
+/**
  * @brief scan for WiFis
  * 
  * @param[out] ap_info  scanned APs
@@ -31,22 +36,31 @@ void wifi_controller_scan(wifi_ap_record_t ap_info[], uint16_t *ap_count);
  * @brief connect to wifi ap
  * 
  * @param[in] wifi_config   config of wifi to connect
+ * @param[in] callback      callback function after connection
  * 
  * @return
  *          esp_err_t connection status
  */
-esp_err_t wifi_controller_connect(wifi_config_t wifi_config);
+esp_err_t wifi_controller_connect(wifi_config_t wifi_config, wifi_connected_callback callback);
 
 /**
  * @brief reconnect to previous wifi
+ * 
+ * @param[in] callback      callback function after connection
  *  
  * @return
  *          esp_err_t connection status
  */
-esp_err_t wifi_controller_reconnect(void);
+esp_err_t wifi_controller_reconnect(wifi_connected_callback callback);
 
 /**
- * @brief reconnect to previous wifi
+ * @brief disconnect wifi
+ * 
+ */
+esp_err_t wifi_controller_disconnect(void);
+
+/**
+ * @brief get current wifi connection
  *  
  * @return
  *          wifi_ap_record_t pointer to current wifi connection, NULL if not connected

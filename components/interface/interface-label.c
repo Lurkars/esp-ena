@@ -27,23 +27,36 @@ void interface_init_label(void)
     // EN
     interface_text_button_cancel.text[EN] = "CANCEL";
     interface_text_button_ok.text[EN] = "OK";
+    interface_text_button_back.text[EN] = "BACK";
     interface_text_button_menu.text[EN] = "MENU";
     interface_text_button_report.text[EN] = "REPORT";
 
     interface_text_headline_tan.text[EN] = "ENTER TAN";
+    interface_text_headline_report.text[EN] = "REPORT";
     interface_text_headline_wifi.text[EN] = "WIFI";
     interface_text_headline_time.text[EN] = "TIME/DATE";
     interface_text_headline_data.text[EN] = "DEL DATA";
     interface_text_headline_settings.text[EN] = "SETTING";
+    interface_text_headline_info.text[EN] = "INFO";
     interface_text_headline_debug.text[EN] = "DEBUG";
+
+    interface_text_wifi_scanning.text[EN] = "Scanning...";
 
     interface_text_settings_locale.text[EN] = "Language:";
     interface_text_settings_locales[EN].text[EN] = "EN";
     interface_text_settings_locales[DE].text[EN] = "DE";
 
-    interface_text_settings_timezone.text[EN] = "Timezone:";
+    interface_text_settings_timezone.text[EN] = "UTC:";
 
-    interface_text_wifi_scanning.text[EN] = "Scanning...";
+    interface_text_info_num_keys.text[EN] = "Seen:";
+    interface_text_info_exp_days.text[EN] = "Last Exp:";
+    interface_text_info_exp_num.text[EN] = "Num Exp:";
+    interface_text_info_exp_max.text[EN] = "Score:";
+    interface_text_info_exp_sum.text[EN] = "Scores:";
+
+    interface_text_report_pending.text[EN] = "Uploading...";
+    interface_text_report_success.text[EN] = "Upload succeed!";
+    interface_text_report_fail.text[EN] = "Upload failed!";
 
     interface_text_data_del[0].text[EN] = "DEL TEK";
     interface_text_data_del[1].text[EN] = "DEL Exp Info";
@@ -75,26 +88,40 @@ void interface_init_label(void)
 
     // DE
     interface_text_button_cancel.text[DE] = "ZURÜCK";
+    interface_text_button_back.text[DE] = "ZURÜCK";
     interface_text_button_ok.text[DE] = "OK";
     interface_text_button_menu.text[DE] = "MENU";
     interface_text_button_report.text[DE] = "MELDEN";
 
     interface_text_headline_tan.text[DE] = "TAN EING.";
+    interface_text_headline_report.text[DE] = "MELDEN";
     interface_text_headline_wifi.text[DE] = "WLAN";
     interface_text_headline_time.text[DE] = "ZEIT/DATUM";
     interface_text_headline_data.text[DE] = "DATEN ENTF";
     interface_text_headline_settings.text[DE] = "EINSTEL.";
+    interface_text_headline_info.text[DE] = "INFOS";
     interface_text_headline_debug.text[DE] = "DEBUG";
+
+    interface_text_wifi_scanning.text[DE] = "Scannen...";
 
     interface_text_settings_locale.text[DE] = "Sprache:";
     interface_text_settings_locales[EN].text[DE] = "EN";
     interface_text_settings_locales[DE].text[DE] = "DE";
 
-    interface_text_settings_timezone.text[DE] = "Zeitzone:";
+    interface_text_settings_timezone.text[DE] = "GMT:";
 
-    interface_text_wifi_scanning.text[DE] = "Scannen...";
+    interface_text_info_num_keys.text[DE] = "Gesehen:";
+    interface_text_info_exp_days.text[DE] = "letz. Exp:";
+    interface_text_info_exp_num.text[DE] = "Anz. Exp:";
+    interface_text_info_exp_max.text[DE] = "Score:";
+    interface_text_info_exp_sum.text[DE] = "Scores:";
 
-    interface_text_data_del[0].text[DE] = "ENTF TEK";
+    interface_text_report_pending.text[DE] = "Hochladen...";
+    interface_text_report_success.text[DE] = "Erfolgreich!";
+    interface_text_report_fail.text[DE] = "Fehlgeschlagen!";
+
+    interface_text_data_del[0]
+        .text[DE] = "ENTF TEK";
     interface_text_data_del[1].text[DE] = "ENTF Exp Info";
     interface_text_data_del[2].text[DE] = "ENTF Tmp RPI";
     interface_text_data_del[3].text[DE] = "ENTF RPI";

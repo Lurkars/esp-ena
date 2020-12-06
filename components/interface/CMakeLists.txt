@@ -4,6 +4,7 @@ idf_component_register(
         "interface-main.c"
         "interface-data.c"
         "interface-datetime.c"
+        "interface-info.c"
         "interface-input.c"
         "interface-label.c"
         "interface-report.c"
@@ -12,6 +13,7 @@ idf_component_register(
     INCLUDE_DIRS "."
     PRIV_REQUIRES 
         ena
+        ena-eke-proxy
         display
         display-ssd1306
         rtc

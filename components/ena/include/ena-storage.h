@@ -59,7 +59,7 @@ typedef struct __attribute__((__packed__))
     uint32_t day;            // Day of the exposure, using UTC, encapsulated as the time of the beginning of that day.
     int typical_attenuation; // Aggregation of the attenuations of all of a given diagnosis key's beacons received during the scan, in dB.
     int min_attenuation;     // Minimum attenuation of all of a given diagnosis key's beacons received during the scan, in dB.
-    int duration_minutes;    //The duration of the exposure in minutes.
+    int duration_minutes;    // The duration of the exposure in minutes.
     int report_type;         // Type of diagnosis associated with a key.
 } ena_exposure_information_t;
 
@@ -114,6 +114,14 @@ uint32_t ena_storage_read_last_exposure_date(void);
 void ena_storage_write_last_exposure_date(uint32_t timestamp);
 
 /**
+ * @brief       get number of stored TEKs
+ * 
+ * @return
+ *              total number of TEKs stored
+ */
+uint32_t ena_storage_tek_count(void);
+
+/**
  * @brief       get last stored TEK
  * 
  * @param[out]  tek         pointer to write last TEK to
@@ -122,6 +130,15 @@ void ena_storage_write_last_exposure_date(uint32_t timestamp);
  *              total number of TEKs stored
  */
 uint32_t ena_storage_read_last_tek(ena_tek_t *tek);
+
+/**
+ * @brief       get stored TEK at given index
+ * 
+ * @param[in]   index       the index of the TEK to read
+ * @param[out]  tek         pointer to write TEK to
+ * 
+ */
+void ena_storage_get_tek(uint32_t index, ena_tek_t *tek);
 
 /**
  * @brief       store given TEK

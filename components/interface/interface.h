@@ -24,8 +24,6 @@
 
 #define INTERFACE_LOG "INTERFACE" // TAG for Logging
 
-
-
 #define INTERFACE_FORMAT_TIME "%X"
 
 #define INTERFACE_NUM_LOCALE 2
@@ -64,23 +62,37 @@ typedef struct
 // label variables
 interface_label_t interface_text_button_cancel;
 interface_label_t interface_text_button_ok;
+interface_label_t interface_text_button_back;
 interface_label_t interface_text_button_menu;
 interface_label_t interface_text_button_report;
 
 interface_label_t interface_text_headline_tan;
+interface_label_t interface_text_headline_report;
 interface_label_t interface_text_headline_wifi;
 interface_label_t interface_text_headline_time;
 interface_label_t interface_text_headline_data;
 interface_label_t interface_text_headline_settings;
+interface_label_t interface_text_headline_info;
 interface_label_t interface_text_headline_debug;
 
 interface_label_t interface_text_settings_locale;
 interface_label_t interface_text_settings_locales[INTERFACE_NUM_LOCALE];
 interface_label_t interface_text_settings_timezone;
 
+interface_label_t interface_text_info_num_keys;
+interface_label_t interface_text_info_exp_update;
+interface_label_t interface_text_info_exp_days;
+interface_label_t interface_text_info_exp_num;
+interface_label_t interface_text_info_exp_max;
+interface_label_t interface_text_info_exp_sum;
+
+interface_label_t interface_text_report_pending;
+interface_label_t interface_text_report_success;
+interface_label_t interface_text_report_fail;
+
 interface_label_t interface_text_wifi_scanning;
 
-interface_label_t interface_text_data_del[5];
+interface_label_t interface_text_data_del[6];
 
 interface_label_t interface_texts_weekday[7];
 
@@ -117,7 +129,7 @@ void interface_init_label(void);
 char *interface_get_label_text(interface_label_t *label);
 
 /**
- * @brief       set locale for interface
+ * @brief       get locale for interface
  * 
  * @return
  *              interface_locale_t  current locale
@@ -130,6 +142,21 @@ interface_locale_t interface_get_locale(void);
  * @param[in]   locale the locale to set
  */
 void interface_set_locale(interface_locale_t locale);
+
+/**
+ * @brief       get timezone offset for interface
+ * 
+ * @return
+ *              int  current timezone offset
+ */
+int interface_get_timezone_offset(void);
+
+/**
+ * @brief       set timezone offset for interface
+ * 
+ * @param[in]   timezone_offset the timezone offset to set
+ */
+void interface_set_timezone_offset(int timezone_offset);
 
 /**
  * @brief       register a callback function for command event
@@ -152,6 +179,13 @@ void interface_execute_command(interface_command_t command);
  * @param[in]   display_function    display  function
  */
 void interface_set_display_function(interface_display_function display_function);
+
+/**
+ * @brief       set the display refresh function
+ * 
+ * @param[in]   display_function    display  function
+ */
+void interface_set_display_refresh_function(interface_display_function display_function);
 
 /**
  * @brief       start interface logic
@@ -189,6 +223,11 @@ void interface_wifi_start(void);
  * @brief       start settings interface
  */
 void interface_settings_start(void);
+
+/**
+ * @brief       start info interface
+ */
+void interface_info_start(void);
 
 /**
  * @brief       start interface for input

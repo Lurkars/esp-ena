@@ -20,9 +20,9 @@
 #ifndef _i2c_main_H_
 #define _i2c_main_H_
 
-#define I2C_SDA_PIN (23)
-#define I2C_SCL_PIN (22)
-#define I2C_CLK_SPEED (1000000)
+#define I2C_SDA_PIN (CONFIG_I2C_SDA_PIN)
+#define I2C_SCL_PIN (CONFIG_I2C_SCL_PIN)
+#define I2C_CLK_SPEED (CONFIG_I2C_CLOCKSPEED)
 
 /**
  * @brief initialize main I2C interface

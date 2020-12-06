@@ -179,10 +179,17 @@ void ena_storage_write_last_exposure_date(uint32_t timestamp)
     ena_storage_write(ENA_STORAGE_LAST_EXPOSURE_DATE_ADDRESS, &timestamp, sizeof(uint32_t));
 }
 
+uint32_t ena_storage_tek_count(void)
+{
+    uint32_t count = 0;
+    ena_storage_read(ENA_STORAGE_TEK_COUNT_ADDRESS, &count, sizeof(uint32_t));
+    ESP_LOGD(ENA_STORAGE_LOG, "read TEK count: %u", count);
+    return count;
+}
+
 uint32_t ena_storage_read_last_tek(ena_tek_t *tek)
 {
-    uint32_t tek_count = 0;
-    ena_storage_read(ENA_STORAGE_TEK_COUNT_ADDRESS, &tek_count, sizeof(uint32_t));
+    uint32_t tek_count = ena_storage_tek_count();
     if (tek_count < 1)
     {
         return 0;
@@ -193,6 +200,13 @@ uint32_t ena_storage_read_last_tek(ena_tek_t *tek)
     ESP_LOGD(ENA_STORAGE_LOG, "read last tek %u:", tek->enin);
     ESP_LOG_BUFFER_HEXDUMP(ENA_STORAGE_LOG, tek->key_data, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
     return tek_count;
+}
+
+void ena_storage_get_tek(uint32_t index, ena_tek_t *tek)
+{
+    ena_storage_read(ENA_STORAGE_TEK_START_ADDRESS + index * sizeof(ena_tek_t), tek, sizeof(ena_tek_t));
+    ESP_LOGD(ENA_STORAGE_LOG, "read %d tek %u:", index, tek->enin);
+    ESP_LOG_BUFFER_HEXDUMP(ENA_STORAGE_LOG, tek->key_data, ENA_KEY_LENGTH, ESP_LOG_DEBUG);
 }
 
 void ena_storage_write_tek(ena_tek_t *tek)
