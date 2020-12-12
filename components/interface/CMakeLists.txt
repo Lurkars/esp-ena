@@ -7,9 +7,9 @@ elseif(ENA_INTERFACE_M5STICKC)
 elseif(ENA_INTERFACE_M5STICKC_PLUS)
     list(APPEND priv_requires "display-st7789" "rtc-bm8563" "imu-mpu6886" "pmu-axp192")
 else()   
-#   list(APPEND priv_requires "display-ssd1306" "rtc-ds3231") # uncomment for custom device with SSD1306 und DS3231
+   list(APPEND priv_requires "display-ssd1306" "rtc-ds3231") # uncomment for custom device with SSD1306 und DS3231
 #    list(APPEND priv_requires "display-st7735s" "rtc-bm8563" "imu-mpu6886" "pmu-axp192") # uncomment for M5StickC
-    list(APPEND priv_requires "display-st7789" "rtc-bm8563" "imu-mpu6886" "pmu-axp192") # uncomment for M5StickC PLUS
+#    list(APPEND priv_requires "display-st7789" "rtc-bm8563" "imu-mpu6886" "pmu-axp192") # uncomment for M5StickC PLUS
 endif()
 
 idf_component_register(
