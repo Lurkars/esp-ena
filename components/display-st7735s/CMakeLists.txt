@@ -1,8 +1,9 @@
 idf_component_register(
     SRCS 
-        "ssd1306.c"
+        "st7735s.c"
     INCLUDE_DIRS "."
     PRIV_REQUIRES
         "display"
-        "i2c-main"
+        "spi_flash"
+        "pmu-axp192"
 )

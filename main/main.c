@@ -27,14 +27,19 @@
 #include "ena-bluetooth-advertise.h"
 #include "ena-bluetooth-scan.h"
 #include "ena-eke-proxy.h"
-#include "ds3231.h"
-#include "ssd1306.h"
 #include "interface.h"
-#include "button-input.h"
 #include "rtc.h"
 #include "wifi-controller.h"
 
 #include "sdkconfig.h"
+
+#ifdef CONFIG_ENA_INTERFACE_CUSTOM
+#include "button-input.h"
+#endif
+
+#if defined(CONFIG_ENA_INTERFACE_M5STICKC) || defined(CONFIG_ENA_INTERFACE_M5STICKC_PLUS) 
+#include "m5-input.h"
+#endif
 
 void time_sync_notification_cb(struct timeval *tv)
 {
@@ -49,6 +54,7 @@ void app_main(void)
 {
     // debug only own LOG TAGs
     esp_log_level_set("*", ESP_LOG_WARN);
+    esp_log_level_set("wifi", ESP_LOG_ERROR);
     esp_log_level_set(ENA_LOG, ESP_LOG_DEBUG);
     esp_log_level_set(ENA_BEACON_LOG, ESP_LOG_INFO);
     esp_log_level_set(ENA_ADVERTISE_LOG, ESP_LOG_INFO);
@@ -83,7 +89,13 @@ void app_main(void)
     interface_main_start();
 
     // start button input
+#if defined(CONFIG_ENA_INTERFACE_CUSTOM)
     button_input_start();
+#endif
+
+#if defined(CONFIG_ENA_INTERFACE_M5STICKC) || defined(CONFIG_ENA_INTERFACE_M5STICKC_PLUS) 
+    m5_input_start();
+#endif
 
     wifi_controller_reconnect(NULL);
 

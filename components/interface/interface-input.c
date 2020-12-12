@@ -76,7 +76,6 @@ void interface_input_set_char_set(void)
         strcpy(current_char_set, char_set_uppercase);
         current_char_index = strlen(current_char_set) - strlen(ret);
     }
-    printf("current_char_set: %d %s\n", strlen(current_char_set), current_char_set);
 }
 
 void interface_input_set(void)
@@ -152,7 +151,6 @@ void interface_input_mid(void)
     }
     current_char_index = 0;
     current_text[current_cursor] = current_char_set[current_char_index];
-    printf("current_char_set: %d %s\n", strlen(current_char_set), current_char_set);
 }
 
 void interface_input_up(void)
@@ -187,8 +185,8 @@ void interface_input_display(void)
 {
 
     // buttons
-    display_set_button( interface_get_label_text(&interface_text_button_cancel), true, false);
-    display_set_button( interface_get_label_text(&interface_text_button_ok), false, true);
+    display_set_button(interface_get_label_text(&interface_text_button_cancel), true, false);
+    display_set_button(interface_get_label_text(&interface_text_button_ok), false, true);
 
     size_t start = 0;
     uint8_t display_cursor = current_cursor + 1;
@@ -198,26 +196,9 @@ void interface_input_display(void)
         display_cursor = 14;
     }
 
-    // arrow
-    if (current_cursor > 0)
-    {
-        display_data( display_gfx_arrow_left, 8, 2, 0, false);
-    }
-    else
-    {
-        display_data( display_gfx_clear, 8, 2, 0, false);
-    }
     // bounday
-    display_text_line_column( "______________", 2, 1, false);
-    // arrow
-    if (current_cursor < current_limit)
-    {
-        display_data( display_gfx_arrow_right, 8, 2, 15 * 8, false);
-    }
-    else
-    {
-        display_data( display_gfx_clear, 8, 2, 15 * 8, false);
-    }
+    display_text_line_column("______________", 2, 1, false);
+
     // text
     size_t text_length = strlen(current_text);
     if (strlen(current_text) > 14)
@@ -231,14 +212,14 @@ void interface_input_display(void)
         memcpy(&textdata[i * 8], display_gfx_font[(uint8_t)current_text[i + start] - 32], 8);
     }
 
-    display_data( textdata, length, 2, 8, true);
+    display_data(textdata, length, 2, 8, true);
     free(textdata);
 
     // clear
-    display_clear_line( 0, false);
-    display_clear_line( 1, false);
-    display_clear_line( 3, false);
-    display_clear_line( 4, false);
+    display_clear_line(0, false);
+    display_clear_line(1, false);
+    display_clear_line(3, false);
+    display_clear_line(4, false);
 
     uint8_t current_char = (uint8_t)current_char_set[current_char_index] - 32;
     uint8_t prev_char = (uint8_t)current_char_set[current_char_index - 1] - 32;
@@ -255,15 +236,32 @@ void interface_input_display(void)
     }
 
     // arrow
-    display_data( display_gfx_arrow_up, 8, 0, display_cursor * 8, false);
+    display_data(display_gfx_arrow_up, 8, 0, display_cursor * 8, false);
     // upper char
-    display_data( display_gfx_font[prev_char], 8, 1, display_cursor * 8, false);
+    display_data(display_gfx_font[prev_char], 8, 1, display_cursor * 8, false);
     // sel char
-    display_data( display_gfx_font[current_char], 8, 2, display_cursor * 8, false);
+    display_data(display_gfx_font[current_char], 8, 2, display_cursor * 8, false);
     // lower char
-    display_data( display_gfx_font[next_char], 8, 3, display_cursor * 8, false);
+    display_data(display_gfx_font[next_char], 8, 3, display_cursor * 8, false);
     // arrow
-    display_data( display_gfx_arrow_down, 8, 4, display_cursor * 8, false);
+    display_data(display_gfx_arrow_down, 8, 4, display_cursor * 8, false);
+
+    if (current_cursor > 0)
+    {
+        display_data(display_gfx_arrow_left, 8, 2, 0, false);
+    }
+    else
+    {
+        display_data(display_gfx_clear, 8, 2, 0, false);
+    }
+    if (current_cursor < current_limit)
+    {
+        display_data(display_gfx_arrow_right, 8, 2, 15 * 8, false);
+    }
+    else
+    {
+        display_data(display_gfx_clear, 8, 2, 15 * 8, false);
+    }
 }
 
 void interface_input_set_text(char *text)
@@ -313,8 +311,7 @@ void interface_input(interface_text_callback callback_rst, interface_text_callba
     interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_input_mid);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_input_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_input_dwn);
+    interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, &interface_input_mid);
 
     interface_set_display_function(&interface_input_display);
-    interface_set_display_refresh_function(NULL);
-    ESP_LOGD(INTERFACE_LOG, "start input interface");
 }

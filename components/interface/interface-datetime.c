@@ -64,7 +64,6 @@ void interface_datetime_mid(void)
     {
         current_interface_datetime_state = INTERFACE_DATETIME_STATE_HOUR;
     }
-    ESP_LOGD(INTERFACE_LOG, "datetime to %d", current_interface_datetime_state);
 }
 
 void interface_datetime_up(void)
@@ -75,7 +74,6 @@ void interface_datetime_up(void)
     tv.tv_sec = curtime;
     settimeofday(&tv, NULL);
     rtc_set_time(gmtime(&curtime));
-    ESP_LOGD(INTERFACE_LOG, "increment %d about %u %s", current_interface_datetime_state, interface_datetime_steps[current_interface_datetime_state], ctime(&curtime));
 }
 
 void interface_datetime_dwn(void)
@@ -86,37 +84,40 @@ void interface_datetime_dwn(void)
     tv.tv_sec = curtime;
     settimeofday(&tv, NULL);
     rtc_set_time(gmtime(&curtime));
-    ESP_LOGD(INTERFACE_LOG, "decrement %d about %u %s", current_interface_datetime_state, interface_datetime_steps[current_interface_datetime_state], ctime(&curtime));
 }
 
 void interface_datetime_display(void)
+{
+    display_menu_headline(interface_get_label_text(&interface_text_headline_time), true, 0);
+}
+
+void interface_datetime_display_refresh(void)
 {
     static time_t current_timstamp;
     static struct tm *current_tm;
     static char time_buffer[9];
     static char date_buffer[32];
 
-    display_menu_headline( interface_get_label_text(&interface_text_headline_time), true, 0);
     static char edit_char[3];
     static int edit_line = 3;
     int edit_length = 2;
     int edit_offset = 0;
 
-    display_clear_line( edit_line - 1, false);
-    display_clear_line( edit_line + 1, false);
+    display_clear_line(edit_line - 1, false);
+    display_clear_line(edit_line + 1, false);
 
     time(&current_timstamp);
     current_tm = gmtime(&current_timstamp);
     current_tm->tm_hour = current_tm->tm_hour + (interface_get_timezone_offset()) % 24;
 
     strftime(time_buffer, 16, INTERFACE_FORMAT_TIME, current_tm);
-    display_text_line_column( time_buffer, 3, 4, false);
+    display_text_line_column(time_buffer, 3, 4, false);
 
     sprintf(date_buffer, "%02d %s %02d",
             current_tm->tm_mday,
             interface_get_label_text(&interface_texts_month[current_tm->tm_mon]),
             current_tm->tm_year - 100);
-    display_text_line_column( date_buffer, 6, 4, false);
+    display_text_line_column(date_buffer, 6, 4, false);
 
     switch (interface_datetime_state())
     {
@@ -154,9 +155,11 @@ void interface_datetime_display(void)
         break;
     }
 
-    display_data( display_gfx_arrow_up, 8, edit_line - 1, edit_offset * 8 + 4, false);
-    display_chars( edit_char, edit_length, edit_line, edit_offset, true);
-    display_data( display_gfx_arrow_down, 8, edit_line + 1, edit_offset * 8 + 4, false);
+    display_data(display_gfx_arrow_up, 8, edit_line - 1, edit_offset * 8 + 4, false);
+    display_chars(edit_char, edit_length, edit_line, edit_offset, true);
+    display_data(display_gfx_arrow_down, 8, edit_line + 1, edit_offset * 8 + 4, false);
+
+    display_menu_headline(interface_get_label_text(&interface_text_headline_time), true, 0);
 }
 
 void interface_datetime_start(void)
@@ -164,12 +167,12 @@ void interface_datetime_start(void)
     current_interface_datetime_state = INTERFACE_DATETIME_STATE_HOUR;
     interface_register_command_callback(INTERFACE_COMMAND_LFT, &interface_datetime_lft);
     interface_register_command_callback(INTERFACE_COMMAND_RHT, &interface_datetime_rht);
+    interface_register_command_callback(INTERFACE_COMMAND_RST, &interface_datetime_mid);
     interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_datetime_mid);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_datetime_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_datetime_dwn);
     interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_datetime_set);
-    interface_register_command_callback(INTERFACE_COMMAND_RST, NULL);
-    interface_set_display_function(NULL);
-    interface_set_display_refresh_function(&interface_datetime_display);
-    ESP_LOGD(INTERFACE_LOG, "start datetime interface");
+
+    interface_set_display_function(&interface_datetime_display);
+    interface_set_display_refresh_function(&interface_datetime_display_refresh);
 }

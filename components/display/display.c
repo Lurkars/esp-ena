@@ -16,6 +16,8 @@
 #include "display.h"
 #include "display-gfx.h"
 
+static uint16_t current_color = WHITE;
+
 uint8_t display_utf8_to_ascii_char(uint8_t ascii)
 {
     static uint8_t c1;
@@ -87,4 +89,129 @@ void display_chars(char *text, size_t length, uint8_t line, uint8_t offset, bool
         display_data(textdata, res_length, line, offset * font_width, invert);
         free(textdata);
     }
+}
+
+void display_text_line_column(char *text, uint8_t line, uint8_t offset, bool invert)
+{
+    display_chars(text, strlen(text), line, offset, invert);
+}
+
+void display_text_line(char *text, uint8_t line, bool invert)
+{
+    display_text_line_column(text, line, 0, invert);
+}
+
+void display_text_input(char *text, uint8_t position)
+{
+    size_t start = 0;
+    if (position > 13)
+    {
+        position = 13;
+        start = position - 13;
+    }
+    uint8_t cur_char = (uint8_t)text[start + position] - 32;
+
+    // arrow
+    display_data(display_gfx_arrow_left, 8, 2, 0, false);
+    // bounday
+    display_text_line_column("______________", 2, 1, false);
+    // arrow
+    display_data(display_gfx_arrow_right, 8, 2, 15 * 8, false);
+    // text
+    size_t text_length = strlen(text);
+    if (strlen(text) > 14)
+    {
+        text_length = 14;
+    }
+    size_t length = 0;
+    uint8_t *textdata = display_text_to_data(text, text_length, &length);
+    display_data(textdata, length, 2, 8, true);
+    free(textdata);
+    // arrow
+    display_data(display_gfx_arrow_up, 8, 0, (position + 1) * 8, false);
+    // upper char
+    display_data(display_gfx_font[cur_char - 1], 8, 1, (position + 1) * 8, false);
+    // sel char
+    display_data(display_gfx_font[cur_char], 8, 2, (position + 1) * 8, false);
+    // lower char
+    display_data(display_gfx_font[cur_char + 1], 8, 3, (position + 1) * 8, false);
+    // arrow
+    display_data(display_gfx_arrow_down, 8, 4, (position + 1) * 8, false);
+}
+
+void display_set_button(char *text, bool selected, bool primary)
+{
+    uint8_t start = 0;
+    if (primary)
+    {
+        start = 64;
+    }
+    if (selected)
+    {
+        display_data(display_gfx_button_sel[0], 64, 5, start, false);
+        display_data(display_gfx_button_sel[1], 64, 6, start, false);
+        display_data(display_gfx_button_sel[2], 64, 7, start, false);
+    }
+    else
+    {
+        display_data(display_gfx_button[0], 64, 5, start, false);
+        display_data(display_gfx_button[1], 64, 6, start, false);
+        display_data(display_gfx_button[2], 64, 7, start, false);
+    }
+    // text
+    size_t text_length = strlen(text);
+    if (strlen(text) > 6)
+    {
+        text_length = 6;
+    }
+    size_t length = 0;
+    uint8_t *textdata = display_text_to_data(text, text_length, &length);
+
+    uint8_t offset = 0;
+    if (text_length < 6)
+    {
+        offset = (6 - text_length) / 2 * 8;
+    }
+
+    display_data(textdata, length, 6, start + 8 + offset, selected);
+    free(textdata);
+}
+
+void display_menu_headline(char *text, bool arrows, uint8_t line)
+{
+    if (arrows)
+    {
+        display_data(display_gfx_arrow_left, 8, line, 0, false);
+        display_data(display_gfx_arrow_right, 8, line, 15 * 8, false);
+    }
+    // bounday
+    display_data(display_gfx_menu_head, 112, line, 8, false);
+
+    // text
+    size_t text_length = strlen(text);
+    if (strlen(text) > 10)
+    {
+        text_length = 10;
+    }
+    size_t length = 0;
+    uint8_t *textdata = display_text_to_data(text, text_length, &length);
+
+    uint8_t offset = 0;
+    if (text_length < 10)
+    {
+        offset = (10 - text_length) / 2 * 8;
+    }
+
+    display_data(textdata, length, line, 24 + offset, true);
+    free(textdata);
+}
+
+void display_set_color(uint16_t color)
+{
+    current_color = color;
+}
+
+uint16_t display_get_color(void)
+{
+    return current_color;
 }

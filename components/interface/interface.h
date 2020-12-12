@@ -28,6 +28,11 @@
 
 #define INTERFACE_NUM_LOCALE 2
 
+#define INTERFACE_IDLE_SECONDS CONFIG_ENA_INTERFACE_IDLE_TIME
+
+#define INTERFACE_INPUT_TICKS_MS 20
+#define INTERFACE_LONG_STATE_SECONDS 1.0
+
 /**
  * @brief available commands
  */
@@ -40,6 +45,8 @@ typedef enum
     INTERFACE_COMMAND_LFT,
     INTERFACE_COMMAND_DWN,
     INTERFACE_COMMAND_UP,
+    INTERFACE_COMMAND_RST_LONG,
+    INTERFACE_COMMAND_SET_LONG,
     INTERFACE_COMMANDS_SIZE,
 } interface_command_t;
 
@@ -80,6 +87,7 @@ interface_label_t interface_text_settings_locales[INTERFACE_NUM_LOCALE];
 interface_label_t interface_text_settings_timezone;
 
 interface_label_t interface_text_info_num_keys;
+interface_label_t interface_text_info_last_keys;
 interface_label_t interface_text_info_exp_update;
 interface_label_t interface_text_info_exp_days;
 interface_label_t interface_text_info_exp_num;
@@ -115,6 +123,13 @@ typedef void (*interface_display_function)(void);
  * @param[in]   cursor  current cursor position 
  */
 typedef void (*interface_text_callback)(char *text, uint8_t cursor);
+
+/**
+ * @brief       is interface in idle mode
+ * 
+ * @return if interface is idle
+ */
+bool interface_is_idle(void);
 
 /**
  * @brief       init label
@@ -195,6 +210,13 @@ void interface_set_display_refresh_function(interface_display_function display_f
 void interface_start(void);
 
 /**
+ * @brief set interface flipped or not
+ * 
+ * @param[in] on true interface is flipped
+ */
+void interface_flipped(bool flipped);
+
+/**
  * @brief       start delete data interface
  */
 void interface_data_start(void);
@@ -228,6 +250,11 @@ void interface_settings_start(void);
  * @brief       start info interface
  */
 void interface_info_start(void);
+
+/**
+ * @brief       start debug interface
+ */
+void interface_debug_start(void);
 
 /**
  * @brief       start interface for input

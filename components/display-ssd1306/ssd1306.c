@@ -221,117 +221,27 @@ void display_data(uint8_t *data, size_t length, uint8_t line, uint8_t offset, bo
     i2c_cmd_link_delete(cmd);
 }
 
-void display_text_line_column(char *text, uint8_t line, uint8_t offset, bool invert)
+void display_flipped(bool flipped)
 {
-    display_chars(text, strlen(text), line, offset, invert);
-}
 
-void display_text_line(char *text, uint8_t line, bool invert)
-{
-    display_text_line_column(text, line, 0, invert);
-}
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    // Begin the I2C comm with SSD1306's address (SLA+Write)
+    i2c_master_write_byte(cmd, (SSD1306_ADDRESS << 1) | I2C_MASTER_WRITE, true);
+    // Tell the SSD1306 that a command stream is incoming
+    i2c_master_write_byte(cmd, SSD1306_CONTROL_CMD_STREAM, true);
+    i2c_master_write_byte(cmd, SSD1306_CMD_SEGMENT_HIGH, true);
 
-void display_text_input(char *text, uint8_t position)
-{
-    size_t start = 0;
-    if (position > 13)
+    if (flipped)
     {
-        position = 13;
-        start = position - 13;
-    }
-    uint8_t cur_char = (uint8_t)text[start + position] - 32;
-
-    // arrow
-    display_data(display_gfx_arrow_left, 8, 2, 0, false);
-    // bounday
-    display_text_line_column("______________", 2, 1, false);
-    // arrow
-    display_data(display_gfx_arrow_right, 8, 2, 15 * 8, false);
-    // text
-    size_t text_length = strlen(text);
-    if (strlen(text) > 14)
-    {
-        text_length = 14;
-    }
-    size_t length = 0;
-    uint8_t *textdata = display_text_to_data(text, text_length, &length);
-    display_data(textdata, length, 2, 8, true);
-    free(textdata);
-    // arrow
-    display_data(display_gfx_arrow_up, 8, 0, (position + 1) * 8, false);
-    // upper char
-    display_data(display_gfx_font[cur_char - 1], 8, 1, (position + 1) * 8, false);
-    // sel char
-    display_data(display_gfx_font[cur_char], 8, 2, (position + 1) * 8, false);
-    // lower char
-    display_data(display_gfx_font[cur_char + 1], 8, 3, (position + 1) * 8, false);
-    // arrow
-    display_data(display_gfx_arrow_down, 8, 4, (position + 1) * 8, false);
-}
-
-void display_set_button(char *text, bool selected, bool primary)
-{
-    uint8_t start = 0;
-    if (primary)
-    {
-        start = 64;
-    }
-    if (selected)
-    {
-        display_data(display_gfx_button_sel[0], 64, 5, start, false);
-        display_data(display_gfx_button_sel[1], 64, 6, start, false);
-        display_data(display_gfx_button_sel[2], 64, 7, start, false);
+        i2c_master_write_byte(cmd, SSD1306_CMD_SCAN_DIRECTION_NORMAL, true);
     }
     else
     {
-        display_data(display_gfx_button[0], 64, 5, start, false);
-        display_data(display_gfx_button[1], 64, 6, start, false);
-        display_data(display_gfx_button[2], 64, 7, start, false);
-    }
-    // text
-    size_t text_length = strlen(text);
-    if (strlen(text) > 6)
-    {
-        text_length = 6;
-    }
-    size_t length = 0;
-    uint8_t *textdata = display_text_to_data(text, text_length, &length);
-
-    uint8_t offset = 0;
-    if (text_length < 6)
-    {
-        offset = (6 - text_length) / 2 * 8;
+        i2c_master_write_byte(cmd, SSD1306_CMD_SCAN_DIRECTION_REMAPPED, true);
     }
 
-    display_data(textdata, length, 6, start + 8 + offset, selected);
-    free(textdata);
-}
-
-void display_menu_headline(char *text, bool arrows, uint8_t line)
-{
-    if (arrows)
-    {
-        display_data(display_gfx_arrow_left, 8, line, 0, false);
-        display_data(display_gfx_arrow_right, 8, line, 15 * 8, false);
-    }
-    // bounday
-    display_data(display_gfx_menu_head, 112, line, 8, false);
-
-    // text
-    size_t text_length = strlen(text);
-    if (strlen(text) > 10)
-    {
-        text_length = 10;
-    }
-    size_t length = 0;
-    uint8_t *textdata = display_text_to_data(text, text_length, &length);
-
-    uint8_t offset = 0;
-    if (text_length < 10)
-    {
-        offset = (10 - text_length) / 2 * 8;
-    }
-
-    display_data(textdata, length, line, 24 + offset, true);
-    free(textdata);
+    i2c_master_stop(cmd);
+    ESP_ERROR_CHECK_WITHOUT_ABORT(i2c_master_cmd_begin(I2C_NUM_0, cmd, 10 / portTICK_PERIOD_MS));
+    i2c_cmd_link_delete(cmd);
 }

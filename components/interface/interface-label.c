@@ -49,6 +49,7 @@ void interface_init_label(void)
     interface_text_settings_timezone.text[EN] = "UTC:";
 
     interface_text_info_num_keys.text[EN] = "Seen:";
+    interface_text_info_last_keys.text[EN] = "<=30m:";
     interface_text_info_exp_days.text[EN] = "Last Exp:";
     interface_text_info_exp_num.text[EN] = "Num Exp:";
     interface_text_info_exp_max.text[EN] = "Score:";
@@ -111,6 +112,7 @@ void interface_init_label(void)
     interface_text_settings_timezone.text[DE] = "GMT:";
 
     interface_text_info_num_keys.text[DE] = "Gesehen:";
+    interface_text_info_last_keys.text[DE] = "<=30m:";
     interface_text_info_exp_days.text[DE] = "letz. Exp:";
     interface_text_info_exp_num.text[DE] = "Anz. Exp:";
     interface_text_info_exp_max.text[DE] = "Score:";

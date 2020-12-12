@@ -1,0 +1,26 @@
+
+menu "ENA Interface"
+	 
+	config ENA_INTERFACE_IDLE_TIME
+		int  "Seconds after display turns off on inactivity"
+		default 15
+
+	config ENA_INTERFACE_DEBUG
+		bool "Adds a debug interface for additional information for device"
+		default false
+
+	choice ENA_INTERFACE_DEVICE
+		prompt "Choose device"
+		default ENA_INTERFACE_CUSTOM
+	
+		config ENA_INTERFACE_CUSTOM
+			bool "Custom"
+	
+		config ENA_INTERFACE_M5STICKC
+			bool "M5StickC"
+	
+		config ENA_INTERFACE_M5STICKC_PLUS
+			bool "M5StickC PLUS"
+	endchoice 
+
+endmenu

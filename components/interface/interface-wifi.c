@@ -22,6 +22,7 @@
 #include "display.h"
 #include "display-gfx.h"
 #include "wifi-controller.h"
+#include "ena-eke-proxy.h"
 
 #include "interface.h"
 
@@ -70,12 +71,14 @@ void interface_wifi_rht(void)
 {
     interface_datetime_start();
 }
+
 void interface_wifi_mid(void)
 {
     memset(&current_wifi_config, 0, sizeof(wifi_config_t));
     memcpy(current_wifi_config.sta.ssid, ap_info[ap_selected].ssid, strlen((char *)ap_info[ap_selected].ssid));
     interface_input(&interface_wifi_input_rst, &interface_wifi_input_set, 64);
 }
+
 void interface_wifi_up(void)
 {
     ap_selected--;
@@ -120,6 +123,7 @@ void interface_wifi_display_refresh(void)
 {
     if (ap_count > 0)
     {
+        ena_eke_proxy_resume();
         display_clear_line(2, false);
         display_clear_line(4, false);
         display_clear_line(6, false);
@@ -131,6 +135,10 @@ void interface_wifi_display_refresh(void)
                 if (index == ap_selected)
                 {
                     display_data(display_gfx_arrow_right, 8, i * 2 + 2, 8, false);
+                }
+                else
+                {
+                    display_data(display_gfx_clear, 8, i * 2 + 2, 8, false);
                 }
 
                 if (sizeof(ap_info[i].ssid) > 0)
@@ -171,18 +179,17 @@ void interface_wifi_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_wifi_mid);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_wifi_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_wifi_dwn);
-    interface_register_command_callback(INTERFACE_COMMAND_RST, NULL);
+    interface_register_command_callback(INTERFACE_COMMAND_RST, &interface_wifi_mid);
 
     interface_set_display_function(&interface_wifi_display);
     interface_set_display_refresh_function(&interface_wifi_display_refresh);
-    interface_wifi_display();
-
-    ESP_LOGD(INTERFACE_LOG, "start wifi interface and scanning");
 
     memset(ap_info, 0, sizeof(ap_info));
     ap_count = 0;
     ap_index = 0;
     ap_selected = 0;
+
+    ena_eke_proxy_pause();
 
     wifi_controller_scan(ap_info, &ap_count);
 }

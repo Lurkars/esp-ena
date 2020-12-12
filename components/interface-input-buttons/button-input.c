@@ -21,39 +21,64 @@
 
 #include "button-input.h"
 
-static int old_button_states[INTERFACE_COMMANDS_SIZE];
-static int button_states[INTERFACE_COMMANDS_SIZE];
+static float button_states[INTERFACE_COMMANDS_SIZE];
 static int button_command_mapping[INTERFACE_COMMANDS_SIZE];
 
 void button_input_check(interface_command_t command)
 {
-    button_states[command] = gpio_get_level(button_command_mapping[command]);
+    int button_level = gpio_get_level(button_command_mapping[command]);
 
-    if (old_button_states[command] != 0 && old_button_states[command] != 1)
+    if (button_level == 0)
     {
-        old_button_states[command] = 1;
-    }
+        button_states[command] = button_states[command] + ((float)INTERFACE_INPUT_TICKS_MS / 1000);
 
-    if (button_states[command] == 0 && button_states[command] != old_button_states[command])
+        if (command == INTERFACE_COMMAND_SET && button_states[command] > INTERFACE_LONG_STATE_SECONDS)
+        {
+            button_states[command] = 0;
+            button_states[INTERFACE_COMMAND_SET_LONG] = button_states[INTERFACE_COMMAND_SET_LONG] + 1;
+            interface_execute_command(INTERFACE_COMMAND_SET_LONG);
+        }
+        else if (command == INTERFACE_COMMAND_RST && button_states[command] > INTERFACE_LONG_STATE_SECONDS)
+        {
+            button_states[command] = 0;
+            button_states[INTERFACE_COMMAND_RST_LONG] = button_states[INTERFACE_COMMAND_RST_LONG] + 1;
+            interface_execute_command(INTERFACE_COMMAND_RST_LONG);
+        }
+    }
+    else if (button_level == 1 && button_states[command] > 0)
     {
-        interface_execute_command(command);
-    }
+        button_states[command] = 0;
 
-    old_button_states[command] = button_states[command];
+        if (command == INTERFACE_COMMAND_SET && button_states[INTERFACE_COMMAND_SET_LONG] > 0)
+        {
+            button_states[INTERFACE_COMMAND_SET_LONG] = 0;
+        }
+        else if (command == INTERFACE_COMMAND_RST && button_states[INTERFACE_COMMAND_RST_LONG] > 0)
+        {
+            button_states[INTERFACE_COMMAND_RST_LONG] = 0;
+        }
+        else
+        {
+            interface_execute_command(command);
+        }
+    }
 }
 
 void button_input_task(void *pvParameter)
 {
     while (1)
     {
-        button_input_check(INTERFACE_COMMAND_RST);
         button_input_check(INTERFACE_COMMAND_SET);
-        button_input_check(INTERFACE_COMMAND_MID);
-        button_input_check(INTERFACE_COMMAND_RHT);
-        button_input_check(INTERFACE_COMMAND_LFT);
-        button_input_check(INTERFACE_COMMAND_DWN);
-        button_input_check(INTERFACE_COMMAND_UP);
-        vTaskDelay(20 / portTICK_PERIOD_MS);
+        if (!interface_is_idle())
+        {
+            button_input_check(INTERFACE_COMMAND_RST);
+            button_input_check(INTERFACE_COMMAND_MID);
+            button_input_check(INTERFACE_COMMAND_RHT);
+            button_input_check(INTERFACE_COMMAND_LFT);
+            button_input_check(INTERFACE_COMMAND_DWN);
+            button_input_check(INTERFACE_COMMAND_UP);
+        }
+        vTaskDelay(INTERFACE_INPUT_TICKS_MS / portTICK_PERIOD_MS);
     }
 }
 

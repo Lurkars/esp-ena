@@ -51,6 +51,7 @@ void interface_main_display(void)
     // status unknown if no update or last update older than two days
     if (last_update == 0 || ((current_timstamp - last_update) / (60 * 60 * 24)) > 2)
     {
+        display_set_color(YELLOW);
         display_data(display_gfx_question[0], 24, 0, 12, false);
         display_data(display_gfx_question[1], 24, 1, 12, false);
         display_data(display_gfx_question[2], 24, 2, 12, false);
@@ -58,18 +59,23 @@ void interface_main_display(void)
     }
     else if (current_exposure_summary->max_risk_score < 100)
     {
+        display_set_color(GREEN);
         display_data(display_gfx_smile[0], 24, 0, 12, false);
         display_data(display_gfx_smile[1], 24, 1, 12, false);
         display_data(display_gfx_smile[2], 24, 2, 12, false);
         display_data(display_gfx_smile[3], 24, 3, 12, false);
+        display_set_color(WHITE);
     }
     else
     {
+        display_set_color(RED);
         display_data(display_gfx_sad[0], 24, 0, 12, false);
         display_data(display_gfx_sad[1], 24, 1, 12, false);
         display_data(display_gfx_sad[2], 24, 2, 12, false);
         display_data(display_gfx_sad[3], 24, 3, 12, false);
+        display_set_color(WHITE);
     }
+
     // clock icon
     display_data(display_gfx_clock, 8, 4, 8, false);
 
@@ -78,9 +84,9 @@ void interface_main_display(void)
 
     last_update_tm->tm_hour = last_update_tm->tm_hour + (interface_get_timezone_offset()) % 24;
 
-    sprintf(time_buffer, "%02d %s %02d:%02d",
-            last_update_tm->tm_mday,
+    sprintf(time_buffer, "%s %02d %02d:%02d",
             interface_get_label_text(&interface_texts_month[last_update_tm->tm_mon]),
+            last_update_tm->tm_mday,
             last_update_tm->tm_hour,
             last_update_tm->tm_min);
 
@@ -88,6 +94,8 @@ void interface_main_display(void)
     {
         display_text_line_column(time_buffer, 4, 3, false);
     }
+
+    display_set_color(WHITE);
 
     // buttons
     display_set_button(interface_get_label_text(&interface_text_button_menu), true, false);
@@ -124,7 +132,6 @@ void interface_main_display_refresh(void)
 
 void interface_main_start(void)
 {
-
     interface_register_command_callback(INTERFACE_COMMAND_RST, &interface_main_rst);
     interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_main_set);
     interface_register_command_callback(INTERFACE_COMMAND_LFT, NULL);
@@ -135,7 +142,4 @@ void interface_main_start(void)
 
     interface_set_display_function(&interface_main_display);
     interface_set_display_refresh_function(&interface_main_display_refresh);
-
-    interface_main_display();
-    ESP_LOGD(INTERFACE_LOG, "start main interface");
 }

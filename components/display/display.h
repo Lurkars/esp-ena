@@ -22,6 +22,18 @@
 
 #include "esp_system.h"
 
+#define DISPLAY_COLUMNS 8
+
+#define BLACK 0x0000
+#define WHITE 0xffff
+#define RED 0xf800
+#define GREEN 0x07e0
+#define BLUE 0x001f
+#define GRAY 0x8c51
+#define YELLOW 0xFFE0
+#define CYAN 0x07FF
+#define PURPLE 0xF81F
+
 /**
  * 
  */
@@ -43,7 +55,7 @@ void display_start(void);
  * @param[in] line the line to clear
  * @param[in] invert if true, image is inverted
  */
-void display_clear_line( uint8_t line, bool invert);
+void display_clear_line(uint8_t line, bool invert);
 
 /**
  * @brief clear the display
@@ -52,11 +64,18 @@ void display_clear_line( uint8_t line, bool invert);
 void display_clear(void);
 
 /**
- * @brief set display on or offf
+ * @brief set display on or off
  * 
  * @param[in] on true if display on, false if display off
  */
 void display_on(bool on);
+
+/**
+ * @brief set display flipped or not
+ * 
+ * @param[in] on true display is flipped
+ */
+void display_flipped(bool flipped);
 
 /**
  * 
@@ -121,5 +140,19 @@ void display_set_button(char *text, bool selected, bool primary);
  * @param[in] line line the line to write to
  */
 void display_menu_headline(char *text, bool arrows, uint8_t line);
+
+/**
+ * @brief set current color for colored displays
+ * 
+ * @param[in] color the color to set
+ */
+void display_set_color(uint16_t color);
+
+/**
+ * @brief set current color for colored displays
+ * 
+ * @return the current color
+ */
+uint16_t display_get_color(void);
 
 #endif

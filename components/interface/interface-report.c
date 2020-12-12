@@ -48,33 +48,15 @@ static int current_report_status = INTERFACE_REPORT_STATUS_NONE;
 
 void interface_report_display(void)
 {
-    display_clear();
     if (current_report_status == INTERFACE_REPORT_STATUS_NONE)
     {
         display_menu_headline(interface_get_label_text(&interface_text_headline_tan), false, 0);
+        
         // buttons
         display_set_button(interface_get_label_text(&interface_text_button_cancel), true, false);
         if (current_cursor == 9)
         {
             display_set_button(interface_get_label_text(&interface_text_button_ok), false, true);
-        }
-
-        if (current_cursor > 0)
-        {
-            display_data(display_gfx_arrow_left, 8, 3, 8, false);
-        }
-        else
-        {
-            display_data(display_gfx_clear, 8, 3, 8, false);
-        }
-
-        if (current_cursor < 9)
-        {
-            display_data(display_gfx_arrow_right, 8, 3, 112, false);
-        }
-        else
-        {
-            display_data(display_gfx_clear, 8, 3, 112, false);
         }
 
         display_clear_line(2, false);
@@ -123,25 +105,45 @@ void interface_report_display(void)
         display_data(display_gfx_arrow_down, 8, 4, current_cursor * 8 + offset * 8, false);
 
         display_chars(&current_tan[current_cursor], 1, 3, current_cursor + offset, false);
+
+        if (current_cursor > 0)
+        {
+            display_data(display_gfx_arrow_left, 8, 3, 8, false);
+        }
+        else
+        {
+            display_data(display_gfx_clear, 8, 3, 8, false);
+        }
+
+        if (current_cursor < 9)
+        {
+            display_data(display_gfx_arrow_right, 8, 3, 112, false);
+        }
+        else
+        {
+            display_data(display_gfx_clear, 8, 3, 112, false);
+        }
     }
     else if (current_report_status == INTERFACE_REPORT_STATUS_PENDING)
     {
-
-        display_menu_headline(interface_get_label_text(&interface_text_headline_report), false, 0);
+        display_clear();
         display_text_line_column(interface_get_label_text(&interface_text_report_pending), 4, 1, false);
+        display_menu_headline(interface_get_label_text(&interface_text_headline_report), false, 0);
     }
     else if (current_report_status == INTERFACE_REPORT_STATUS_SUCCESS)
     {
-        display_menu_headline(interface_get_label_text(&interface_text_headline_report), false, 0);
+        display_clear();
         display_text_line_column(interface_get_label_text(&interface_text_report_success), 3, 1, false);
         display_set_button(interface_get_label_text(&interface_text_button_ok), false, true);
+        display_menu_headline(interface_get_label_text(&interface_text_headline_report), false, 0);
     }
     else if (current_report_status == INTERFACE_REPORT_STATUS_FAIL)
     {
-        display_menu_headline(interface_get_label_text(&interface_text_headline_report), false, 0);
+        display_clear();
         display_text_line_column(interface_get_label_text(&interface_text_report_fail), 3, 1, false);
         display_set_button(interface_get_label_text(&interface_text_button_back), true, false);
         display_set_button(interface_get_label_text(&interface_text_button_ok), false, true);
+        display_menu_headline(interface_get_label_text(&interface_text_headline_report), false, 0);
     }
 }
 
@@ -306,8 +308,7 @@ void interface_report_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_RHT, &interface_report_rht);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_report_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_report_dwn);
-    interface_set_display_function(&interface_report_display);
-    interface_set_display_refresh_function(NULL);
+    interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, &interface_report_mid);
 
-    ESP_LOGD(INTERFACE_LOG, "start report interface");
+    interface_set_display_function(&interface_report_display);
 }

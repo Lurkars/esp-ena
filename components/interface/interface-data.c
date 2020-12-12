@@ -49,9 +49,12 @@ void interface_data_set(void)
     else
     {
         confirm_current = false;
-        display_clear_line( 2, false);
-        display_clear_line( 4, false);
-        display_clear_line( 6, false);
+        display_clear_line(2, false);
+        display_clear_line(3, false);
+        display_clear_line(4, false);
+        display_clear_line(5, false);
+        display_clear_line(6, false);
+        display_clear_line(7, false);
     }
 }
 
@@ -83,9 +86,19 @@ void interface_data_rst(void)
         }
 
         confirm_current = false;
-        display_clear_line( 2, false);
-        display_clear_line( 4, false);
-        display_clear_line( 6, false);
+        display_clear_line(2, false);
+        display_clear_line(3, false);
+        display_clear_line(4, false);
+        display_clear_line(5, false);
+        display_clear_line(6, false);
+        display_clear_line(7, false);
+    }
+    else
+    {
+        display_clear_line(2, false);
+        display_clear_line(4, false);
+        display_clear_line(6, false);
+        confirm_current = true;
     }
 }
 
@@ -96,16 +109,20 @@ void interface_data_lft(void)
 
 void interface_data_rht(void)
 {
+#if defined(CONFIG_ENA_INTERFACE_DEBUG)
+    interface_debug_start();
+#else
     interface_info_start();
+#endif
 }
 
 void interface_data_mid(void)
 {
     if (!confirm_current)
     {
-        display_clear_line( 2, false);
-        display_clear_line( 4, false);
-        display_clear_line( 6, false);
+        display_clear_line(2, false);
+        display_clear_line(4, false);
+        display_clear_line(6, false);
         confirm_current = true;
     }
 }
@@ -124,9 +141,9 @@ void interface_data_up(void)
         current_data_index--;
     }
 
-    display_clear_line( 2, false);
-    display_clear_line( 4, false);
-    display_clear_line( 6, false);
+    display_clear_line(2, false);
+    display_clear_line(4, false);
+    display_clear_line(6, false);
 }
 
 void interface_data_dwn(void)
@@ -142,26 +159,28 @@ void interface_data_dwn(void)
         current_data_index++;
     }
 
-    display_clear_line( 2, false);
-    display_clear_line( 4, false);
-    display_clear_line( 6, false);
+    display_clear_line(2, false);
+    display_clear_line(4, false);
+    display_clear_line(6, false);
 }
 
 void interface_data_display(void)
 {
-    display_menu_headline( interface_get_label_text(&interface_text_headline_data), true, 0);
+    display_menu_headline(interface_get_label_text(&interface_text_headline_data), true, 0);
+
     if (confirm_current)
     {
-        display_text_line_column( interface_get_label_text(&interface_text_data_del[current_interface_data_state]), 2, 2, false);
-        display_text_line_column( "?", 2, strlen(interface_get_label_text(&interface_text_data_del[current_interface_data_state])) + 2, false);
+        display_text_line_column(interface_get_label_text(&interface_text_data_del[current_interface_data_state]), 2, 2, false);
+        display_text_line_column("?", 2, strlen(interface_get_label_text(&interface_text_data_del[current_interface_data_state])) + 2, false);
 
-        display_set_button( interface_get_label_text(&interface_text_button_cancel), true, false);
-        display_set_button( interface_get_label_text(&interface_text_button_ok), false, true);
+        display_set_button(interface_get_label_text(&interface_text_button_cancel), true, false);
+        display_set_button(interface_get_label_text(&interface_text_button_ok), false, true);
     }
     else
     {
-        display_clear_line( 5, false);
-        display_clear_line( 7, false);
+        display_clear_line(2, false);
+        display_clear_line(4, false);
+        display_clear_line(6, false);
         for (int i = 0; i < 3; i++)
         {
             int index = i + current_data_index;
@@ -169,10 +188,14 @@ void interface_data_display(void)
             {
                 if (index == current_interface_data_state)
                 {
-                    display_data( display_gfx_arrow_right, 8, i * 2 + 2, 8, false);
+                    display_data(display_gfx_arrow_right, 8, i * 2 + 2, 8, false);
+                }
+                else
+                {
+                    display_data(display_gfx_clear, 8, i * 2 + 2, 8, false);
                 }
 
-                display_text_line_column( interface_get_label_text(&interface_text_data_del[index]), i * 2 + 2, 2, false);
+                display_text_line_column(interface_get_label_text(&interface_text_data_del[index]), i * 2 + 2, 2, false);
             }
         }
     }
@@ -189,8 +212,6 @@ void interface_data_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_data_mid);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_data_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_data_dwn);
-    interface_set_display_function(&interface_data_display);
-    interface_set_display_refresh_function(NULL);
 
-    ESP_LOGD(INTERFACE_LOG, "start delete data interface");
+    interface_set_display_function(&interface_data_display);
 }

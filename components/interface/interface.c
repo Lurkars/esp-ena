@@ -29,6 +29,12 @@ static interface_display_function current_display_refresh_function;
 
 static TimerHandle_t interface_idle_timer;
 static bool interface_idle = false;
+static bool busy = false;
+
+bool interface_is_idle(void)
+{
+    return interface_idle;
+}
 
 void interface_register_command_callback(interface_command_t command, interface_command_callback callback)
 {
@@ -37,14 +43,26 @@ void interface_register_command_callback(interface_command_t command, interface_
 
 void interface_set_display_function(interface_display_function display_function)
 {
+    busy = true;
     display_clear();
+    current_display_refresh_function = NULL;
     current_display_function = display_function;
+    if (current_display_function != NULL)
+    {
+        (*current_display_function)();
+    }
+    busy = false;
 }
 
 void interface_set_display_refresh_function(interface_display_function display_function)
 {
-    display_clear();
+    busy = true;
     current_display_refresh_function = display_function;
+    if (current_display_function != NULL)
+    {
+        (*current_display_function)();
+    }
+    busy = false;
 }
 
 void interface_execute_command(interface_command_t command)
@@ -53,19 +71,14 @@ void interface_execute_command(interface_command_t command)
     {
         xTimerReset(interface_idle_timer, 0);
         (*command_callbacks[command])();
-        if (current_display_function != NULL || current_display_refresh_function != NULL)
+        if (!busy)
         {
-            display_clear();
-            if (current_display_refresh_function != NULL)
-            {
-                vTaskDelay(10 / portTICK_PERIOD_MS);
-                (*current_display_refresh_function)();
-            }
+            busy = true;
             if (current_display_function != NULL)
             {
-                vTaskDelay(10 / portTICK_PERIOD_MS);
                 (*current_display_function)();
             }
+            busy = false;
         }
     }
     else if (interface_idle && command == INTERFACE_COMMAND_SET)
@@ -82,11 +95,15 @@ void interface_display_task(void *pvParameter)
 
     while (1)
     {
-        if (current_display_refresh_function != NULL)
+        if (!interface_idle && !busy && current_display_refresh_function != NULL)
         {
             (*current_display_refresh_function)();
+            vTaskDelay(500 / portTICK_PERIOD_MS);
         }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        else
+        {
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+        }
     }
 }
 
@@ -101,7 +118,7 @@ void interface_start(void)
 
     interface_idle_timer = xTimerCreate(
         "interface_idle",
-        (15 * 1000) / portTICK_PERIOD_MS,
+        (INTERFACE_IDLE_SECONDS * 1000) / portTICK_PERIOD_MS,
         false,
         NULL,
         interface_idle_callback);
@@ -112,10 +129,18 @@ void interface_start(void)
     display_start();
     display_clear();
 
-    for (int i = 0; i < 8; i++)
-    {
-        display_data(display_gfx_logo[i], 64, i, 32, false);
-    }
-
     xTaskCreate(&interface_display_task, "interface_display_task", 4096, NULL, 5, NULL);
+}
+
+void interface_flipped(bool flipped)
+{
+    busy = true;
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+    display_clear();
+    display_flipped(flipped);
+    if (current_display_function != NULL)
+    {
+        (*current_display_function)();
+    }
+    busy = false;
 }

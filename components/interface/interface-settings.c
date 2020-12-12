@@ -50,10 +50,6 @@ void interface_settings_set(void)
     interface_main_start();
 }
 
-void interface_settings_rst(void)
-{
-}
-
 void interface_settings_lft(void)
 {
     interface_info_start();
@@ -191,15 +187,13 @@ void interface_settings_start(void)
 {
     current_interface_settings_state = INTERFACE_SETTINGS_LOCALE;
 
-    interface_register_command_callback(INTERFACE_COMMAND_RST, &interface_settings_rst);
+    interface_register_command_callback(INTERFACE_COMMAND_RST, &interface_settings_mid);
     interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_settings_set);
     interface_register_command_callback(INTERFACE_COMMAND_LFT, &interface_settings_lft);
     interface_register_command_callback(INTERFACE_COMMAND_RHT, &interface_settings_rht);
     interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_settings_mid);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_settings_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_settings_dwn);
+    
     interface_set_display_function(&interface_settings_display);
-    interface_set_display_refresh_function(NULL);
-
-    ESP_LOGD(INTERFACE_LOG, "start settings interface");
 }

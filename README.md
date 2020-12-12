@@ -23,6 +23,8 @@ The following acronyms will be used in code and comments:
 * Upload of own Exposure keys to proxy server
 
 Additional features for full ENA device
+
+#### Custom device
 * RTC support with DS3231 (for correct system time)
 * display support with SSD1306
 * interface with a 7 button control (joystick up,down,left,right,enter,cancel,ok) to
@@ -33,6 +35,15 @@ Additional features for full ENA device
     * set language
     * enter tan and uploading own exposure keys
 * battery support with ESP32 dev-boards with integrated LiPo support
+
+#### M5StickC and M5StickC PLUS
+* RTC support
+* PMU support
+* display support
+* interface with 2 buttons and accelometer control
+  * ok/cancel with button 1 and button 2 (depending on screen orientation)
+  * up, down, left, right with tilting device
+  * long press button 1 for changing character set on input
 
 ### Features in development
 * 3d print case
@@ -78,30 +89,46 @@ For base functionality just an ESP32 is required. DS3231 RTC, SSD1306 Display an
 idf.py menuconfig
 ```
 
-required
+**required**
 * enable bluetooth (BLE)
+> Component config -> Bluetooth -> [*] Bluetooth
 * add partition-table for storage (currently hardcoded name "ena")
+> Partition Table -> Partition table -> (x) Custom partition table CSV
 * mbedTLS enable HKDF
+> Component config -> mbedTLS -> [*] HKDF algorithm (RFC 5869)
+* flash size > 3.9GB
+> Serial flasher config -> Flash size ->  (x) 4MB
+* choose interface device (custom, M5StickC or M5StickC PLUS)
+> ENA Interface -> ENA Interface device
 
-recommended
+**recommended**
 * BLE *Scan Duplicate* (By Device Address and Advertising Data)
+> Component config -> Bluetooth -> Bluetooth controller -> Scan Duplicate Type -> (X) Scan Duplicate By Device Address And Advertising Data
 
-debug options
+**debug options**
 * Log output set to Debug
-* Exposure Notification API / Storage enable *Dump storage* 
+> Component config -> Log output -> Default log verbosity -> (X) Debug
+* Exposure Notification API / Storage enable *Dump storage*
+> Exposure Notification API -> Storage -> [X] Dump storage
  
+#### Configure device manually!
+
+Select required device drivers manually, because config get not applied in interface's CmakeLists.txt (I don't know why!):
+> comment in/out line in *components/interface/CmakeLists.txt* with matching interface 
+
+
 ### Build and Flash
 
 May flash partition table:
 
 ```
-idf.py partition_table-flash
+idf.py partition_table-flash -b 1500000
 ```
 
 Build the project and flash it to the board, then run monitor tool to view serial output:
 
 ```
-idf.py -p PORT flash monitor
+idf.py -p PORT flash -b 1500000 monitor
 ```
 
 (Replace PORT with the name of the serial port to use.)
@@ -155,19 +182,43 @@ General module for set/get time from RTC.
 
 ### i2c-main
 
-Just start I2C driver for display and RTC.
+Just start I²C driver for display and RTC.
 
 ### interface-input-buttons
 
 Interface with 7 button input
 
+### interface-input-m5
+
+Interface with input for M5StickC (PLUS) with 2 button input and accelometer as axis input
+
 ### rtc-ds3231
 
-I2C driver for a DS3231 RTC, implementation of [rtc](#-rtc) module
+I²C driver for a DS3231 RTC, implementation of [rtc](#-rtc) module
+
+### rtc-bm8563
+
+I²C driver for BM8563 of M5StickC (PLUS), implementation of [rtc](#-rtc) module
 
 ### display-ssd1306
 
-I2C driver for a SSD1306 display, implementation of [display](#-display) module
+I²C driver for a SSD1306 display, implementation of [display](#-display) module
+
+### display-st7735s
+
+SPI driver for a ST7735s display of M5StickC, implementation of [display](#-display) module
+
+### display-st7789
+
+SPI driver for a ST7789 display of M5StickC PLUS, implementation of [display](#-display) module
+
+### imu-mpu6886
+
+I²C driver for MPU6886 6-Axis IMU of M5StickC (PLUS)
+
+### pmu-axp192
+
+I²C driver for AXP192 PMU of M5StickC (PLUS)
 
 ### ena-binary-export  \[deprecared\]
 
