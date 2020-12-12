@@ -130,6 +130,8 @@ void interface_debug_start(void)
   interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_debug_mid);
   interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_debug_up);
   interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_debug_dwn);
+  interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, NULL);
+  interface_register_command_callback(INTERFACE_COMMAND_SET_LONG, NULL);
 
   interface_set_display_function(NULL);
 

@@ -307,8 +307,11 @@ void interface_report_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_LFT, &interface_report_lft);
     interface_register_command_callback(INTERFACE_COMMAND_RHT, &interface_report_rht);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_report_up);
+    interface_command_callback_set_trigger(INTERFACE_COMMAND_UP);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_report_dwn);
+    interface_command_callback_set_trigger(INTERFACE_COMMAND_DWN);
     interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, &interface_report_mid);
+    interface_register_command_callback(INTERFACE_COMMAND_SET_LONG, NULL);
 
     interface_set_display_function(&interface_report_display);
 }

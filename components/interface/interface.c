@@ -24,6 +24,7 @@
 #include "interface.h"
 
 static interface_command_callback command_callbacks[INTERFACE_COMMANDS_SIZE];
+static bool command_callback_trigger[INTERFACE_COMMANDS_SIZE];
 static interface_display_function current_display_function;
 static interface_display_function current_display_refresh_function;
 
@@ -39,6 +40,12 @@ bool interface_is_idle(void)
 void interface_register_command_callback(interface_command_t command, interface_command_callback callback)
 {
     command_callbacks[command] = callback;
+    command_callback_trigger[command] = false;
+}
+
+void interface_command_callback_set_trigger(interface_command_t command)
+{
+    command_callback_trigger[command] = true;
 }
 
 void interface_set_display_function(interface_display_function display_function)
@@ -86,6 +93,14 @@ void interface_execute_command(interface_command_t command)
         xTimerReset(interface_idle_timer, 0);
         interface_idle = false;
         display_on(true);
+    }
+}
+
+void interface_execute_command_trigger(interface_command_t command)
+{
+    if (command_callback_trigger[command])
+    {
+        interface_execute_command(command);
     }
 }
 

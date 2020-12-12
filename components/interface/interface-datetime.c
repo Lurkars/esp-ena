@@ -172,6 +172,8 @@ void interface_datetime_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_datetime_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_datetime_dwn);
     interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_datetime_set);
+    interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, NULL);
+    interface_register_command_callback(INTERFACE_COMMAND_SET_LONG, NULL);
 
     interface_set_display_function(&interface_datetime_display);
     interface_set_display_refresh_function(&interface_datetime_display_refresh);

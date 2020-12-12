@@ -137,6 +137,8 @@ void interface_info_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_info_mid);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_info_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_info_dwn);
+    interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, NULL);
+    interface_register_command_callback(INTERFACE_COMMAND_SET_LONG, NULL);
 
     interface_set_display_function(&interface_info_display);
 }

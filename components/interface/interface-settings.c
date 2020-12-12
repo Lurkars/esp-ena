@@ -194,6 +194,8 @@ void interface_settings_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_settings_mid);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_settings_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_settings_dwn);
+    interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, NULL);
+    interface_register_command_callback(INTERFACE_COMMAND_SET_LONG, NULL);
     
     interface_set_display_function(&interface_settings_display);
 }

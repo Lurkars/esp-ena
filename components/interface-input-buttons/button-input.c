@@ -21,46 +21,61 @@
 
 #include "button-input.h"
 
-static float button_states[INTERFACE_COMMANDS_SIZE];
-static int button_command_mapping[INTERFACE_COMMANDS_SIZE];
+static float input_states[INTERFACE_COMMANDS_SIZE];
+static float input_trigger_state[INTERFACE_COMMANDS_SIZE];
+static int input_command_mapping[INTERFACE_COMMANDS_SIZE];
 
 void button_input_check(interface_command_t command)
 {
-    int button_level = gpio_get_level(button_command_mapping[command]);
+    int button_level = gpio_get_level(input_command_mapping[command]);
 
     if (button_level == 0)
     {
-        button_states[command] = button_states[command] + ((float)INTERFACE_INPUT_TICKS_MS / 1000);
+        input_states[command] = input_states[command] + ((float)INTERFACE_INPUT_TICKS_MS / 1000);
 
-        if (command == INTERFACE_COMMAND_SET && button_states[command] > INTERFACE_LONG_STATE_SECONDS)
+        if (command == INTERFACE_COMMAND_SET && input_states[command] > INTERFACE_LONG_STATE_SECONDS)
         {
-            button_states[command] = 0;
-            button_states[INTERFACE_COMMAND_SET_LONG] = button_states[INTERFACE_COMMAND_SET_LONG] + 1;
+            input_states[command] = 0;
+            input_states[INTERFACE_COMMAND_SET_LONG] = input_states[INTERFACE_COMMAND_SET_LONG] + 1;
             interface_execute_command(INTERFACE_COMMAND_SET_LONG);
         }
-        else if (command == INTERFACE_COMMAND_RST && button_states[command] > INTERFACE_LONG_STATE_SECONDS)
+        else if (command == INTERFACE_COMMAND_RST && input_states[command] > INTERFACE_LONG_STATE_SECONDS)
         {
-            button_states[command] = 0;
-            button_states[INTERFACE_COMMAND_RST_LONG] = button_states[INTERFACE_COMMAND_RST_LONG] + 1;
+            input_states[command] = 0;
+            input_states[INTERFACE_COMMAND_RST_LONG] = input_states[INTERFACE_COMMAND_RST_LONG] + 1;
             interface_execute_command(INTERFACE_COMMAND_RST_LONG);
         }
-    }
-    else if (button_level == 1 && button_states[command] > 0)
-    {
-        button_states[command] = 0;
-
-        if (command == INTERFACE_COMMAND_SET && button_states[INTERFACE_COMMAND_SET_LONG] > 0)
+        else if (input_states[command] > input_trigger_state[command])
         {
-            button_states[INTERFACE_COMMAND_SET_LONG] = 0;
+            input_trigger_state[command] = input_trigger_state[command] - (input_trigger_state[command] / 8);
+            if (input_trigger_state[command] <= ((float)INTERFACE_INPUT_TICKS_MS / 200))
+            {
+                input_trigger_state[command] = ((float)INTERFACE_INPUT_TICKS_MS / 200);
+            }
+            input_states[command] = 0;
+            interface_execute_command_trigger(command);
         }
-        else if (command == INTERFACE_COMMAND_RST && button_states[INTERFACE_COMMAND_RST_LONG] > 0)
+    }
+    else if (button_level == 1 && input_states[command] > 0)
+    {
+        input_states[command] = 0;
+        input_trigger_state[command] = INTERFACE_LONG_STATE_SECONDS;
+        if (command == INTERFACE_COMMAND_SET && input_states[INTERFACE_COMMAND_SET_LONG] > 0)
         {
-            button_states[INTERFACE_COMMAND_RST_LONG] = 0;
+            input_states[INTERFACE_COMMAND_SET_LONG] = 0;
+        }
+        else if (command == INTERFACE_COMMAND_RST && input_states[INTERFACE_COMMAND_RST_LONG] > 0)
+        {
+            input_states[INTERFACE_COMMAND_RST_LONG] = 0;
         }
         else
         {
             interface_execute_command(command);
         }
+    }
+    else if (button_level == 1)
+    {
+        input_trigger_state[command] = INTERFACE_LONG_STATE_SECONDS;
     }
 }
 
@@ -96,13 +111,18 @@ void button_input_start(void)
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     gpio_config(&io_conf);
 
-    button_command_mapping[INTERFACE_COMMAND_RST] = BUTTON_RST;
-    button_command_mapping[INTERFACE_COMMAND_SET] = BUTTON_SET;
-    button_command_mapping[INTERFACE_COMMAND_MID] = BUTTON_MID;
-    button_command_mapping[INTERFACE_COMMAND_RHT] = BUTTON_RHT;
-    button_command_mapping[INTERFACE_COMMAND_LFT] = BUTTON_LFT;
-    button_command_mapping[INTERFACE_COMMAND_DWN] = BUTTON_DWN;
-    button_command_mapping[INTERFACE_COMMAND_UP] = BUTTON_UP;
+    input_command_mapping[INTERFACE_COMMAND_RST] = BUTTON_RST;
+    input_command_mapping[INTERFACE_COMMAND_SET] = BUTTON_SET;
+    input_command_mapping[INTERFACE_COMMAND_MID] = BUTTON_MID;
+    input_command_mapping[INTERFACE_COMMAND_RHT] = BUTTON_RHT;
+    input_command_mapping[INTERFACE_COMMAND_LFT] = BUTTON_LFT;
+    input_command_mapping[INTERFACE_COMMAND_DWN] = BUTTON_DWN;
+    input_command_mapping[INTERFACE_COMMAND_UP] = BUTTON_UP;
+
+    for (int i = 0; i < INTERFACE_COMMANDS_SIZE; i++)
+    {
+        input_trigger_state[i] = INTERFACE_LONG_STATE_SECONDS;
+    }
 
     xTaskCreate(&button_input_task, "button_input_task", 4096, NULL, 5, NULL);
 }

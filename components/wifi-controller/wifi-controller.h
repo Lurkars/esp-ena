@@ -22,7 +22,7 @@
 /**
  * @brief       callback function after successfull wifi connect
  */
-typedef void (*wifi_connected_callback)(void);
+typedef void (*wifi_callback)(void);
 
 /**
  * @brief scan for WiFis
@@ -30,7 +30,7 @@ typedef void (*wifi_connected_callback)(void);
  * @param[out] ap_info  scanned APs
  * @param[out] ap_count    number of scanned APs
  */
-void wifi_controller_scan(wifi_ap_record_t ap_info[], uint16_t *ap_count);
+void wifi_controller_scan(wifi_ap_record_t ap_info[], uint16_t *ap_count, wifi_callback callback);
 
 /**
  * @brief connect to wifi ap
@@ -41,7 +41,7 @@ void wifi_controller_scan(wifi_ap_record_t ap_info[], uint16_t *ap_count);
  * @return
  *          esp_err_t connection status
  */
-esp_err_t wifi_controller_connect(wifi_config_t wifi_config, wifi_connected_callback callback);
+esp_err_t wifi_controller_connect(wifi_config_t wifi_config, wifi_callback callback);
 
 /**
  * @brief reconnect to previous wifi
@@ -51,7 +51,7 @@ esp_err_t wifi_controller_connect(wifi_config_t wifi_config, wifi_connected_call
  * @return
  *          esp_err_t connection status
  */
-esp_err_t wifi_controller_reconnect(wifi_connected_callback callback);
+esp_err_t wifi_controller_reconnect(wifi_callback callback);
 
 /**
  * @brief disconnect wifi

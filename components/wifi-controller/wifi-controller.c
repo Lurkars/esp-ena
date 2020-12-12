@@ -37,7 +37,8 @@ static bool connecting = false;
 
 static wifi_ap_record_t current_wifi_ap;
 
-static wifi_connected_callback wifi_callback;
+static wifi_callback wifi_connected_callback;
+static wifi_callback wifi_scan_callback;
 
 static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
@@ -52,15 +53,20 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
     {
-
-        ESP_LOGD(WIFI_LOG, "Got Ip!");
-        if (wifi_callback != NULL)
+        if (wifi_connected_callback != NULL)
         {
-            (*wifi_callback)();
+            (*wifi_connected_callback)();
         }
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
         connecting = false;
         heap_caps_check_integrity_all(true);
+    }
+    else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_SCAN_DONE)
+    {
+        if (wifi_scan_callback != NULL)
+        {
+            (*wifi_scan_callback)();
+        }
     }
     else
     {
@@ -92,16 +98,19 @@ void wifi_controller_init(void)
     initialized = true;
 }
 
-void wifi_controller_scan(wifi_ap_record_t *ap_info, uint16_t *ap_count)
+void wifi_controller_scan(wifi_ap_record_t *ap_info, uint16_t *ap_count, wifi_callback callback)
 {
     if (!initialized)
     {
         wifi_controller_init();
     }
 
+    wifi_scan_callback = callback;
+
     uint16_t number = 10;
 
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_stop());
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_ERROR_CHECK(esp_wifi_scan_start(NULL, true));
@@ -110,21 +119,21 @@ void wifi_controller_scan(wifi_ap_record_t *ap_info, uint16_t *ap_count)
     ESP_ERROR_CHECK(esp_wifi_stop());
 }
 
-esp_err_t wifi_controller_connect(wifi_config_t wifi_config, wifi_connected_callback callback)
+esp_err_t wifi_controller_connect(wifi_config_t wifi_config, wifi_callback callback)
 {
     if (connecting)
     {
         return ESP_ERR_NOT_SUPPORTED;
     }
     connecting = true;
-    wifi_callback = callback;
+    wifi_connected_callback = callback;
     if (!initialized)
     {
         wifi_controller_init();
     }
 
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_stop());
-
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
     esp_event_handler_instance_t instance_any_id;
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, &instance_any_id));
     esp_event_handler_instance_t instance_got_ip;
@@ -159,7 +168,7 @@ esp_err_t wifi_controller_connect(wifi_config_t wifi_config, wifi_connected_call
     }
 }
 
-esp_err_t wifi_controller_reconnect(wifi_connected_callback callback)
+esp_err_t wifi_controller_reconnect(wifi_callback callback)
 {
     if (connecting)
     {
@@ -167,13 +176,14 @@ esp_err_t wifi_controller_reconnect(wifi_connected_callback callback)
     }
     connecting = true;
 
-    wifi_callback = callback;
+    wifi_connected_callback = callback;
     if (!initialized)
     {
         wifi_controller_init();
     }
 
-    esp_wifi_stop();
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_stop());
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     esp_event_handler_instance_t instance_any_id;
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, &instance_any_id));
@@ -198,7 +208,7 @@ esp_err_t wifi_controller_reconnect(wifi_connected_callback callback)
     }
     else if (bits & WIFI_FAIL_BIT)
     {
-        ESP_LOGI(WIFI_LOG, "Failed to reconnect to last ap");
+        ESP_LOGD(WIFI_LOG, "Failed to reconnect to last ap");
         return ESP_ERR_INVALID_ARG;
     }
     else

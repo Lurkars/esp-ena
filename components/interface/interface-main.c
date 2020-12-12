@@ -139,6 +139,8 @@ void interface_main_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_MID, NULL);
     interface_register_command_callback(INTERFACE_COMMAND_UP, NULL);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, NULL);
+    interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, NULL);
+    interface_register_command_callback(INTERFACE_COMMAND_SET_LONG, NULL);
 
     interface_set_display_function(&interface_main_display);
     interface_set_display_refresh_function(&interface_main_display_refresh);

@@ -288,13 +288,6 @@ void interface_input(interface_text_callback callback_rst, interface_text_callba
 
     strcpy(current_char_set, char_set_uppercase);
 
-    printf("char_set_uppercase: %d %s\n", strlen(char_set_uppercase), char_set_uppercase);
-    printf("char_set_lowercase: %d %s\n", strlen(char_set_lowercase), char_set_lowercase);
-    printf("char_set_numeric: %d %s\n", strlen(char_set_numeric), char_set_numeric);
-    printf("char_set_special1: %d %s\n", strlen(char_set_special1), char_set_special1);
-    printf("char_set_special_uppercasecase: %d %s\n", strlen(char_set_special_uppercasecase), char_set_special_uppercasecase);
-    printf("char_set_special_lowercase: %d %s\n", strlen(char_set_special_lowercase), char_set_special_lowercase);
-
     current_char_index = 0;
     current_max_index = 0;
     if (current_limit == 0)
@@ -310,8 +303,11 @@ void interface_input(interface_text_callback callback_rst, interface_text_callba
     interface_register_command_callback(INTERFACE_COMMAND_RHT, &interface_input_rht);
     interface_register_command_callback(INTERFACE_COMMAND_MID, &interface_input_mid);
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_input_up);
+    interface_command_callback_set_trigger(INTERFACE_COMMAND_UP);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_input_dwn);
+    interface_command_callback_set_trigger(INTERFACE_COMMAND_DWN);
     interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, &interface_input_mid);
+    interface_register_command_callback(INTERFACE_COMMAND_SET_LONG, NULL);
 
     interface_set_display_function(&interface_input_display);
 }

@@ -28,10 +28,11 @@
 
 #define APS_TO_DISPLAY 3
 
-wifi_ap_record_t ap_info[10];
-uint16_t ap_count = 0;
-int ap_index = 0;
-int ap_selected = 0;
+static wifi_ap_record_t ap_info[10];
+static uint16_t ap_count = 0;
+static int ap_index = 0;
+static int ap_selected = 0;
+static bool interface_wifi_working = false;
 
 static wifi_config_t current_wifi_config;
 
@@ -116,14 +117,10 @@ void interface_wifi_dwn(void)
 
 void interface_wifi_display(void)
 {
-    display_menu_headline(interface_get_label_text(&interface_text_headline_wifi), true, 0);
-}
 
-void interface_wifi_display_refresh(void)
-{
+    display_menu_headline(interface_get_label_text(&interface_text_headline_wifi), true, 0);
     if (ap_count > 0)
     {
-        ena_eke_proxy_resume();
         display_clear_line(2, false);
         display_clear_line(4, false);
         display_clear_line(6, false);
@@ -171,6 +168,38 @@ void interface_wifi_display_refresh(void)
     }
 }
 
+void interface_wifi_scan(void)
+{
+    if (!interface_wifi_working)
+    {
+        interface_wifi_working = true;
+        memset(ap_info, 0, sizeof(ap_info));
+        ap_count = 0;
+        ap_index = 0;
+        ap_selected = 0;
+        ena_eke_proxy_pause();
+
+        display_clear();
+        display_menu_headline(interface_get_label_text(&interface_text_headline_wifi), true, 0);
+
+        display_text_line_column(interface_get_label_text(&interface_text_wifi_scanning), 4, 1, false);
+        wifi_controller_scan(ap_info, &ap_count, interface_wifi_display);
+
+        ena_eke_proxy_resume();
+        interface_wifi_working = false;
+    }
+}
+
+void interface_wifi_reconnect(void)
+{
+    if (!interface_wifi_working)
+    {
+        interface_wifi_working = true;
+        wifi_controller_reconnect(NULL);
+        interface_wifi_working = false;
+    }
+}
+
 void interface_wifi_start(void)
 {
     interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_wifi_set);
@@ -180,16 +209,11 @@ void interface_wifi_start(void)
     interface_register_command_callback(INTERFACE_COMMAND_UP, &interface_wifi_up);
     interface_register_command_callback(INTERFACE_COMMAND_DWN, &interface_wifi_dwn);
     interface_register_command_callback(INTERFACE_COMMAND_RST, &interface_wifi_mid);
+    interface_register_command_callback(INTERFACE_COMMAND_SET_LONG, &interface_wifi_scan);
+    interface_register_command_callback(INTERFACE_COMMAND_RST_LONG, &interface_wifi_reconnect);
 
     interface_set_display_function(&interface_wifi_display);
-    interface_set_display_refresh_function(&interface_wifi_display_refresh);
+    interface_set_display_refresh_function(NULL);
 
-    memset(ap_info, 0, sizeof(ap_info));
-    ap_count = 0;
-    ap_index = 0;
-    ap_selected = 0;
-
-    ena_eke_proxy_pause();
-
-    wifi_controller_scan(ap_info, &ap_count);
+    interface_wifi_scan();
 }

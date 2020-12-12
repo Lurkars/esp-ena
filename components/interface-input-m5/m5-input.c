@@ -23,8 +23,8 @@
 
 #include "m5-input.h"
 
-static float old_input_states[INTERFACE_COMMANDS_SIZE];
 static float input_states[INTERFACE_COMMANDS_SIZE];
+static float input_trigger_state[INTERFACE_COMMANDS_SIZE];
 static int input_command_mapping[INTERFACE_COMMANDS_SIZE];
 static bool flipped = false;
 
@@ -77,76 +77,28 @@ void button_input_check(interface_command_t command)
     }
 }
 
-void accel_input_up(float axis)
+void accel_input(float axis, interface_command_t command, float tresh)
 {
+    if (axis > tresh)
+    {
+        input_states[command] = input_states[command] + ((float)INTERFACE_INPUT_TICKS_MS / 1000);
 
-    input_states[INTERFACE_COMMAND_UP] = axis;
-    if (axis < -0.3 && old_input_states[INTERFACE_COMMAND_UP] > -0.3 && old_input_states[INTERFACE_COMMAND_UP] + axis < -0.5)
-    {
-        interface_execute_command(INTERFACE_COMMAND_UP);
-        old_input_states[INTERFACE_COMMAND_UP] = axis;
+        if (input_states[command] > input_trigger_state[command])
+        {
+            input_trigger_state[command] = input_trigger_state[command] - (input_trigger_state[command] / 8);
+            if (input_trigger_state[command] <= ((float)INTERFACE_INPUT_TICKS_MS / 200))
+            {
+                input_trigger_state[command] = ((float)INTERFACE_INPUT_TICKS_MS / 200);
+            }
+            input_states[command] = 0;
+            interface_execute_command_trigger(command);
+        }
     }
-    else if (axis > -0.3)
+    else if (input_states[command] > 0)
     {
-        old_input_states[INTERFACE_COMMAND_UP] = 0;
-    }
-}
-
-void accel_input_left(float axis)
-{
-
-    input_states[INTERFACE_COMMAND_LFT] = axis;
-    if (axis < -0.3 && old_input_states[INTERFACE_COMMAND_LFT] > -0.3 && old_input_states[INTERFACE_COMMAND_LFT] + axis < -0.5)
-    {
-        interface_execute_command(INTERFACE_COMMAND_LFT);
-        old_input_states[INTERFACE_COMMAND_LFT] = axis;
-    }
-    else if (axis > -0.3)
-    {
-        old_input_states[INTERFACE_COMMAND_LFT] = 0;
-    }
-}
-
-void accel_input_right(float axis)
-{
-    input_states[INTERFACE_COMMAND_RHT] = axis;
-    if (axis > 0.3 && old_input_states[INTERFACE_COMMAND_RHT] < 0.3 && old_input_states[INTERFACE_COMMAND_RHT] + axis > 0.5)
-    {
-        interface_execute_command(INTERFACE_COMMAND_RHT);
-        old_input_states[INTERFACE_COMMAND_RHT] = axis;
-    }
-    else if (axis < 0.3)
-    {
-        old_input_states[INTERFACE_COMMAND_RHT] = 0;
-    }
-}
-
-void accel_input_down(float axis)
-{
-    input_states[INTERFACE_COMMAND_DWN] = axis;
-    if (axis > 0.3 && old_input_states[INTERFACE_COMMAND_DWN] < 0.3 && old_input_states[INTERFACE_COMMAND_DWN] + axis > 0.5)
-    {
-        interface_execute_command(INTERFACE_COMMAND_DWN);
-        old_input_states[INTERFACE_COMMAND_DWN] = axis;
-    }
-    else if (axis < 0.3)
-    {
-        old_input_states[INTERFACE_COMMAND_DWN] = 0;
-    }
-}
-
-void gyro_input(float axis)
-{
-    input_states[INTERFACE_COMMAND_MID] = axis;
-    if (axis < -50 && old_input_states[INTERFACE_COMMAND_MID] > 50)
-    {
-        // interface_execute_command(INTERFACE_COMMAND_MID);
-        old_input_states[INTERFACE_COMMAND_MID] = axis;
-        ESP_LOGI(INTERFACE_LOG, "gyro: %f", axis);
-    }
-    else if (axis > 50)
-    {
-        old_input_states[INTERFACE_COMMAND_MID] = axis;
+        input_states[command] = 0;
+        input_trigger_state[command] = INTERFACE_LONG_STATE_SECONDS;
+        interface_execute_command(command);
     }
 }
 
@@ -164,17 +116,18 @@ void m5_input_task(void *pvParameter)
         {
             button_input_check(INTERFACE_COMMAND_RST);
             mpu6886_get_accel_data(&ax, &ay, &az);
-            accel_input_up(flipped ? -ax : ax);
-            accel_input_left(flipped ? -ay : ay);
-            accel_input_right(flipped ? -ay : ay);
-            accel_input_down(flipped ? -ax : ax);
 
-            if (ax >= 1)
+            accel_input(flipped ? ax : -ax, INTERFACE_COMMAND_UP, 0.3);
+            accel_input(flipped ? ay : -ay, INTERFACE_COMMAND_LFT, 0.5);
+            accel_input(flipped ? -ax : ax, INTERFACE_COMMAND_DWN, 0.5);
+            accel_input(flipped ? -ay : ay, INTERFACE_COMMAND_RHT, 0.3);
+
+            if (ax >= 0.95)
             {
                 flipped = false;
                 interface_flipped(flipped);
             }
-            else if (ax <= -1)
+            else if (ax <= -0.95)
             {
                 flipped = true;
                 interface_flipped(flipped);
@@ -200,6 +153,11 @@ void m5_input_start(void)
     input_command_mapping[INTERFACE_COMMAND_SET] = BUTTON_SET;
 
     mpu6886_start();
+
+    for (int i = 0; i < INTERFACE_COMMANDS_SIZE; i++)
+    {
+        input_trigger_state[i] = INTERFACE_LONG_STATE_SECONDS;
+    }
 
     xTaskCreate(&m5_input_task, "m5_input_task", 4096, NULL, 5, NULL);
 }

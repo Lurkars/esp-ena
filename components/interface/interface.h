@@ -31,7 +31,7 @@
 #define INTERFACE_IDLE_SECONDS CONFIG_ENA_INTERFACE_IDLE_TIME
 
 #define INTERFACE_INPUT_TICKS_MS 20
-#define INTERFACE_LONG_STATE_SECONDS 1.0
+#define INTERFACE_LONG_STATE_SECONDS 0.6
 
 /**
  * @brief available commands
@@ -99,6 +99,7 @@ interface_label_t interface_text_report_success;
 interface_label_t interface_text_report_fail;
 
 interface_label_t interface_text_wifi_scanning;
+interface_label_t interface_text_wifi_nothing;
 
 interface_label_t interface_text_data_del[6];
 
@@ -182,11 +183,25 @@ void interface_set_timezone_offset(int timezone_offset);
 void interface_register_command_callback(interface_command_t command, interface_command_callback callback);
 
 /**
+ * @brief       set if command is trigger
+ * 
+ * @param[in]   command     id of the command to set as trigger
+ */
+void interface_command_callback_set_trigger(interface_command_t command);
+
+/**
  * @brief       execute a command
  * 
  * @param[in]   command     id of the command to trigger
  */
 void interface_execute_command(interface_command_t command);
+
+/**
+ * @brief       execute a command as trigger
+ * 
+ * @param[in]   command     id of the command to trigger
+ */
+void interface_execute_command_trigger(interface_command_t command);
 
 /**
  * @brief       set the display function
