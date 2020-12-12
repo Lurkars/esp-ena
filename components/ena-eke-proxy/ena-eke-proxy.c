@@ -38,6 +38,23 @@ static time_t request_sleep = 0;
 static uint32_t request_sleep_waiting = 30;
 static time_t last_check = 0;
 static bool wait_for_request = false;
+static bool request_pause = false;
+
+void ena_eke_proxy_pause(void)
+{
+    while (wait_for_request || request_pause)
+    {
+        ESP_LOGD(ENA_EKE_PROXY_LOG, "waiting for other requests to finish...");
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+
+    request_pause = true;
+}
+
+void ena_eke_proxy_resume(void)
+{
+    request_pause = false;
+}
 
 esp_err_t ena_eke_proxy_fetch_event_handler(esp_http_client_event_t *evt)
 {
@@ -256,7 +273,7 @@ void ena_eke_proxy_run(void)
     last_check = (time_t)ena_storage_read_last_exposure_date();
     check_diff = difftime(current_time, last_check);
 
-    if (check_diff > HOUR_IN_SECONDS && !wait_for_request && current_time > request_sleep)
+    if (check_diff > HOUR_IN_SECONDS && !wait_for_request && !request_pause && current_time > request_sleep)
     {
         if (wifi_controller_connection() == NULL && current_time > wifi_reconnect && wifi_reconnect_waiting < 86400)
         {
@@ -323,6 +340,7 @@ esp_err_t ena_eke_proxy_fetch_upload_handler(esp_http_client_event_t *evt)
     case HTTP_EVENT_ON_DATA:
         break;
     case HTTP_EVENT_ON_FINISH:
+        ena_eke_proxy_resume();
         break;
     default:
         break;
@@ -332,6 +350,8 @@ esp_err_t ena_eke_proxy_fetch_upload_handler(esp_http_client_event_t *evt)
 
 esp_err_t ena_eke_proxy_upload(char *token, uint32_t days_since_onset_of_symptoms)
 {
+
+    ena_eke_proxy_pause();
 
     ESP_LOGD(ENA_EKE_PROXY_LOG, "try to upload keys:");
     esp_http_client_config_t config = {
@@ -380,7 +400,7 @@ esp_err_t ena_eke_proxy_upload(char *token, uint32_t days_since_onset_of_symptom
         if (status == 200)
         {
             ESP_LOGI(ENA_EKE_PROXY_LOG, "successfully uploaded keys : url = %s, status = %d, content_length = %d", ENA_EKE_PROXY_KEYFILES_UPLOAD_URL, status, content_length);
-            err = ESP_OK; 
+            err = ESP_OK;
         }
         else
         {
@@ -391,6 +411,7 @@ esp_err_t ena_eke_proxy_upload(char *token, uint32_t days_since_onset_of_symptom
     else
     {
         ESP_LOGW(ENA_EKE_PROXY_LOG, "Keyupload failed!");
+        ena_eke_proxy_resume();
     }
 
     free(output_buffer);

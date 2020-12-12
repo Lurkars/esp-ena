@@ -85,4 +85,16 @@ void ena_eke_proxy_run(void);
  */
 esp_err_t ena_eke_proxy_upload(char *token, uint32_t days_since_onset_of_symptoms);
 
+/**
+ * @brief pause requests
+ * 
+ */
+void ena_eke_proxy_pause(void);
+
+/**
+ * @brief resume requests
+ * 
+ */
+void ena_eke_proxy_resume(void);
+
 #endif
