@@ -256,13 +256,12 @@ void display_start(void)
 	axp192_screen_breath(10);
 }
 
-void display_rect(uint8_t x1, uint8_t x2, uint8_t y1, uint8_t y2, uint16_t color)
+void display_clear_line(uint8_t line, bool invert)
 {
-
-	uint16_t _x1 = x1 + M5_ST7735S_OFFSETX;
-	uint16_t _x2 = x2 + M5_ST7735S_OFFSETX - 1;
-	uint16_t _y1 = y1 + M5_ST7735S_OFFSETY;
-	uint16_t _y2 = y2 + M5_ST7735S_OFFSETY - 1;
+	uint16_t _x1 = 0 + M5_ST7735S_OFFSETX;
+	uint16_t _x2 = M5_ST7735S_WIDTH + M5_ST7735S_OFFSETX - 1;
+	uint16_t _y1 = line * 8 + M5_ST7735S_OFFSETY + M5_ST7735S_INTERFACE_OFFSETY;
+	uint16_t _y2 = line * 8 + 8 + M5_ST7735S_OFFSETY - 1 + M5_ST7735S_INTERFACE_OFFSETY;
 
 	spi_master_write_command(0x2A); // set column(x) address
 	spi_master_write_addr(_x1, _x2);
@@ -272,18 +271,27 @@ void display_rect(uint8_t x1, uint8_t x2, uint8_t y1, uint8_t y2, uint16_t color
 	for (int i = _x1; i <= _x2; i++)
 	{
 		uint16_t size = _y2 - _y1 + 1;
-		spi_master_write_color(color, size);
+		spi_master_write_color(invert ? display_get_color() : BLACK, size);
 	}
-}
-
-void display_clear_line(uint8_t line, bool invert)
-{
-	display_rect(0, M5_ST7735S_WIDTH, line * 8, line * 8 + 8, invert ? display_get_color() : BLACK);
 }
 
 void display_clear(void)
 {
-	display_rect(0, M5_ST7735S_WIDTH, 0, M5_ST7735S_HEIGHT, BLACK);
+	uint16_t _x1 = 0 + M5_ST7735S_OFFSETX;
+	uint16_t _x2 = M5_ST7735S_WIDTH + M5_ST7735S_OFFSETX - 1;
+	uint16_t _y1 = 0 + M5_ST7735S_OFFSETY;
+	uint16_t _y2 = M5_ST7735S_HEIGHT + M5_ST7735S_OFFSETY - 1;
+
+	spi_master_write_command(0x2A); // set column(x) address
+	spi_master_write_addr(_x1, _x2);
+	spi_master_write_command(0x2B); // set Page(y) address
+	spi_master_write_addr(_y1, _y2);
+	spi_master_write_command(0x2C); //	Memory Write
+	for (int i = _x1; i <= _x2; i++)
+	{
+		uint16_t size = _y2 - _y1 + 1;
+		spi_master_write_color(BLACK, size);
+	}
 }
 
 void display_on(bool on)
