@@ -22,7 +22,7 @@ The following acronyms will be used in code and comments:
 * receive Exposue Key export from an ENA Exposure Key export proxy server [ena-eke-proxy module](#ena-eke-proxy), see [ena-eke-proxy server reference implemenation](https://github.com/Lurkars/ena-eke-proxy)
 * Upload of own Exposure keys to proxy server
 
-Additional features for full ENA device
+### Additional features for full ENA device
 
 #### Custom device
 * RTC support with DS3231 (for correct system time)
@@ -44,9 +44,6 @@ Additional features for full ENA device
   * ok/cancel with button 1 and button 2 (depending on screen orientation)
   * up, down, left, right with tilting device
   * long press button 1 for changing character set on input
-
-### Features in development
-* 3d print case
 
 ### Limitations/Problems/Questions
 * WiFi or other external connection needed for infections status (auto-connect to open WiFis?)
@@ -81,7 +78,7 @@ So on average it is possible to meet 38 (24 on a lower boundary) different devic
 
 ### Hardware Required
 
-For base functionality just an ESP32 is required. DS3231 RTC, SSD1306 Display and 7 buttons are required for a complete device.
+For base functionality just an ESP32 is required, for full device M5StickC (PLUS) or for a custom device DS3231 RTC, SSD1306 Display and 7 buttons are required.
 
 ### Configure the project
 
@@ -135,17 +132,9 @@ idf.py -p PORT flash -b 1500000 monitor
 
 (To exit the serial monitor, type ``Ctrl-]``.)
 
-## Troubleshooting
-
-Sometimes I get errors from BT-stack of ESP-IDF printed. Didn't affect functionality for now, but I also could not find out what it caused and what it means.
-
-```
-E (909164) BT_HCI: btu_hcif_hdl_command_complete opcode 0x2005 status 0xc
-```
-
 ## Structure
 
-The project is divided in different components. The main.c just wrap up all components. The Exposure Notification API is in **ena** module
+The project is divided in different components. The main.c just wrap up all components. The Exposure Notification API is in **ena** module.
 
 ### ena
 
@@ -182,31 +171,31 @@ General module for set/get time from RTC.
 
 ### i2c-main
 
-Just start I²C driver for display and RTC.
+Just start I²C driver.
 
 ### interface-input-buttons
 
-Interface with 7 button input
+Interface with 7 button input.
 
 ### interface-input-m5
 
-Interface with input for M5StickC (PLUS) with 2 button input and accelometer as axis input
+Interface with input for M5StickC (PLUS) with 2 button input and accelometer as axis input.
 
 ### rtc-ds3231
 
-I²C driver for a DS3231 RTC, implementation of [rtc](#-rtc) module
+I²C driver for a DS3231 RTC, implementation of [rtc](#-rtc) module.
 
 ### rtc-bm8563
 
-I²C driver for BM8563 of M5StickC (PLUS), implementation of [rtc](#-rtc) module
+I²C driver for BM8563 of M5StickC (PLUS), implementation of [rtc](#-rtc) module.
 
 ### display-ssd1306
 
-I²C driver for a SSD1306 display, implementation of [display](#-display) module
+I²C driver for a SSD1306 display, implementation of [display](#-display) module.
 
 ### display-st7735s
 
-SPI driver for a ST7735s display of M5StickC, implementation of [display](#-display) module
+SPI driver for a ST7735s display of M5StickC, implementation of [display](#-display) module.
 
 ### display-st7789
 
@@ -214,11 +203,11 @@ SPI driver for a ST7789 display of M5StickC PLUS, implementation of [display](#-
 
 ### imu-mpu6886
 
-I²C driver for MPU6886 6-Axis IMU of M5StickC (PLUS)
+I²C driver for MPU6886 6-Axis IMU of M5StickC (PLUS).
 
 ### pmu-axp192
 
-I²C driver for AXP192 PMU of M5StickC (PLUS)
+I²C driver for AXP192 PMU of M5StickC (PLUS).
 
 ### ena-binary-export  \[deprecared\]
 
