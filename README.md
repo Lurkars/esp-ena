@@ -1,17 +1,17 @@
 # esp-ena
 
 Implementation of contact tracing with the Covid-19 Exposure Notification API by Apple and Google on an ESP32 (with [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)). 
-More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is fully compatible with the official API and is meant for people without smartphone or without access to Apples/Googles implementation.
+More information about the Covid-19 Exposure Notification at [Apple](https://www.apple.com/covid19/contacttracing/) and [Google](https://www.google.com/covid19/exposurenotifications/). This is fully compatible with the official API and is meant for people without smartphone or without access to Apple/Google's implementation.
 
 This is the main source (the Exposure Notification API). Full device is in the [**main branch**](https://github.com/Lurkars/esp-ena/).
 
 This implementation fully covers the BLE part including the cryptography specifications needed and the exposure check.
 
 The following acronyms will be used in code and comments:
-* *ENA* Exposure Notification Api
+* *ENA* Exposure Notification API
 * *ENIN* ENIntervalNumber - timestamp with 10 minutes resolution
 * *TEK* Temporary Exposure Key - personal secret key changed every 24h, published when infected
-* *RPI* Rolling Proximity Identifier - send and received identifer changed every 10 minutes
+* *RPI* Rolling Proximity Identifier - send and received identifier changed every 10 minutes
 * *AEM* Associated Encrypted Metadata - send and received metadata
 
 ### Features implemented
@@ -19,7 +19,7 @@ The following acronyms will be used in code and comments:
 * BLE privacy (change random MAC address in random interval)
 * permanent storage on flash of last keys, beacons and exposures (storage is limited, see [storage math](#some-storage-math) for details)
 * calculating exposure risks/scores (after adding reported keys and storing exposure information) as defined in [ENExposureConfiguration (Apple v1)](https://developer.apple.com/documentation/exposurenotification/enexposureconfiguration/calculating_the_exposure_risk_value_in_exposurenotification_version_1)
-* receive Exposue Key export from an ENA Exposure Key export proxy server [ena-eke-proxy module](#ena-eke-proxy), see [ena-eke-proxy server reference implemenation](https://github.com/Lurkars/ena-eke-proxy)
+* receive Exposure Key export from an ENA Exposure Key export proxy server [ena-eke-proxy module](#ena-eke-proxy), see [ena-eke-proxy server reference implemenation](https://github.com/Lurkars/ena-eke-proxy)
 * Upload of own Exposure keys to proxy server
 
 ### Limitations/Problems/Questions
@@ -79,7 +79,7 @@ idf.py menuconfig
 ```
 
 **required**
-* enable bluetooth (BLE)
+* enable Bluetooth (BLE)
 > Component config -> Bluetooth -> [*] Bluetooth
 * add partition-table for storage (currently hardcoded name "ena")
 > Partition Table -> Partition table -> (x) Custom partition table CSV
@@ -113,7 +113,7 @@ The project is divided in different components. The main.c just wrap up all comp
 
 ### ena
 
-The ena module contains the main functions of eps-ena with bluetooth scanning and adverting, storing data, handle beacons and check exposure.
+The ena module contains the main functions of eps-ena with Bluetooth scanning and advertising, storing data, handle beacons and check exposure.
 * *ena-beacons* handles scanned data by storing temporary beacons, check for threshold and store beacons permanently
 * *ena-crypto* covers cryptography part (key creation, encryption etc.)
 * *ena-storage* storage part to store own TEKs and beacons
@@ -124,22 +124,22 @@ The ena module contains the main functions of eps-ena with bluetooth scanning an
 
 ### ena-eke-proxy
 
-This module is for connecting to an Exposue Key export proxy server. The server must provide daily (and could hourly) fetch of daily keys in binary blob batches with the following format
+This module is for connecting to an Exposure Key export proxy server. The server must provide daily (and could hourly) fetch of daily keys in binary blob batches with the following format
 
 | Key Data | Rolling Start Interval Number | Rolling Period | Days Since Onset Of Symptoms |
 | :------: | :---------------------------: | :------------: | :--------------------------: |
 | 16 bytes |            4 bytes            |    4 bytes     |           4 bytes            |
 
-Request url is parametrized with {day-string},({hour} in hourly mode,) {page}, {page-size}.
+Request URL is parametrized with {day-string},({hour} in hourly mode,) {page}, {page-size}.
 
-### ena-binary-export  \[deprecared\]
+### ena-binary-export  \[deprecated\]
 
-Module to decode Exposure Key export. \[Depracated through ena-eke-proxy module\]
+Module to decode Exposure Key export. \[Deprecated through ena-eke-proxy module\]
 
-### ena-cwa \[deprecared\]
+### ena-cwa \[deprecated\]
 
-Connection to german Exposure App ([Corona Warn App](https://github.com/corona-warn-app)) for download Exposure Key export (and maybe later report infection). \[Depracated through ena-eke-proxy module\]
+Connection to German Exposure App ([Corona Warn App](https://github.com/corona-warn-app)) for download Exposure Key export (and maybe later report infection). \[Deprecated through ena-eke-proxy module\]
 
-### nanopb \[deprecared\]
+### nanopb \[deprecated\]
 
-[Nanopb](https://github.com/nanopb/nanopb) for reading Protocol Buffers of Exposure Key export. Including already generated Headers from *.proto files.  \[Depracated through ena-eke-proxy module\]
+[Nanopb](https://github.com/nanopb/nanopb) for reading Protocol Buffers of Exposure Key export. Including already generated Headers from *.proto files.  \[Deprecated through ena-eke-proxy module\]
