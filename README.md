@@ -113,6 +113,13 @@ idf.py menuconfig
 Select required device drivers manually, because config get not applied in interface's CmakeLists.txt (I don't know why!):
 > comment in/out line in *components/interface/CmakeLists.txt* with matching interface 
 
+#### Configure SSL cert manually!
+
+For *ena-eke-proxy* connection over SSL a valid certificate for used server under *components/ena-eke-proxy/certs/cert.pem* is required. 
+
+For my own proxy server, I have added a self signed cert for cwa-proxy.champonthis.de. For using, copy or rename  *components/ena-eke-proxy/certs/cwa-proxy.champonthis.de.pem* to *components/ena-eke-proxy/certs/cert.pem*.
+
+> copy valid cert to *components/ena-eke-proxy/certs/cert.pem*
 
 ### Build and Flash
 
