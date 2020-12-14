@@ -72,6 +72,41 @@ FetchContent_MakeAvailable(esp-ena)
 set(EXTRA_COMPONENT_DIRS ${esp-ena_SOURCE_DIR}/components)
 ```
 
+### Configure the project
+
+```
+idf.py menuconfig
+```
+
+**required**
+* enable bluetooth (BLE)
+> Component config -> Bluetooth -> [*] Bluetooth
+* add partition-table for storage (currently hardcoded name "ena")
+> Partition Table -> Partition table -> (x) Custom partition table CSV
+* mbedTLS enable HKDF
+> Component config -> mbedTLS -> [*] HKDF algorithm (RFC 5869)
+* flash size > 3.9GB
+> Serial flasher config -> Flash size ->  (x) 4MB
+
+**recommended**
+* BLE *Scan Duplicate* (By Device Address and Advertising Data)
+> Component config -> Bluetooth -> Bluetooth controller -> Scan Duplicate Type -> (X) Scan Duplicate By Device Address And Advertising Data
+
+**debug options**
+* Log output set to Debug
+> Component config -> Log output -> Default log verbosity -> (X) Debug
+* Exposure Notification API / Storage enable *Dump storage*
+> Exposure Notification API -> Storage -> [X] Dump storage
+
+#### Configure SSL cert manually!
+
+For *ena-eke-proxy* connection over SSL a valid certificate for used server under *components/ena-eke-proxy/certs/cert.pem* is required. 
+
+For my own proxy server, I have added a self signed cert for cwa-proxy.champonthis.de. For using, copy or rename  *components/ena-eke-proxy/certs/cwa-proxy.champonthis.de.pem* to *components/ena-eke-proxy/certs/cert.pem*.
+
+> copy valid cert to *components/ena-eke-proxy/certs/cert.pem*
+
+
 ## Structure
 
 The project is divided in different components. The main.c just wrap up all components. The Exposure Notification API is in **ena** module

@@ -44,3 +44,5 @@ sdkconfig
 sdkconfig.old
 
 .local
+
+cert.pem
