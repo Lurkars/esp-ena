@@ -40,7 +40,9 @@ void interface_init_label(void)
     interface_text_headline_info.text[EN] = "INFO";
     interface_text_headline_debug.text[EN] = "DEBUG";
 
+    interface_text_wifi_waiting.text[EN] = "Waiting...";
     interface_text_wifi_scanning.text[EN] = "Scanning...";
+    interface_text_wifi_connecting.text[EN] = "Connecting...";
     interface_text_wifi_nothing.text[EN] = "None...";
 
     interface_text_settings_locale.text[EN] = "Language:";
@@ -104,7 +106,9 @@ void interface_init_label(void)
     interface_text_headline_info.text[DE] = "INFOS";
     interface_text_headline_debug.text[DE] = "DEBUG";
 
+    interface_text_wifi_waiting.text[DE] = "Warten...";
     interface_text_wifi_scanning.text[DE] = "Scannen...";
+    interface_text_wifi_connecting.text[DE] = "Verbinden...";
     interface_text_wifi_nothing.text[DE] = "Keine...";
 
     interface_text_settings_locale.text[DE] = "Sprache:";

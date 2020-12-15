@@ -111,15 +111,10 @@ void interface_input_rht(void)
         if (current_cursor > current_max_index)
         {
             current_max_index = current_cursor;
-            strcpy(current_char_set, char_set_uppercase);
+            current_text[current_cursor] = current_text[current_cursor - 1];
+        }
 
-            current_char_index = 0;
-            current_text[current_cursor] = current_char_set[current_char_index];
-        }
-        else
-        {
-            interface_input_set_char_set();
-        }
+        interface_input_set_char_set();
     }
 }
 
@@ -149,7 +144,12 @@ void interface_input_mid(void)
     {
         strcpy(current_char_set, char_set_uppercase);
     }
-    current_char_index = 0;
+
+    if (current_char_index >= strlen(current_char_set))
+    {
+        current_char_index = 0;
+    }
+
     current_text[current_cursor] = current_char_set[current_char_index];
 }
 

@@ -33,6 +33,6 @@
  * 
  * 
  */
-void button_input_start(void);
+void custom_input_start(void);
 
 #endif

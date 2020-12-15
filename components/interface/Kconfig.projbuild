@@ -21,6 +21,9 @@ menu "ENA Interface"
 	
 		config ENA_INTERFACE_M5STICKC_PLUS
 			bool "M5StickC PLUS"
+	
+		config ENA_INTERFACE_TTGO_T_WRISTBAND
+			bool "TTGO T-Wristband"
 	endchoice 
 
 endmenu

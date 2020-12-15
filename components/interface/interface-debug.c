@@ -27,6 +27,10 @@
 #include "axp192.h"
 #endif
 
+#if defined(CONFIG_ENA_INTERFACE_TTGO_T_WRISTBAND)
+#include "lsm9ds1.h"
+#endif
+
 #include "interface.h"
 
 static bool runTask = true;
@@ -75,7 +79,7 @@ void interface_debug_dwn(void)
 void interface_debug_task(void *pvParameter)
 {
 
-#if defined(CONFIG_ENA_INTERFACE_M5STICKC) || defined(CONFIG_ENA_INTERFACE_M5STICKC_PLUS)
+#if defined(CONFIG_ENA_INTERFACE_M5STICKC) || defined(CONFIG_ENA_INTERFACE_M5STICKC_PLUS) || defined(CONFIG_ENA_INTERFACE_TTGO_T_WRISTBAND)
   float ax = 0;
   float ay = 0;
   float az = 0;
@@ -94,6 +98,14 @@ void interface_debug_task(void *pvParameter)
       mpu6886_get_accel_data(&ax, &ay, &az);
       mpu6886_get_gyro_data(&gx, &gy, &gz);
 
+#endif
+
+#if defined(CONFIG_ENA_INTERFACE_TTGO_T_WRISTBAND)
+      lsm9ds1_get_accel_data(&ax, &ay, &az);
+      lsm9ds1_get_gyro_data(&gx, &gy, &gz);
+#endif
+
+#if defined(CONFIG_ENA_INTERFACE_M5STICKC) || defined(CONFIG_ENA_INTERFACE_M5STICKC_PLUS) || defined(CONFIG_ENA_INTERFACE_TTGO_T_WRISTBAND)
       char data_chars[32];
       sprintf(data_chars, "acc x:%3.2f", ax);
       display_text_line(data_chars, 2, false);
@@ -108,8 +120,10 @@ void interface_debug_task(void *pvParameter)
       sprintf(data_chars, "gyr z:%3.2f", gz);
       display_text_line(data_chars, 7, false);
 
-      float bat_v = axp192_get_bat_voltage();
+#endif
 
+#if defined(CONFIG_ENA_INTERFACE_M5STICKC) || defined(CONFIG_ENA_INTERFACE_M5STICKC_PLUS)
+      float bat_v = axp192_get_bat_voltage();
       sprintf(data_chars, "Battery: %.2f V", bat_v);
       display_text_line(data_chars, 7, false);
 
@@ -122,6 +136,10 @@ void interface_debug_task(void *pvParameter)
 
 void interface_debug_start(void)
 {
+
+#if defined(CONFIG_ENA_INTERFACE_TTGO_T_WRISTBAND)
+    lsm9ds1_start();
+#endif
 
   interface_register_command_callback(INTERFACE_COMMAND_RST, &interface_debug_rst);
   interface_register_command_callback(INTERFACE_COMMAND_SET, &interface_debug_set);

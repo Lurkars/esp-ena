@@ -1,15 +1,18 @@
 set(priv_requires "ena" "ena-eke-proxy" "display" "rtc" "wifi-controller" )
 
 if(CONFIG_ENA_INTERFACE_CUSTOM)
-     list(APPEND priv_requires "display-ssd1306" "rtc-ds3231") 
-elseif(ENA_INTERFACE_M5STICKC)
-    list(APPEND priv_requires "display-st7735s" "rtc-bm8563" "imu-mpu6886" "pmu-axp192")
-elseif(ENA_INTERFACE_M5STICKC_PLUS)
-    list(APPEND priv_requires "display-st7789" "rtc-bm8563" "imu-mpu6886" "pmu-axp192")
+     list(APPEND priv_requires "display-custom-ssd1306" "rtc-custom-ds3231") 
+elseif(CONFIG_ENA_INTERFACE_M5STICKC)
+    list(CONFIG_APPEND priv_requires "display-m5-st7735s" "rtc-m5-bm8563" "imu-m5-mpu6886" "pmu-m5-axp192")
+elseif(CONFIG_ENA_INTERFACE_M5STICKC_PLUS)
+    list(APPEND priv_requires "display-m5-st7789" "rtc-m5-bm8563" "imu-m5-mpu6886" "pmu-m5-axp192")
+elseif(CONFIG_ENA_INTERFACE_TTGO_T_WRISTBAND)
+    list(APPEND priv_requires "display-ttgo-st7735" "imu-ttgo-lsm9ds1")
 else()   
-   list(APPEND priv_requires "display-ssd1306" "rtc-ds3231") # uncomment for custom device with SSD1306 und DS3231
-#    list(APPEND priv_requires "display-st7735s" "rtc-bm8563" "imu-mpu6886" "pmu-axp192") # uncomment for M5StickC
-#    list(APPEND priv_requires "display-st7789" "rtc-bm8563" "imu-mpu6886" "pmu-axp192") # uncomment for M5StickC PLUS
+    list(APPEND priv_requires "display-custom-ssd1306" "rtc-custom-ds3231") # uncomment for custom device with SSD1306 und DS3231
+#    list(APPEND priv_requires "display-m5-st7735s" "rtc-m5-bm8563" "imu-m5-mpu6886" "pmu-m5-axp192") # uncomment for M5StickC
+#    list(APPEND priv_requires "display-m5-st7789" "rtc-m5-bm8563" "imu-m5-mpu6886" "pmu-m5-axp192") # uncomment for M5StickC PLUS
+#    list(APPEND priv_requires "display-ttgo-st7735" "imu-ttgo-lsm9ds1") # uncomment for TTGO T-Wristband
 endif()
 
 idf_component_register(

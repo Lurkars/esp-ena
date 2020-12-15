@@ -1,9 +1,9 @@
 idf_component_register(
     SRCS 
-        "st7789.c"
+        "st7735s.c"
     INCLUDE_DIRS "."
     PRIV_REQUIRES
         "display"
         "spi_flash"
-        "pmu-axp192"
+        "pmu-m5-axp192"
 )

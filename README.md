@@ -180,39 +180,51 @@ General module for set/get time from RTC.
 
 Just start I²C driver.
 
-### interface-input-buttons
+### interface-custom-input
 
 Interface with 7 button input.
 
-### interface-input-m5
+### interface-m5-input
 
 Interface with input for M5StickC (PLUS) with 2 button input and accelerometer as axis input.
 
-### rtc-ds3231
+### interface-ttgo-input
+
+Interface with input for TTGO T-Wristband with 1 button input and accelerometer as axis input.
+
+### rtc-custom-ds3231
 
 I²C driver for a DS3231 RTC, implementation of [rtc](#-rtc) module.
 
-### rtc-bm8563
+### rtc-m5-bm8563
 
 I²C driver for BM8563 of M5StickC (PLUS), implementation of [rtc](#-rtc) module.
 
-### display-ssd1306
+### display-custom-ssd1306
 
 I²C driver for a SSD1306 display, implementation of [display](#-display) module.
 
-### display-st7735s
+### display-m5-st7735s
 
 SPI driver for a ST7735s display of M5StickC, implementation of [display](#-display) module.
 
-### display-st7789
+### display-m5-st7789
 
 SPI driver for a ST7789 display of M5StickC PLUS, implementation of [display](#-display) module
 
-### imu-mpu6886
+### display-ttgo-st7735
+
+SPI driver for a ST7735 display of TTGO T-Wristband, implementation of [display](#-display) module.
+
+### imu-m5-mpu6886
 
 I²C driver for MPU6886 6-Axis IMU of M5StickC (PLUS).
 
-### pmu-axp192
+### imu-ttgo-lsm9ds1 \[in development\]
+
+I²C driver for LSM9DS1 6-Axis IMU of TTGO T-Wristband.
+
+### pmu-m5-axp192
 
 I²C driver for AXP192 PMU of M5StickC (PLUS).
 

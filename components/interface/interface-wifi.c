@@ -43,6 +43,12 @@ void interface_wifi_input_rst(char *text, uint8_t cursor)
 
 void interface_wifi_input_set(char *text, uint8_t cursor)
 {
+
+    display_clear();
+    display_menu_headline(interface_get_label_text(&interface_text_headline_wifi), true, 0);
+
+    display_text_line_column(interface_get_label_text(&interface_text_wifi_connecting), 4, 1, false);
+
     memcpy(current_wifi_config.sta.password, text, cursor + 1);
 
     ESP_LOGD(INTERFACE_LOG, "ssid: '%s' password '%s'", current_wifi_config.sta.ssid, current_wifi_config.sta.password);
@@ -173,15 +179,16 @@ void interface_wifi_scan(void)
     if (!interface_wifi_working)
     {
         interface_wifi_working = true;
+        display_clear();
+        display_menu_headline(interface_get_label_text(&interface_text_headline_wifi), true, 0);
+
+        display_text_line_column(interface_get_label_text(&interface_text_wifi_waiting), 4, 1, false);
+        ena_eke_proxy_pause();
+
         memset(ap_info, 0, sizeof(ap_info));
         ap_count = 0;
         ap_index = 0;
         ap_selected = 0;
-        ena_eke_proxy_pause();
-
-        display_clear();
-        display_menu_headline(interface_get_label_text(&interface_text_headline_wifi), true, 0);
-
         display_text_line_column(interface_get_label_text(&interface_text_wifi_scanning), 4, 1, false);
         wifi_controller_scan(ap_info, &ap_count, interface_wifi_display);
 
@@ -194,8 +201,11 @@ void interface_wifi_reconnect(void)
 {
     if (!interface_wifi_working)
     {
+        display_clear();
+        display_menu_headline(interface_get_label_text(&interface_text_headline_wifi), true, 0);
+        display_text_line_column(interface_get_label_text(&interface_text_wifi_connecting), 4, 1, false);
         interface_wifi_working = true;
-        wifi_controller_reconnect(NULL);
+        wifi_controller_reconnect(&interface_wifi_set);
         interface_wifi_working = false;
     }
 }

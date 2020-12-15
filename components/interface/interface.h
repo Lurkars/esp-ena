@@ -98,7 +98,9 @@ interface_label_t interface_text_report_pending;
 interface_label_t interface_text_report_success;
 interface_label_t interface_text_report_fail;
 
+interface_label_t interface_text_wifi_waiting;
 interface_label_t interface_text_wifi_scanning;
+interface_label_t interface_text_wifi_connecting;
 interface_label_t interface_text_wifi_nothing;
 
 interface_label_t interface_text_data_del[6];

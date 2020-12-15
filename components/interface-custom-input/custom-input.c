@@ -19,13 +19,13 @@
 
 #include "interface.h"
 
-#include "button-input.h"
+#include "custom-input.h"
 
 static float input_states[INTERFACE_COMMANDS_SIZE];
 static float input_trigger_state[INTERFACE_COMMANDS_SIZE];
 static int input_command_mapping[INTERFACE_COMMANDS_SIZE];
 
-void button_input_check(interface_command_t command)
+void custom_input_check(interface_command_t command)
 {
     int button_level = gpio_get_level(input_command_mapping[command]);
 
@@ -79,25 +79,25 @@ void button_input_check(interface_command_t command)
     }
 }
 
-void button_input_task(void *pvParameter)
+void custom_input_task(void *pvParameter)
 {
     while (1)
     {
-        button_input_check(INTERFACE_COMMAND_SET);
+        custom_input_check(INTERFACE_COMMAND_SET);
         if (!interface_is_idle())
         {
-            button_input_check(INTERFACE_COMMAND_RST);
-            button_input_check(INTERFACE_COMMAND_MID);
-            button_input_check(INTERFACE_COMMAND_RHT);
-            button_input_check(INTERFACE_COMMAND_LFT);
-            button_input_check(INTERFACE_COMMAND_DWN);
-            button_input_check(INTERFACE_COMMAND_UP);
+            custom_input_check(INTERFACE_COMMAND_RST);
+            custom_input_check(INTERFACE_COMMAND_MID);
+            custom_input_check(INTERFACE_COMMAND_RHT);
+            custom_input_check(INTERFACE_COMMAND_LFT);
+            custom_input_check(INTERFACE_COMMAND_DWN);
+            custom_input_check(INTERFACE_COMMAND_UP);
         }
         vTaskDelay(INTERFACE_INPUT_TICKS_MS / portTICK_PERIOD_MS);
     }
 }
 
-void button_input_start(void)
+void custom_input_start(void)
 {
     gpio_config_t io_conf;
 
@@ -124,5 +124,5 @@ void button_input_start(void)
         input_trigger_state[i] = INTERFACE_LONG_STATE_SECONDS;
     }
 
-    xTaskCreate(&button_input_task, "button_input_task", 4096, NULL, 5, NULL);
+    xTaskCreate(&custom_input_task, "custom_input_task", 4096, NULL, 5, NULL);
 }
