@@ -188,7 +188,7 @@ Interface with 7 button input.
 
 Interface with input for M5StickC (PLUS) with 2 button input and accelerometer as axis input.
 
-### interface-ttgo-input
+### interface-ttgo-input \[in development\]
 
 Interface with input for TTGO T-Wristband with 1 button input and accelerometer as axis input.
 
