@@ -108,17 +108,17 @@ void interface_debug_task(void *pvParameter)
 #if defined(CONFIG_ENA_INTERFACE_M5STICKC) || defined(CONFIG_ENA_INTERFACE_M5STICKC_PLUS) || defined(CONFIG_ENA_INTERFACE_TTGO_T_WRISTBAND)
       char data_chars[32];
       sprintf(data_chars, "acc x:%3.2f", ax);
-      display_text_line(data_chars, 2, false);
+      display_text_line(data_chars, 1, false);
       sprintf(data_chars, "acc y:%3.2f", ay);
-      display_text_line(data_chars, 3, false);
+      display_text_line(data_chars, 2, false);
       sprintf(data_chars, "acc z:%3.2f", az);
-      display_text_line(data_chars, 4, false);
+      display_text_line(data_chars, 3, false);
       sprintf(data_chars, "gyr x:%3.2f", gx);
-      display_text_line(data_chars, 5, false);
+      display_text_line(data_chars, 4, false);
       sprintf(data_chars, "gyr y:%3.2f", gy);
-      display_text_line(data_chars, 6, false);
+      display_text_line(data_chars, 5, false);
       sprintf(data_chars, "gyr z:%3.2f", gz);
-      display_text_line(data_chars, 7, false);
+      display_text_line(data_chars, 6, false);
 
 #endif
 

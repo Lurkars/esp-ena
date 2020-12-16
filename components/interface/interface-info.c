@@ -96,11 +96,10 @@ void interface_info_display(void)
     time_t current_timstamp;
     time(&current_timstamp);
 
-    int max = ena_expore_check_find_min((uint32_t)current_timstamp);
     int min = ena_expore_check_find_min((uint32_t)current_timstamp - 60 * 30);
-    int last30 = max - min;
+    int last30 = num - min;
 
-    if (last30 > 0)
+    if (last30 >= 0)
     {
         sprintf(data_chars, "%d", last30);
         display_text_line_column(data_chars, 3, interface_info_num_offset(last30), false);
