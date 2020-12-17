@@ -26,6 +26,8 @@ static int scan_status = ENA_SCAN_STATUS_NOT_SCANNING;
 
 static const uint16_t ENA_SERVICE_UUID = 0xFD6F;
 
+static int last_scan_num;
+
 static esp_ble_scan_params_t ena_scan_params = {
     .scan_type = BLE_SCAN_TYPE_ACTIVE,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
@@ -37,7 +39,6 @@ static esp_ble_scan_params_t ena_scan_params = {
 
 void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
-
     uint32_t unix_timestamp = (uint32_t)time(NULL);
     esp_ble_gap_cb_param_t *p = (esp_ble_gap_cb_param_t *)param;
     switch (event)
@@ -70,6 +71,7 @@ void ena_bluetooth_scan_event_callback(esp_gap_ble_cb_event_t event, esp_ble_gap
                 uint8_t *aem = malloc(ENA_AEM_METADATA_LENGTH);
                 memcpy(aem, &service_data[sizeof(ENA_SERVICE_UUID) + ENA_KEY_LENGTH], ENA_AEM_METADATA_LENGTH);
                 ena_beacon(unix_timestamp, rpi, aem, p->scan_rst.rssi);
+                last_scan_num++;
                 free(rpi);
                 free(aem);
             }
@@ -98,6 +100,7 @@ void ena_bluetooth_scan_init(void)
 void ena_bluetooth_scan_start(uint32_t duration)
 {
     scan_status = ENA_SCAN_STATUS_SCANNING;
+    last_scan_num = 0;
     ESP_ERROR_CHECK(esp_ble_gap_start_scanning(duration));
 }
 
@@ -110,4 +113,9 @@ void ena_bluetooth_scan_stop(void)
 int ena_bluetooth_scan_get_status(void)
 {
     return scan_status;
+}
+
+int ena_bluetooth_scan_get_last_num(void)
+{
+    return last_scan_num;
 }

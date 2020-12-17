@@ -14,33 +14,18 @@
 /**
  * @file
  * 
- * @brief start I2C driver for display and RTC.
+ * @brief execute interface commands via simple push buttons
  *  
  */
-#ifndef _i2c_main_H_
-#define _i2c_main_H_
+#ifndef _button_input_H_
+#define _button_input_H_
 
-#if defined(CONFIG_ENA_INTERFACE_CUSTOM)
-#define I2C_SDA_PIN (CONFIG_I2C_SDA_PIN)
-#define I2C_SCL_PIN (CONFIG_I2C_SCL_PIN)
-#else
-#define I2C_SDA_PIN 21
-#define I2C_SCL_PIN 22
-#endif
-#define I2C_CLK_SPEED (1000000)
-
-/**
- * @brief initialize main I2C interface
- */
-void i2c_main_init();
-
-/**
- * @brief check if I2C interface already initialized
- * 
- * @return
- *      - false I2C not initialized
- *      - true  I2C initialized
- */
-bool i2c_is_initialized();
+#define BUTTON_RST GPIO_NUM_32
+#define BUTTON_SET GPIO_NUM_33
+#define BUTTON_MID GPIO_NUM_25
+#define BUTTON_RHT GPIO_NUM_26
+#define BUTTON_LFT GPIO_NUM_27
+#define BUTTON_DWN GPIO_NUM_14
+#define BUTTON_UP GPIO_NUM_12
 
 #endif

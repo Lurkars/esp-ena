@@ -37,7 +37,7 @@ void ttgo_input_task(void *pvParameter)
     }
 }
 
-void ttgo_input_start(void)
+void interface_input_start(void)
 {
     lsm9ds1_start();
     xTaskCreate(&ttgo_input_task, "ttgo_input_task", 4096, NULL, 5, NULL);

@@ -58,6 +58,11 @@ void interface_init_label(void)
     interface_text_info_exp_max.text[EN] = "Score:";
     interface_text_info_exp_sum.text[EN] = "Scores:";
 
+    interface_text_info_scan_status_scanning.text[EN] = "Scanning...";
+    interface_text_info_scan_status_notscanning.text[EN] = "Not scanning.";
+    interface_text_info_scan_status_waiting.text[EN] = "Waiting for scan";
+    interface_text_info_scan_last.text[EN] = "Last scan:";
+
     interface_text_report_pending.text[EN] = "Uploading...";
     interface_text_report_success.text[EN] = "Upload succeed!";
     interface_text_report_fail.text[EN] = "Upload failed!";
@@ -123,6 +128,11 @@ void interface_init_label(void)
     interface_text_info_exp_num.text[DE] = "Anz. Exp:";
     interface_text_info_exp_max.text[DE] = "Score:";
     interface_text_info_exp_sum.text[DE] = "Scores:";
+
+    interface_text_info_scan_status_scanning.text[DE] = "Scannen...";
+    interface_text_info_scan_status_notscanning.text[DE] = "Kein Scan.";
+    interface_text_info_scan_status_waiting.text[DE] = "Warten auf Scan.";
+    interface_text_info_scan_last.text[DE] = "letz. Scan:";
 
     interface_text_report_pending.text[DE] = "Hochladen...";
     interface_text_report_success.text[DE] = "Erfolgreich!";

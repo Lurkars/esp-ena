@@ -93,6 +93,10 @@ interface_label_t interface_text_info_exp_days;
 interface_label_t interface_text_info_exp_num;
 interface_label_t interface_text_info_exp_max;
 interface_label_t interface_text_info_exp_sum;
+interface_label_t interface_text_info_scan_status_scanning;
+interface_label_t interface_text_info_scan_status_notscanning;
+interface_label_t interface_text_info_scan_status_waiting;
+interface_label_t interface_text_info_scan_last;
 
 interface_label_t interface_text_report_pending;
 interface_label_t interface_text_report_success;
@@ -126,6 +130,16 @@ typedef void (*interface_display_function)(void);
  * @param[in]   cursor  current cursor position 
  */
 typedef void (*interface_text_callback)(char *text, uint8_t cursor);
+
+
+/**
+ * @brief start input routine
+ * 
+ * MUST BE DEFINED DEVICE SPECIFIC
+ * 
+ */
+void interface_input_start(void);
+
 
 /**
  * @brief       is interface in idle mode
@@ -267,11 +281,6 @@ void interface_settings_start(void);
  * @brief       start info interface
  */
 void interface_info_start(void);
-
-/**
- * @brief       start debug interface
- */
-void interface_debug_start(void);
 
 /**
  * @brief       start interface for input

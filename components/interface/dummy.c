@@ -11,20 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/**
- * @file
- * 
- * @brief execute interface commands via simple push buttons
- *  
- */
-#ifndef _ttgo_input_H_
-#define _ttgo_input_H_
+#include <stdio.h>
+#include "interface.h"
 
-/**
- * @brief     
- * 
- * 
- */
-void ttgo_input_start(void);
-
-#endif
+void interface_input_start(void)
+{
+}

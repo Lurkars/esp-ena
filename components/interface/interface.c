@@ -145,6 +145,8 @@ void interface_start(void)
     display_clear();
 
     xTaskCreate(&interface_display_task, "interface_display_task", 4096, NULL, 5, NULL);
+    
+    interface_input_start();
 }
 
 void interface_flipped(bool flipped)

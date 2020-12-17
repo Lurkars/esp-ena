@@ -23,11 +23,4 @@
 #define BUTTON_RST GPIO_NUM_37
 #define BUTTON_SET GPIO_NUM_39
 
-/**
- * @brief     
- * 
- * 
- */
-void m5_input_start(void);
-
 #endif

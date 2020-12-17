@@ -5,17 +5,56 @@ menu "ENA Interface"
 		int  "Seconds after display turns off on inactivity"
 		default 15
 
-	config ENA_INTERFACE_DEBUG
-		bool "Adds a debug interface for additional information for device"
-		default false
-
 	choice ENA_INTERFACE_DEVICE
 		prompt "Choose device"
 		default ENA_INTERFACE_CUSTOM
 	
 		config ENA_INTERFACE_CUSTOM
 			bool "Custom"
-	
+
+				choice ENA_INTERFACE_CUSTOM_DISPLAY
+					depends on 	ENA_INTERFACE_CUSTOM
+					prompt "Choose custom display"
+					default ENA_INTERFACE_DISPLAY_SSD1306
+					config ENA_INTERFACE_DISPLAY_SSD1306
+						bool "SSD1306"
+					config ENA_INTERFACE_DISPLAY_NONE
+						bool "none"
+				endchoice 
+
+				choice ENA_INTERFACE_CUSTOM_RTC
+					depends on 	ENA_INTERFACE_CUSTOM
+						prompt "Choose custom rtc"
+						default ENA_INTERFACE_RTC_DS3231
+						config ENA_INTERFACE_RTC_DS3231
+							bool "DS3231"
+						config ENA_INTERFACE_RTC_NONE
+							bool "none"
+				endchoice 
+
+				choice ENA_INTERFACE_CUSTOM_INPUT
+					depends on 	ENA_INTERFACE_CUSTOM
+						prompt "Choose custom input"
+						default ENA_INTERFACE_INPUT_CUSTOM
+						config ENA_INTERFACE_INPUT_CUSTOM
+							bool "7-Button input"
+						config ENA_INTERFACE_INPUT_NONE
+							bool "none"
+				endchoice 
+
+				menu "Custom I²C"
+					depends on ENA_INTERFACE_CUSTOM
+
+					config I2C_SDA_PIN
+						int "I²C sda pin"
+						default 21
+				
+					config I2C_SCL_PIN
+						int "I²C scl pin"
+						default 22
+
+				endmenu
+
 		config ENA_INTERFACE_M5STICKC
 			bool "M5StickC"
 	

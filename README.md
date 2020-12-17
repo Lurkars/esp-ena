@@ -24,26 +24,35 @@ The following acronyms will be used in code and comments:
 
 ### Additional features for full ENA device
 
-#### Custom device
+Interface with display and input to
+  * show exposure status
+  * connect to WiFi
+  * delete data
+  * set language (currently supported: English and German)
+  * set timezone
+  * enter tan and uploading own exposure keys
+  * set time and date (if no RTC/NTP available)
+
+#### supported devices
+
+##### M5StickC and M5StickC PLUS
+* RTC support
+* display support
+* PMU support
+* input with 2 buttons and accelerometer control
+  * ok/cancel with button 1 and button 2 (depending on screen orientation)
+  * up, down, left, right by tilting device
+  * long press button 1 for changing character set on input
+
+##### Custom device
 * RTC support with DS3231 (for correct system time)
 * display support with SSD1306
-* interface with a 7 button control (joystick up,down,left,right,enter,cancel,ok) to
-    * show exposure status
-    * set time
-    * connect to WiFi
-    * delete data
-    * set language
-    * enter tan and uploading own exposure keys
+* input with a 7 button control (joystick up,down,left,right,enter,cancel,ok) 
 * battery support with ESP32 development boards with integrated LiPo support
 
-#### M5StickC and M5StickC PLUS
-* RTC support
-* PMU support
+##### LILYGO TTGO T-Wristband \[in development\]
 * display support
-* interface with 2 buttons and accelerometer control
-  * ok/cancel with button 1 and button 2 (depending on screen orientation)
-  * up, down, left, right with tilting device
-  * long press button 1 for changing character set on input
+* RTC and input in development
 
 ### Limitations/Problems/Questions
 * WiFi or other external connection needed for infections status (auto-connect to open WiFis?)
@@ -95,8 +104,15 @@ idf.py menuconfig
 > Component config -> mbedTLS -> [*] HKDF algorithm (RFC 5869)
 * flash size > 3.9GB
 > Serial flasher config -> Flash size ->  (x) 4MB
-* choose interface device (custom, M5StickC or M5StickC PLUS)
+* choose interface device (custom, M5StickC, M5StickC PLUS, TTGO T-Wristband \[in development\])
 > ENA Interface -> ENA Interface device
+
+***important***
+
+If you ran into error ``region 'iram0_0_seg' overflowed by xxx bytes`` you can try disabling WiFi IRAM optimization
+> Component config -> Wi-Fi -> WiFi IRAM speed optimization -> ( )
+ 
+> Component config -> Wi-Fi -> WiFi RX IRAM speed optimization -> ( )
 
 **recommended**
 * BLE *Scan Duplicate* (By Device Address and Advertising Data)
@@ -107,11 +123,7 @@ idf.py menuconfig
 > Component config -> Log output -> Default log verbosity -> (X) Debug
 * Exposure Notification API / Storage enable *Dump storage*
 > Exposure Notification API -> Storage -> [X] Dump storage
- 
-#### Configure device manually!
 
-Select required device drivers manually, because config get not applied in interface's CmakeLists.txt (I don't know why!):
-> comment in/out line in *components/interface/CmakeLists.txt* with matching interface 
 
 #### Configure SSL cert manually!
 
@@ -168,65 +180,65 @@ Request URL is parametrized with {day-string},({hour} in hourly mode,) {page}, {
 
 Adds interface functionality for control and setup.
 
+#### interface/custom-input
+
+Interface input with 7 button input.
+
+#### interface/m5-input
+
+Interface input for M5StickC (PLUS) with 2 button input and accelerometer as axis input.
+
+#### interface-m5-mpu6886
+
+I²C driver for MPU6886 6-Axis IMU of M5StickC (PLUS).
+
+#### interface/ttgo-input \[in development\]
+
+Interface input for TTGO T-Wristband with 1 button input and accelerometer as axis input.
+
+#### interface/ttgo-lsm9ds1 \[in development\]
+
+I²C driver for LSM9DS1 6-Axis IMU of TTGO T-Wristband.
+
 ### display
 
 General module for display and gfx.
+
+#### display/custom-ssd1306
+
+I²C driver for a SSD1306 display, implementation of [display](#-display) module.
+
+### display/m5-axp192
+
+I²C driver for AXP192 PMU of M5StickC (PLUS).
+
+#### display/m5-st7735s
+
+SPI driver for a ST7735s display of M5StickC, implementation of [display](#-display) module.
+
+#### display/m5-st7789
+
+SPI driver for a ST7789 display of M5StickC PLUS, implementation of [display](#-display) module
+
+#### display/ttgo-st7735
+
+SPI driver for a ST7735 display of TTGO T-Wristband, implementation of [display](#-display) module.
 
 ### rtc
 
 General module for set/get time from RTC.
 
-### i2c-main
-
-Just start I²C driver.
-
-### interface-custom-input
-
-Interface with 7 button input.
-
-### interface-m5-input
-
-Interface with input for M5StickC (PLUS) with 2 button input and accelerometer as axis input.
-
-### interface-ttgo-input \[in development\]
-
-Interface with input for TTGO T-Wristband with 1 button input and accelerometer as axis input.
-
-### rtc-custom-ds3231
+#### rtc/custom-ds3231
 
 I²C driver for a DS3231 RTC, implementation of [rtc](#-rtc) module.
 
-### rtc-m5-bm8563
+#### rtc/m5-bm8563
 
 I²C driver for BM8563 of M5StickC (PLUS), implementation of [rtc](#-rtc) module.
 
-### display-custom-ssd1306
+### i2c-main
 
-I²C driver for a SSD1306 display, implementation of [display](#-display) module.
-
-### display-m5-st7735s
-
-SPI driver for a ST7735s display of M5StickC, implementation of [display](#-display) module.
-
-### display-m5-st7789
-
-SPI driver for a ST7789 display of M5StickC PLUS, implementation of [display](#-display) module
-
-### display-ttgo-st7735
-
-SPI driver for a ST7735 display of TTGO T-Wristband, implementation of [display](#-display) module.
-
-### imu-m5-mpu6886
-
-I²C driver for MPU6886 6-Axis IMU of M5StickC (PLUS).
-
-### imu-ttgo-lsm9ds1 \[in development\]
-
-I²C driver for LSM9DS1 6-Axis IMU of TTGO T-Wristband.
-
-### pmu-m5-axp192
-
-I²C driver for AXP192 PMU of M5StickC (PLUS).
+Just start I²C driver.
 
 ### ena-binary-export  \[deprecated\]
 

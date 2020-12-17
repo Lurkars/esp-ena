@@ -11,36 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/**
- * @file
- * 
- * @brief start I2C driver for display and RTC.
- *  
- */
-#ifndef _i2c_main_H_
-#define _i2c_main_H_
+#include <string.h>
+#include "rtc.h"
 
-#if defined(CONFIG_ENA_INTERFACE_CUSTOM)
-#define I2C_SDA_PIN (CONFIG_I2C_SDA_PIN)
-#define I2C_SCL_PIN (CONFIG_I2C_SCL_PIN)
-#else
-#define I2C_SDA_PIN 21
-#define I2C_SCL_PIN 22
-#endif
-#define I2C_CLK_SPEED (1000000)
+void rtc_get_time(struct tm *time)
+{
+}
 
-/**
- * @brief initialize main I2C interface
- */
-void i2c_main_init();
-
-/**
- * @brief check if I2C interface already initialized
- * 
- * @return
- *      - false I2C not initialized
- *      - true  I2C initialized
- */
-bool i2c_is_initialized();
-
-#endif
+void rtc_set_time(struct tm *time)
+{
+}

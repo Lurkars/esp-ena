@@ -66,4 +66,12 @@ void ena_bluetooth_scan_stop(void);
  */
 int ena_bluetooth_scan_get_status(void);
 
+/**
+ * @brief       return the num of found devices in last scan
+ * 
+ * @return
+ *              num of last beacons
+ */
+int ena_bluetooth_scan_get_last_num(void);
+
 #endif

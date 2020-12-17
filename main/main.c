@@ -33,18 +33,6 @@
 
 #include "sdkconfig.h"
 
-#ifdef CONFIG_ENA_INTERFACE_CUSTOM
-#include "custom-input.h"
-#endif
-
-#if defined(CONFIG_ENA_INTERFACE_M5STICKC) || defined(CONFIG_ENA_INTERFACE_M5STICKC_PLUS) 
-#include "m5-input.h"
-#endif
-
-#ifdef CONFIG_ENA_INTERFACE_TTGO_T_WRISTBAND
-#include "ttgo-input.h"
-#endif
-
 void time_sync_notification_cb(struct timeval *tv)
 {
     time_t time = (time_t)tv->tv_sec;
@@ -91,19 +79,6 @@ void app_main(void)
 
     // start with main interface
     interface_main_start();
-
-    // start input
-#if defined(CONFIG_ENA_INTERFACE_CUSTOM)
-    custom_input_start();
-#endif
-
-#if defined(CONFIG_ENA_INTERFACE_M5STICKC) || defined(CONFIG_ENA_INTERFACE_M5STICKC_PLUS) 
-    m5_input_start();
-#endif
-
-#if defined(CONFIG_ENA_INTERFACE_TTGO_T_WRISTBAND)
-    ttgo_input_start();
-#endif
 
     wifi_controller_reconnect(NULL);
 

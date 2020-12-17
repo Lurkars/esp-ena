@@ -55,6 +55,11 @@ void lsm9ds1_i2c_write_bytes(uint8_t driver_addr, uint8_t start_addr, uint8_t nu
 
 int lsm9ds1_start(void)
 {
+    if (!i2c_is_initialized())
+    {
+        i2c_main_init();
+    }
+
     unsigned char regdata;
     // init ACC
     regdata = 0x38;
@@ -77,7 +82,7 @@ int lsm9ds1_start(void)
 
     aRes = 16.0 / 32768.0;
     gRes = 500.0 / 32768.0;
-    return 0; 
+    return 0;
 }
 
 void lsm9ds1_get_accel_adc(int16_t *ax, int16_t *ay, int16_t *az)

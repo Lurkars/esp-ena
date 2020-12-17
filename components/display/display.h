@@ -35,6 +35,63 @@
 #define PURPLE 0xF81F
 
 /**
+ * @brief initalize display 
+ * 
+ * MUST BE DEFINED DEVICE SPECIFIC
+ * 
+ */
+void display_start(void);
+
+/**
+ * @brief clear the display
+ *  
+ * MUST BE DEFINED DEVICE SPECIFIC
+ * 
+ * @param[in] line the line to clear
+ * @param[in] invert if true, image is inverted
+ */
+void display_clear_line(uint8_t line, bool invert);
+
+/**
+ * @brief clear the display
+ *  
+ * MUST BE DEFINED DEVICE SPECIFIC
+ * 
+ */
+void display_clear(void);
+
+/**
+ * @brief set display on or off
+ *  
+ * MUST BE DEFINED DEVICE SPECIFIC
+ * 
+ * @param[in] on true if display on, false if display off
+ */
+void display_on(bool on);
+
+/**
+ * @brief set display flipped or not
+ * 
+ * MUST BE DEFINED DEVICE SPECIFIC
+ * 
+ * @param[in] on true display is flipped
+ */
+void display_flipped(bool flipped);
+
+/**
+ * @brief write raw bytes to display line at starting column
+ * 
+ * MUST BE DEFINED DEVICE SPECIFIC
+ * 
+ * @param[in] data bytes to display  
+ * @param[in] length length of data
+ * @param[in] line the line to write to
+ * @param[in] offset number of offset chars to start
+ * @param[in] invert if true, image is inverted
+ */
+void display_data(uint8_t *data, size_t length, uint8_t line, uint8_t offset, bool invert);
+
+/**
  * 
  */
 void display_utf8_to_ascii(char *input, char *output);
@@ -45,53 +102,9 @@ void display_utf8_to_ascii(char *input, char *output);
 uint8_t *display_text_to_data(char *text, size_t text_length, size_t *length);
 
 /**
- * @brief initalize display
- */
-void display_start(void);
-
-/**
- * @brief clear the display
- * 
- * @param[in] line the line to clear
- * @param[in] invert if true, image is inverted
- */
-void display_clear_line(uint8_t line, bool invert);
-
-/**
- * @brief clear the display
- * 
- */
-void display_clear(void);
-
-/**
- * @brief set display on or off
- * 
- * @param[in] on true if display on, false if display off
- */
-void display_on(bool on);
-
-/**
- * @brief set display flipped or not
- * 
- * @param[in] on true display is flipped
- */
-void display_flipped(bool flipped);
-
-/**
  * 
  */
 uint8_t *display_text_to_data(char *text, size_t text_length, size_t *length);
-
-/**
- * @brief write raw bytes to display line at starting column
- * 
- * @param[in] data bytes to display  
- * @param[in] length length of data
- * @param[in] line the line to write to
- * @param[in] offset number of offset chars to start
- * @param[in] invert if true, image is inverted
- */
-void display_data(uint8_t *data, size_t length, uint8_t line, uint8_t offset, bool invert);
 
 /**
  * @brief write chars to display

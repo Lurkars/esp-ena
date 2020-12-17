@@ -11,28 +11,29 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/**
- * @file
- * 
- * @brief execute interface commands via simple push buttons
- *  
- */
-#ifndef _button_input_H_
-#define _button_input_H_
+#include <string.h>
+#include "display.h"
 
-#define BUTTON_RST GPIO_NUM_32
-#define BUTTON_SET GPIO_NUM_33
-#define BUTTON_MID GPIO_NUM_25
-#define BUTTON_RHT GPIO_NUM_26
-#define BUTTON_LFT GPIO_NUM_27
-#define BUTTON_DWN GPIO_NUM_14
-#define BUTTON_UP GPIO_NUM_12
+void display_start(void)
+{
+}
 
-/**
- * @brief     
- * 
- * 
- */
-void custom_input_start(void);
+void display_clear_line(uint8_t line, bool invert)
+{
+}
 
-#endif
+void display_clear(void)
+{
+}
+
+void display_on(bool on)
+{
+}
+
+void display_data(uint8_t *data, size_t length, uint8_t line, uint8_t offset, bool invert)
+{
+}
+
+void display_flipped(bool flipped)
+{
+}

@@ -109,11 +109,7 @@ void interface_data_lft(void)
 
 void interface_data_rht(void)
 {
-#if defined(CONFIG_ENA_INTERFACE_DEBUG)
-    interface_debug_start();
-#else
     interface_info_start();
-#endif
 }
 
 void interface_data_mid(void)
